@@ -11,24 +11,26 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
       <h1 className="text-3xl font-semibold">Dialed Kitchen</h1>
-      <p className="mt-1 text-muted">Plan it, price it, cook it.</p>
+      <p className="text-muted mt-1">Plan it, price it, cook it.</p>
 
-      <section className="mt-6 rounded-2xl border border-border bg-surface p-4">
+      <section className="border-border bg-surface mt-6 rounded-2xl border p-4">
         <h2 className="text-lg font-semibold">Coming soon</h2>
         <ul className="mt-2 space-y-2">
           {COMING.map((item) => (
             <li key={item} className="flex gap-2">
-              <span aria-hidden className="text-success">✓</span>
+              <span aria-hidden className="text-success">
+                ✓
+              </span>
               {item}
             </li>
           ))}
         </ul>
-        <p className="mt-3 font-semibold text-success-text">🎉 New best price! (sample)</p>
+        <p className="text-success-text mt-3 font-semibold">🎉 New best price! (sample)</p>
       </section>
 
       <button
         type="button"
-        className="mt-6 min-h-12 w-full rounded-xl bg-accent font-heading font-semibold text-on-accent"
+        className="bg-accent font-heading text-on-accent mt-6 min-h-12 w-full rounded-xl font-semibold"
       >
         Sample button
       </button>
