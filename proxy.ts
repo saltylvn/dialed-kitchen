@@ -23,8 +23,11 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Pages only: static files, images and the icon don't need a CSP or a session.
-      source: "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest).*)",
+      // Pages only. Static files, images, icons and the manifest skip this: they need no CSP
+      // or session, and a phone fetching the home-screen icon isn't signed in, so a
+      // redirect to /login here would leave it with no icon.
+      source:
+        "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:png|ico|svg|jpg|jpeg|webp)$).*)",
       // Link prefetches aren't rendered as pages, so they skip this too.
       missing: [
         { type: "header", key: "next-router-prefetch" },

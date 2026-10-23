@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Poppins } from "next/font/google";
 import { connection } from "next/server";
+import { ICON_VERSION } from "@/lib/iconVersion";
 import "./globals.css";
 
 // Two free Google Fonts, served from our own domain by next/font (docs/decisions/0008):
@@ -23,6 +24,17 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Dialed Kitchen",
   description: "Grocery lists, best prices, recipes and meal planning.",
+  // The fork icon as plain PNG files in public/ (made by `npm run icons` from
+  // assets/app-icon.svg). ?v= makes phones fetch a fresh copy after a change.
+  icons: {
+    icon: [
+      { url: `/icon-192.png?v=${ICON_VERSION}`, sizes: "192x192", type: "image/png" },
+      { url: `/icon-512.png?v=${ICON_VERSION}`, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: `/apple-touch-icon.png?v=${ICON_VERSION}`, sizes: "180x180", type: "image/png" },
+    ],
+  },
   appleWebApp: {
     capable: true, // opens full-screen (no Safari toolbars) from the home screen
     title: "Dialed Kitchen", // label under the home-screen icon
