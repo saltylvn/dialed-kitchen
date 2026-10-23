@@ -18,3 +18,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0012](0012-fixed-stores-and-swipe-wheels.md)                  | A fixed list of six stores, and swipe wheels for choosing                         | Accepted |
 | [0013](0013-recipes-typed-ingredients-and-one-step-saves.md)   | Recipes: ingredients typed as text, saved in one step, cooked from in place       | Accepted |
 | [0014](0014-in-stock-synced-with-list-and-recipes.md)          | "In stock": one kitchen inventory, kept in step with recipes and the grocery list | Accepted |
+| [0015](0015-safe-recipe-import-from-links.md)                  | Importing recipes from links, safely                                              | Accepted |
