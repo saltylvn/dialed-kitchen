@@ -4,7 +4,7 @@
     {
       "name": "dialed-kitchen",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "/Users/tyler/Developer/dialed-kitchen", "run", "dev", "--", "--port", "3100"],
+      "runtimeArgs": ["run", "dev", "--", "--port", "3100"],
       "port": 3100
     }
   ]
