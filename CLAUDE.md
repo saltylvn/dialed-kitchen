@@ -129,7 +129,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 
 0. Project setup ✅ (Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records; live at https://dialed-kitchen.vercel.app, deployed by Vercel on every push to `main`)
 1. Google sign-in, the wordmark, and the tab layout (Plan · Recipes · Grocery) ✅
-   1b. Partner sharing: households, invite-only partnership for a married couple
+   1b. Partner sharing: households, invite-only partnership for a married couple ✅
 2. Stores, items and price entry with unit prices, best price, "New best!" and history
 3. Grocery lists with shopping mode
 4. Recipes entered by hand
