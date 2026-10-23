@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Recipes · Dialed Kitchen" };
 
-// The recipe box: favorites first, then the rest. Tap a recipe to open it and cook from it.
+// The recipe box: favorites and regulars first, then the rest. Tap a recipe to open it and cook from it.
 // ?open=<id> opens one (after saving it, for example).
 export default async function RecipesPage({ searchParams }: PageProps<"/recipes">) {
   const [, recipes, { open }] = await Promise.all([requireUser(), listRecipes(), searchParams]);

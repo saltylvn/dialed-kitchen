@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { useWakeLock } from "@/components/useWakeLock";
+import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
 import { setInStock } from "@/features/stock/actions";
 import { addRecipeToList, setFavorite } from "../actions";
 import type { RecipeView } from "../queries";
 import { SOURCE_TYPES } from "../schema";
 
-// The recipe box: favorites first, then the rest. Tapping a recipe opens it in place with
+// The recipe box: favorites and regulars (planned often lately) first, most planned first,
+// then the rest. Tapping a recipe opens it in place with
 // everything needed to cook from the phone: ingredients, steps you can tick off as you go,
 // a keep-the-screen-on switch, and "Add to grocery list". One recipe is open at a time.
 export function RecipeBox({
@@ -39,8 +41,7 @@ export function RecipeBox({
     });
   }
 
-  const favorites = optimistic.filter((r) => r.favorite);
-  const others = optimistic.filter((r) => !r.favorite);
+  const { top: favorites, rest: others } = rankRecipes(optimistic);
   const card = (recipe: RecipeView) => (
     <RecipeCard
       key={recipe.id}
@@ -63,13 +64,14 @@ export function RecipeBox({
           id="favorites-heading"
           className="text-muted mb-2 text-[12px] tracking-[0.2em] uppercase"
         >
-          ★ Favorites
+          ★ Favorites & regulars
         </h2>
         {favorites.length > 0 ? (
           <ul className="space-y-3">{favorites.map(card)}</ul>
         ) : (
           <p className="text-muted text-[15px]">
-            Tap ☆ on a recipe you two make often to keep it up here.
+            Tap ☆ on a recipe you two love to keep it up here. Recipes you plan often join them on
+            their own.
           </p>
         )}
       </section>
@@ -123,6 +125,8 @@ function RecipeCard({
             <span className="text-muted block text-[14px]">
               Serves {recipe.servings}
               {recipe.ingredients.length > 0 && ` · ${recipe.ingredients.length} ingredients`}
+              {recipe.timesPlanned > 0 &&
+                ` · planned ${recipe.timesPlanned}× in ${RECENT_WEEKS} weeks`}
             </span>
           </span>
           <span
