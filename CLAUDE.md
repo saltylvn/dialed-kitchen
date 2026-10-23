@@ -25,6 +25,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
   - `--success` #788c5d and `--info` #6a9bcc are for fills and icons only; for text use `--success-text` #556640 and `--info-text` #3b6896.
 - **Sunlight rule:** every text color must reach 4.5:1 contrast on its background. `lib/contrast.test.ts` reads `globals.css` and checks every text/background pair; add new pairs there when adding a text color.
 - **Look: calm, upscale, minimal** (like a good restaurant menu): generous space, type-led, one accent color used sparingly. No clip-art icons for branding.
+- **Tabs (three, bottom bar):** Plan · Recipes · Grocery (the grocery list and prices together), defined once in `lib/tabs.ts` (`TABS`, `HOME_TAB`). Opening the app lands on Plan (`/` redirects; the home-screen `start_url` is `/plan`). Tab pages live in `app/(tabs)/`, share the `TabBar` and a `loading.tsx` skeleton, and use `components/ui/TabPage` (title in the display font, ⚙︎ top-right linking to `/settings?from=<tab>`; Settings' back link returns to that tab, unknown values fall back to Plan). The active tab shows an accent bar, darker text and `aria-current`, never color alone.
 - **Logo:** `components/ui/Wordmark` (sizes `lg`, `sm`), type only: "DIALED" in light, widely spaced Poppins capitals over a smaller, wider-spaced "KITCHEN". Use it on the sign-in screen and in headers; never retype the name by hand.
 - **Fonts (two only):** Poppins for everything readable (body, prices, buttons; the default `font-sans`), and Cormorant Garamond light italic (`font-display`) for large display headlines only (28px+), never for small or essential text. See docs/decisions/0008.
 - Body text 17px or more; tap targets 48px or more (one hand, holding a basket). Color is never the only signal: pair it with text or an icon (🎉, ✓, strikethrough).
@@ -127,7 +128,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 ## Roadmap
 
 0. Project setup ✅ (Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records; live at https://dialed-kitchen.vercel.app, deployed by Vercel on every push to `main`)
-1. Google sign-in (new Supabase project), the wordmark, and the tab layout
+1. Google sign-in, the wordmark, and the tab layout (Plan · Recipes · Grocery) ✅
    1b. Partner sharing: households, invite-only partnership for a married couple
 2. Stores, items and price entry with unit prices, best price, "New best!" and history
 3. Grocery lists with shopping mode

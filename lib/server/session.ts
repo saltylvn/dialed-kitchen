@@ -3,12 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "../env";
 import { hardenAuthCookie } from "../security/cookies";
 import { RETURN_TO_COOKIE, RETURN_TO_MAX_AGE_SECONDS, safeReturnPath } from "../security/returnTo";
+import { HOME_TAB } from "../tabs";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 // Pages anyone can open while signed out.
 const PUBLIC_PATHS = ["/login", "/auth/google", "/auth/callback"];
-const HOME = "/";
+const HOME = HOME_TAB.href;
 
 // Called by proxy.ts on every page request:
 //  1. refreshes the login session (Supabase tokens expire and must be renewed), and

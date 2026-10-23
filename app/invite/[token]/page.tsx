@@ -5,6 +5,7 @@ import { AcceptInviteForm } from "@/features/partner/components/AcceptInviteForm
 import { getMyHousehold, getInvitePreview } from "@/features/partner/queries";
 import type { InvitePreview } from "@/features/partner/schema";
 import { requireUser } from "@/lib/server/auth";
+import { HOME_TAB } from "@/lib/tabs";
 
 export const metadata: Metadata = {
   title: "Join a kitchen · Dialed Kitchen",
@@ -57,7 +58,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
               : MESSAGES[preview.status]}
           </p>
           <Link
-            href="/"
+            href={HOME_TAB.href}
             className="border-border mt-auto flex min-h-12 w-full items-center justify-center rounded-xl border font-medium"
           >
             Go to your kitchen

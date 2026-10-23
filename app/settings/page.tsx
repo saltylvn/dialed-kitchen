@@ -4,16 +4,22 @@ import { signOut } from "@/features/auth/actions";
 import { PartnerCard } from "@/features/partner/components/PartnerCard";
 import { getMyHousehold } from "@/features/partner/queries";
 import { requireUser } from "@/lib/server/auth";
+import { tabFromParam } from "@/lib/tabs";
 
 export const metadata: Metadata = { title: "Settings · Dialed Kitchen" };
 
-export default async function SettingsPage() {
-  const [user, household] = await Promise.all([requireUser(), getMyHousehold()]);
+export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
+  const [user, household, { from }] = await Promise.all([
+    requireUser(),
+    getMyHousehold(),
+    searchParams,
+  ]);
+  const backTo = tabFromParam(from); // the tab Settings was opened from
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
-      <Link href="/" className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
-        ‹ Home
+      <Link href={backTo.href} className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
+        ‹ {backTo.label}
       </Link>
       <h1 className="font-display mt-1 text-[36px] leading-tight font-light italic">Settings</h1>
 
