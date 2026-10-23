@@ -9,3 +9,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0003](0003-compute-best-price-from-history.md)         | Compute best price from price history instead of storing it | Accepted |
 | [0004](0004-recipe-import-structured-data-first.md)     | Recipe import: structured data first, AI as fallback        | Accepted |
 | [0005](0005-feature-folders-and-layered-data-access.md) | Feature folders and layered data access                     | Accepted |
+| [0006](0006-security-headers-and-strict-csp.md)         | Security headers and a strict, nonce-based CSP              | Accepted |
