@@ -13,3 +13,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0007](0007-server-side-auth-no-database-client-in-browser.md) | Server-side sign-in; no database client in the browser             | Accepted |
 | [0008](0008-type-only-wordmark-and-two-fonts.md)               | A type-only wordmark and two fonts                                 | Accepted |
 | [0009](0009-partner-sharing-households.md)                     | Partner sharing: households, invite-only, enforced in the database | Accepted |
+| [0010](0010-units-and-unit-prices.md)                          | Units, unit prices, and a database that keeps prices honest        | Accepted |
