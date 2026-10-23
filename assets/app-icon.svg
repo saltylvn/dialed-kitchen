@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Dialed Kitchen app icon: a slim clay-orange dinner fork on cream (docs/decisions/0011).
+       Solid background, no transparency: iPhones add their own rounded corners. -->
+  <rect width="100" height="100" fill="#faf9f5"/>
+  <path fill="#d97757" d="M39 16a1.7 1.7 0 0 1 3.4 0V38h2.8V16a1.7 1.7 0 0 1 3.4 0V38h2.8V16a1.7 1.7 0 0 1 3.4 0V38h2.8V16a1.7 1.7 0 0 1 3.4 0V40C61 47 55.5 50 52.6 53L53.4 82a3.4 3.4 0 0 1-6.8 0L47.4 53C44.5 50 39 47 39 40Z"/>
+</svg>

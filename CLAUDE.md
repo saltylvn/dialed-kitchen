@@ -27,6 +27,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 - **Look: calm, upscale, minimal** (like a good restaurant menu): generous space, type-led, one accent color used sparingly. No clip-art icons for branding.
 - **Tabs (three, bottom bar):** Plan · Recipes · Grocery (the grocery list and prices together), defined once in `lib/tabs.ts` (`TABS`, `HOME_TAB`). Opening the app lands on Plan (`/` redirects; the home-screen `start_url` is `/plan`). Tab pages live in `app/(tabs)/`, share the `TabBar` and a `loading.tsx` skeleton, and use `components/ui/TabPage` (title in the display font, ⚙︎ top-right linking to `/settings?from=<tab>`; Settings' back link returns to that tab, unknown values fall back to Plan). The active tab shows an accent bar, darker text and `aria-current`, never color alone.
 - **Logo:** `components/ui/Wordmark` (sizes `lg`, `sm`), type only: "DIALED" in light, widely spaced Poppins capitals over a smaller, wider-spaced "KITCHEN". Use it on the sign-in screen and in headers; never retype the name by hand.
+- **App icon:** a slim clay-orange dinner fork on cream (the fork is for the icon only, not the wordmark). Source: `assets/app-icon.svg`. Phones use plain PNGs in `public/` (`apple-touch-icon.png` 180 + a `-precomposed` copy, `icon-192.png`, `icon-512.png`), linked in `app/layout.tsx` metadata and `app/manifest.ts` (180 first). After changing the SVG: `npm run icons`, bump `ICON_VERSION` in `lib/iconVersion.ts` (the `?v=` on icon links, so phones fetch the new file), commit the PNGs; `lib/appIcon.test.ts` checks sizes, no metadata and the manifest. `proxy.ts` must skip image files: a signed-out phone fetching the icon must get the PNG, not a redirect to /login. iPhones cache home-screen icons: delete and re-add the icon after a change.
 - **Fonts (two only):** Poppins for everything readable (body, prices, buttons; the default `font-sans`), and Cormorant Garamond light italic (`font-display`) for large display headlines only (28px+), never for small or essential text. See docs/decisions/0008.
 - Body text 17px or more; tap targets 48px or more (one hand, holding a basket). Color is never the only signal: pair it with text or an icon (🎉, ✓, strikethrough).
 - No Anthropic logo or name in the app; only the colors.
@@ -137,4 +138,4 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 6. Recipe import from a photo
 7. Weekly meal planner
 8. Meal plan → grocery list with estimated cost
-9. Polish: price trends, cheapest store, meal-prep batch view, app icon
+9. Polish: price trends, cheapest store, meal-prep batch view (app icon ✅)
