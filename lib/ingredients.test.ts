@@ -27,7 +27,11 @@ describe("parseIngredient", () => {
 
   it("keeps counts without a unit", () => {
     expect(p("3 eggs")).toEqual({ quantity: 3, unit: null, name: "eggs" });
-    expect(p("2 cloves garlic, minced")).toEqual({ quantity: 2, unit: null, name: "cloves garlic, minced" });
+    expect(p("2 cloves garlic, minced")).toEqual({
+      quantity: 2,
+      unit: null,
+      name: "cloves garlic, minced",
+    });
   });
 
   it("takes the low end of a range", () => {
@@ -60,13 +64,33 @@ describe("parseIngredient", () => {
 
 describe("parseIngredientLines and formatIngredient", () => {
   it("reads pasted lines and writes them back", () => {
-    const parsed = parseIngredientLines("2 cups flour\n\n1 1/2 lb chicken thighs\r\nsalt to taste\n3 eggs");
+    const parsed = parseIngredientLines(
+      "2 cups flour\n\n1 1/2 lb chicken thighs\r\nsalt to taste\n3 eggs",
+    );
     expect(parsed.map(formatIngredient)).toEqual([
       "2 cups flour",
-      "1.5 lb chicken thighs",
+      "1½ lb chicken thighs",
       "salt to taste",
       "3 eggs",
     ]);
+  });
+});
+
+describe("editing round trip", () => {
+  it("reads back exactly what it writes, fractions included", () => {
+    for (const line of [
+      "1½ lb chicken thighs",
+      "½ tsp salt",
+      "⅓ cup sugar",
+      "2⅔ cups flour",
+      "0.6 lb ham",
+      "3 eggs",
+      "salt to taste",
+    ]) {
+      const parsed = parseIngredient(line)!;
+      expect(formatIngredient(parsed)).toBe(line);
+      expect(parseIngredient(formatIngredient(parsed))).toEqual(parsed);
+    }
   });
 });
 

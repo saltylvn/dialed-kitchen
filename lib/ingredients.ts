@@ -1,4 +1,5 @@
-import { UNITS, type Unit } from "./units";
+import { formatQuantity } from "./list";
+import { unitLabel, type Unit } from "./units";
 
 // Reads an ingredient line the way people (and recipe websites) write it:
 //   "2 cups flour"          → 2, cup, "flour"
@@ -11,24 +12,70 @@ import { UNITS, type Unit } from "./units";
 export type ParsedIngredient = { quantity: number | null; unit: Unit | null; name: string };
 
 const UNICODE_FRACTIONS: Record<string, number> = {
-  "½": 1 / 2, "⅓": 1 / 3, "⅔": 2 / 3, "¼": 1 / 4, "¾": 3 / 4,
-  "⅕": 1 / 5, "⅖": 2 / 5, "⅗": 3 / 5, "⅘": 4 / 5, "⅙": 1 / 6, "⅚": 5 / 6,
-  "⅛": 1 / 8, "⅜": 3 / 8, "⅝": 5 / 8, "⅞": 7 / 8,
+  "½": 1 / 2,
+  "⅓": 1 / 3,
+  "⅔": 2 / 3,
+  "¼": 1 / 4,
+  "¾": 3 / 4,
+  "⅕": 1 / 5,
+  "⅖": 2 / 5,
+  "⅗": 3 / 5,
+  "⅘": 4 / 5,
+  "⅙": 1 / 6,
+  "⅚": 5 / 6,
+  "⅛": 1 / 8,
+  "⅜": 3 / 8,
+  "⅝": 5 / 8,
+  "⅞": 7 / 8,
 };
 
 // Words people use for each unit, matched without caring about capitals or a final dot.
 // ("T" for tablespoon vs "t" for teaspoon is the one place capitals matter; see below.)
 const UNIT_WORDS: Record<string, Unit> = {
-  tsp: "tsp", tsps: "tsp", teaspoon: "tsp", teaspoons: "tsp",
-  tbsp: "tbsp", tbsps: "tbsp", tbs: "tbsp", tablespoon: "tbsp", tablespoons: "tbsp",
-  cup: "cup", cups: "cup", c: "cup",
-  "fl oz": "fl_oz", "fluid ounce": "fl_oz", "fluid ounces": "fl_oz",
-  oz: "oz", ounce: "oz", ounces: "oz",
-  lb: "lb", lbs: "lb", pound: "lb", pounds: "lb",
-  g: "g", gram: "g", grams: "g", kg: "kg", kilogram: "kg", kilograms: "kg",
-  ml: "ml", milliliter: "ml", milliliters: "ml", millilitre: "ml", millilitres: "ml",
-  l: "l", liter: "l", liters: "l", litre: "l", litres: "l",
-  qt: "qt", quart: "qt", quarts: "qt", gal: "gal", gallon: "gal", gallons: "gal",
+  tsp: "tsp",
+  tsps: "tsp",
+  teaspoon: "tsp",
+  teaspoons: "tsp",
+  tbsp: "tbsp",
+  tbsps: "tbsp",
+  tbs: "tbsp",
+  tablespoon: "tbsp",
+  tablespoons: "tbsp",
+  cup: "cup",
+  cups: "cup",
+  c: "cup",
+  "fl oz": "fl_oz",
+  "fluid ounce": "fl_oz",
+  "fluid ounces": "fl_oz",
+  oz: "oz",
+  ounce: "oz",
+  ounces: "oz",
+  lb: "lb",
+  lbs: "lb",
+  pound: "lb",
+  pounds: "lb",
+  g: "g",
+  gram: "g",
+  grams: "g",
+  kg: "kg",
+  kilogram: "kg",
+  kilograms: "kg",
+  ml: "ml",
+  milliliter: "ml",
+  milliliters: "ml",
+  millilitre: "ml",
+  millilitres: "ml",
+  l: "l",
+  liter: "l",
+  liters: "l",
+  litre: "l",
+  litres: "l",
+  qt: "qt",
+  quart: "qt",
+  quarts: "qt",
+  gal: "gal",
+  gallon: "gal",
+  gallons: "gal",
   dozen: "dozen",
 };
 
@@ -50,7 +97,10 @@ function amountValue(text: string): number | null {
 }
 
 export function parseIngredient(line: string): ParsedIngredient | null {
-  const text = line.replace(/\s+/g, " ").trim().replace(/^[-•*·]\s*/, "");
+  const text = line
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[-•*·]\s*/, "");
   if (!text) return null;
 
   const amount = AMOUNT.exec(text);
@@ -76,7 +126,8 @@ export function parseIngredient(line: string): ParsedIngredient | null {
 
   const name = rest.replace(/^of\s+/i, "").trim();
   // "2 cups" alone (nothing after the unit) isn't an ingredient: keep it as written.
-  const nameIsJustAUnit = unit === null && UNIT_WORDS[name.toLowerCase().replace(/\.$/, "")] !== undefined;
+  const nameIsJustAUnit =
+    unit === null && UNIT_WORDS[name.toLowerCase().replace(/\.$/, "")] !== undefined;
   if (!name || nameIsJustAUnit) return { quantity: null, unit: null, name: text };
   return { quantity, unit, name };
 }
@@ -89,11 +140,12 @@ export function parseIngredientLines(text: string): ParsedIngredient[] {
     .filter((i): i is ParsedIngredient => i !== null);
 }
 
-// Back to one line of text (for editing): "1.5 lb chicken thighs", "salt to taste".
+// Back to one line of text (for editing): "1½ lb chicken thighs", "salt to taste".
+// parseIngredient reads it back to the same thing (tested).
 export function formatIngredient({ quantity, unit, name }: ParsedIngredient): string {
   if (quantity === null) return name;
-  const amount = String(Number(quantity.toFixed(3)));
-  return unit ? `${amount} ${UNITS[unit].plural} ${name}` : `${amount} ${name}`;
+  const amount = formatQuantity(quantity);
+  return unit ? `${amount} ${unitLabel(quantity, unit)} ${name}` : `${amount} ${name}`;
 }
 
 // The part of an ingredient name used to match the price book:

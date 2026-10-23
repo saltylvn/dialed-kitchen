@@ -63,7 +63,7 @@ describe("units in SQL match lib/units.ts", () => {
       );
       expect(rows[0]).toEqual({ dimension: def.dimension, to_base: String(def.toBase) });
     }
-    const { rows } = await db.admin("select private.unit_dimension('cup') as d");
+    const { rows } = await db.admin("select private.unit_dimension('pint') as d");
     expect(rows[0]).toEqual({ d: null });
   });
 });

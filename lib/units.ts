@@ -62,3 +62,8 @@ export function pricePerBase(price: number, quantity: number, unit: Unit): numbe
 export function pricePerUnit(pricePerBaseUnit: number, unit: Unit): number {
   return pricePerBaseUnit * UNITS[unit].toBase;
 }
+
+// "cup" for one or less (½ cup, 1 cup), "cups" for more.
+export function unitLabel(quantity: number, unit: Unit): string {
+  return quantity > 1 ? UNITS[unit].plural : UNITS[unit].label;
+}

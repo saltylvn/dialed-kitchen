@@ -49,7 +49,7 @@ describe("priceFormSchema", () => {
       [{ price: "0" }, /Enter the price/],
       [{ price: "free" }, /Enter the price/],
       [{ quantity: "0" }, /package size/],
-      [{ unit: "cup" }, /Choose a unit/],
+      [{ unit: "pint" }, /Choose a unit/],
       [{ storeId: "" }, /Choose a store/],
       [{ observedOn: addDays(serverToday(), 3) }, /in the future/],
       [{ observedOn: "2026-02-30" }, /Choose a date/],

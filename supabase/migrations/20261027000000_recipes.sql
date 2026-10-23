@@ -50,6 +50,8 @@ create table public.recipes (
   source_url text check (source_url is null or (source_url ~ '^https://' and char_length(source_url) <= 2000)),
   steps text[] not null default '{}'
     check (cardinality(steps) <= 100 and array_position(steps, '') is null),
+  -- Starred by either partner; shown at the top of the recipe box for both.
+  favorite boolean not null default false,
   created_by uuid default auth.uid() references auth.users (id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -72,7 +74,7 @@ create table public.recipe_ingredients (
   foreign key (item_id, household_id) references public.items (id, household_id) on delete set null (item_id)
 );
 
-create index recipes_household on public.recipes (household_id, lower(title));
+create index recipes_household on public.recipes (household_id, favorite desc, lower(title));
 create index recipes_created_by on public.recipes (created_by);
 create index recipe_ingredients_recipe on public.recipe_ingredients (recipe_id, household_id);
 create index recipe_ingredients_item on public.recipe_ingredients (item_id, household_id);
@@ -87,8 +89,8 @@ revoke all on public.recipes, public.recipe_ingredients from anon, authenticated
 grant select, delete on public.recipes, public.recipe_ingredients to authenticated;
 -- Writes go through save_recipe (below), which runs as the caller, so these grants and RLS
 -- still apply to it.
-grant insert (title, servings, source_type, source_name, source_url, steps),
-      update (title, servings, source_type, source_name, source_url, steps, updated_at)
+grant insert (title, servings, source_type, source_name, source_url, steps, favorite),
+      update (title, servings, source_type, source_name, source_url, steps, updated_at, favorite)
   on public.recipes to authenticated;
 grant insert (recipe_id, sort_order, quantity, unit, name, item_id)
   on public.recipe_ingredients to authenticated;
