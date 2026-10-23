@@ -4,21 +4,25 @@ import { useActionState } from "react";
 import { useToday } from "@/components/useToday";
 import { UNITS, unitsFor, type Unit } from "@/lib/units";
 import { logPrice, type LogPriceResult } from "../actions";
+import type { StoreRow } from "../schema";
+import { PriceWheel } from "./PriceWheel";
 
 // Width is set where each field is used: full width on its own row, shared in a row.
 const box = "border-border bg-surface mt-2 min-h-12 rounded-xl border px-3 text-[17px]";
 const field = `${box} w-full`;
 
-// Log a price for one item: store, price, package size, sale, date. After saving, says how
-// it compares to the best price found before it. (The form clears itself after each save.)
+// Log a price for one item: store (one of the six), price (swipe wheels), package size,
+// sale, date. After saving, says how it compares to the best price found before it.
 export function LogPriceForm({
   itemId,
   compareUnit,
-  storeNames,
+  stores,
+  initialPrice,
 }: {
   itemId: string;
   compareUnit: Unit;
-  storeNames: string[];
+  stores: StoreRow[];
+  initialPrice: number; // where the price wheels start: the item's latest price
 }) {
   const [result, formAction, pending] = useActionState<LogPriceResult, FormData>(logPrice, null);
   const today = useToday(); // the phone's own date; "" during the server render
@@ -33,36 +37,26 @@ export function LogPriceForm({
         <label htmlFor="price-store" className="font-medium">
           Store
         </label>
-        <input
-          id="price-store"
-          name="storeName"
-          list="store-names"
-          required
-          maxLength={60}
-          autoComplete="off"
-          placeholder="Aldi"
-          className={field}
-        />
-        <datalist id="store-names">
-          {storeNames.map((name) => (
-            <option key={name} value={name} />
+        {/* A native menu: on iPhone it opens as the swipe wheel. */}
+        <select id="price-store" name="storeId" required defaultValue="" className={field}>
+          <option value="" disabled>
+            Choose a store
+          </option>
+          {stores.map((store) => (
+            <option key={store.id} value={store.id}>
+              {store.name}
+            </option>
           ))}
-        </datalist>
+        </select>
       </div>
 
       <div>
-        <label htmlFor="price-amount" className="font-medium">
+        <p id="price-label" className="font-medium">
           Price
-        </label>
-        <input
-          id="price-amount"
-          name="price"
-          inputMode="decimal"
-          required
-          autoComplete="off"
-          placeholder="$5.97"
-          className={field}
-        />
+        </p>
+        <div role="group" aria-labelledby="price-label" className="mt-2">
+          <PriceWheel name="price" initial={initialPrice} />
+        </div>
       </div>
 
       <fieldset>

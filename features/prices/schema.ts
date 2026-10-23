@@ -41,7 +41,7 @@ export const itemFormSchema = z.object({
 
 export const priceFormSchema = z.object({
   itemId: z.uuid(),
-  storeName: name(60, "store name"),
+  storeId: z.uuid({ message: "Choose a store" }),
   price: z.string().transform((s, ctx) => {
     const value = parseMoney(s);
     if (value === null || value <= 0 || value >= 100000) {
@@ -78,6 +78,7 @@ export const itemRowSchema = z.object({
 });
 export type ItemRow = z.infer<typeof itemRowSchema>;
 
+// Stores are a fixed list of six (docs/decisions/0012), shown in sort_order.
 export const storeRowSchema = z.object({ id: z.uuid(), name: z.string() });
 export type StoreRow = z.infer<typeof storeRowSchema>;
 

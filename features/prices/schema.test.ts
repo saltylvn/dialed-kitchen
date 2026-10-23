@@ -5,7 +5,7 @@ import { itemFormSchema, parseMoney, parseQuantity, priceFormSchema } from "./sc
 const ITEM = "00000000-0000-4000-8000-000000000001";
 const valid = {
   itemId: ITEM,
-  storeName: "  Aldi ",
+  storeId: "00000000-0000-4000-8000-000000000002",
   price: "$3.49",
   quantity: "2",
   unit: "lb",
@@ -34,7 +34,7 @@ describe("priceFormSchema", () => {
   it("accepts a normal entry and tidies it", () => {
     expect(priceFormSchema.parse(valid)).toEqual({
       itemId: ITEM,
-      storeName: "Aldi",
+      storeId: "00000000-0000-4000-8000-000000000002",
       price: 3.49,
       quantity: 2,
       unit: "lb",
@@ -50,7 +50,7 @@ describe("priceFormSchema", () => {
       [{ price: "free" }, /Enter the price/],
       [{ quantity: "0" }, /package size/],
       [{ unit: "cup" }, /Choose a unit/],
-      [{ storeName: "   " }, /Enter a store name/],
+      [{ storeId: "" }, /Choose a store/],
       [{ observedOn: addDays(serverToday(), 3) }, /in the future/],
       [{ observedOn: "2026-02-30" }, /Choose a date/],
       [{ itemId: "not-a-uuid" }, /UUID/i],

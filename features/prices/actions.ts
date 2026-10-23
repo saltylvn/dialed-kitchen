@@ -63,7 +63,7 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
   await requireUser();
   const parsed = priceFormSchema.safeParse({
     itemId: formData.get("itemId"),
-    storeName: formData.get("storeName"),
+    storeId: formData.get("storeId"),
     price: formData.get("price"),
     quantity: formData.get("quantity"),
     unit: formData.get("unit"),
@@ -75,27 +75,24 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
 
   const supabase = await createClient();
 
-  // The item (for its display unit), the best earlier price, and the store, in parallel.
-  const [item, best, storeId] = await Promise.all([
+  // The item (for its display unit) and the best earlier price, in parallel. The store needs
+  // no lookup: the database only accepts one of your household's six stores.
+  const [item, best] = await Promise.all([
     supabase.from("items").select("compare_unit").eq("id", input.itemId).maybeSingle(),
     supabase
       .from("item_best_prices")
       .select("unit_price_base")
       .eq("item_id", input.itemId)
       .maybeSingle(),
-    findOrCreateStore(supabase, input.storeName),
   ]);
-  if (item.error || !item.data || best.error || !storeId) {
-    console.error(
-      "log price lookup failed:",
-      item.error?.message ?? best.error?.message ?? "store",
-    );
+  if (item.error || !item.data || best.error) {
+    console.error("log price lookup failed:", item.error?.message ?? best.error?.message);
     return { ok: false, error: GENERIC_ERROR };
   }
 
   const { error } = await supabase.from("item_prices").insert({
     item_id: input.itemId,
-    store_id: storeId,
+    store_id: input.storeId,
     price: input.price,
     package_quantity: input.quantity,
     package_unit: input.unit,
@@ -119,30 +116,6 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
       bestBefore: bestBefore === null ? null : formatUnitPrice(bestBefore, compareUnit),
     },
   };
-}
-
-// Stores are matched by name, ignoring capitals ("aldi" is "Aldi"); new names are added.
-async function findOrCreateStore(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  storeName: string,
-): Promise<string | null> {
-  const match = async () => {
-    const { data } = await supabase.from("stores").select("id, name");
-    return data?.find((s) => s.name.toLowerCase() === storeName.toLowerCase())?.id ?? null;
-  };
-  const existing = await match();
-  if (existing) return existing;
-
-  const { data, error } = await supabase
-    .from("stores")
-    .insert({ name: storeName })
-    .select("id")
-    .single();
-  if (!error) return data.id;
-  // Your partner may have added the same store at the same moment: use theirs.
-  if (error.code === UNIQUE_VIOLATION) return match();
-  console.error("create store failed:", error.message);
-  return null;
 }
 
 export async function deletePrice(formData: FormData): Promise<void> {

@@ -43,11 +43,11 @@ This repo showcases the owner's software engineering skills for future jobs, so 
   - No other sharing (no families, friends, guests or roles). The UI calls it **Partner**.
   - Either partner can leave: the shared data stays with the household's creator, and the one who leaves starts fresh. A joining partner's old solo data stays private, never merged.
   - Every data table has `household_id`, with RLS allowing only that household's members.
-- **Groceries:** `stores`, `items` (one row per thing you buy: name, category, default unit, one comparison unit: per lb, per fl oz, or each).
+- **Groceries:** `stores` is a **fixed list of six, in this order: WinCo, Trader Joe's, Harmons, Smith's, Costco, Walmart** (database-enforced: seeded per household, check constraint, read-only to the app; changing it needs a migration; docs/decisions/0012). `items` (one row per thing you buy: name, one comparison unit: per lb, per fl oz, or each).
 - **Prices:** `item_prices` (item, store, price, package quantity + unit, date, sale flag). Every price is kept as history. **Best price** = the lowest unit price ever entered for the item, computed from the history (not stored), shown with store and date; sale prices are labeled; prices older than 90 days are marked "older". Entering a price shows "🎉 New best price!" or "X% more than your best". Unit-price math in `lib/pricing.ts` with tests; an index keeps the best-price lookup fast.
 - **Grocery lists:** `grocery_lists`, `grocery_list_items` (item, amount, checked, source: manual or meal plan). Shopping mode with big checkboxes, best price and "last here" price per item.
 - **Recipes:** `recipes` (title, servings, steps, source), `recipe_ingredients` (linked to `items`, amount, unit). Import from a URL by reading the page's schema.org Recipe data (no AI); Gemini only as a fallback. Import from a photo of a cookbook/magazine page via Gemini, always shown as an editable form before saving.
-- **Meal plan:** `meal_plan_entries` (date, meal, recipe, servings) → generate a grocery list (ingredients summed across recipes) with an estimated cost from best/latest prices.
+- **Meal plan:** `meal_plan_entries` (date, meal, recipe, servings). **Meals are exactly Breakfast, Lunch, Snacks, Dinner, in that order (snacks after lunch, before dinner), chosen with a swipe wheel.** → generate a grocery list (ingredients summed across recipes) with an estimated cost from best/latest prices.
 - **Units:** conversions in `lib/units.ts` with tests; anything that can't be converted is listed separately, never guessed.
 
 ## Stack
@@ -95,6 +95,8 @@ Rules:
 - Secrets are read only in `lib/server/env.ts` (validated at startup with zod); browser code only sees `NEXT_PUBLIC_*` values that are safe to be public.
 - Database: migrations are append-only (never edit one that has been applied); foreign keys with explicit `on delete`; `check` constraints for invariants (price > 0, quantity > 0); money as `numeric(10,2)`, never floating point in the database.
 - Accessibility: semantic HTML (real `<button>`, `<label>` for every input), visible focus, 48px+ targets.
+- **Choosing one of several values uses a swipe wheel** (the owner's preference): a native `<select>` (iPhone shows its wheel) for named options like stores and meals, `components/ui/WheelPicker` for numbers like the price (dollars and cents wheels). The wheel only changes its value from the person's own scrolling.
+- **No inline `style` attributes** (lint-enforced): the CSP blocks them in production, where they silently do nothing. Use Tailwind classes.
 - TypeScript is strict (incl. `noUncheckedIndexedAccess`); no `any`; avoid `as` casts except at a validated boundary.
 
 ## Performance (speed is a feature: the app is used in the store, often on cellular)
