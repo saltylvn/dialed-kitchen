@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Lora, Poppins } from "next/font/google";
+import { connection } from "next/server";
 import "./globals.css";
 
 // Free Google Fonts close to Anthropic's own (paid) typefaces:
@@ -35,7 +36,11 @@ export const viewport: Viewport = {
   themeColor: "#faf9f5", // cream status-bar area, matching --bg
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Render every page per request (not once at build time), so each page's scripts get
+  // that request's CSP nonce (proxy.ts). The app is per-user, so pages are dynamic anyway.
+  await connection();
+
   return (
     <html lang="en" className={`${poppins.variable} ${lora.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
