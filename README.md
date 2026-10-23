@@ -2,7 +2,7 @@
 
 **Plan it, price it, cook it.** An iPhone-first web app for daily cooking, grocery shopping and meal prep: grocery lists, price tracking that remembers the best price for every item across stores, recipes imported from websites or photographed from cookbooks, and weekly meal plans that build the grocery list and estimate its cost.
 
-> Status: early development. See the [roadmap](#roadmap).
+> **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · Status: early development. See the [roadmap](#roadmap).
 
 ## Why it exists
 
@@ -66,7 +66,7 @@ npm run build   # production build
 
 ## Roadmap
 
-- [ ] 0. Project setup, design tokens, CI, first deploy
+- [x] 0. Project setup, design tokens, CI, first deploy
 - [ ] 1. Google sign-in and app layout
 - [ ] 2. Stores, items, prices: unit price, best price, history
 - [ ] 3. Grocery lists and shopping mode

@@ -58,7 +58,7 @@ Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Googl
 - `npm run lint`: lint
 
 ## Roadmap
-0. Project setup: Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records, first deploy (in progress)
+0. Project setup ✅ (Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records; live at https://dialed-kitchen.vercel.app, deployed by Vercel on every push to `main`)
 1. Google sign-in (new Supabase project) and the tab layout
 2. Stores, items and price entry with unit prices, best price, "New best!" and history
 3. Grocery lists with shopping mode
