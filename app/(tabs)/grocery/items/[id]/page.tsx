@@ -53,7 +53,9 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
           <LogPriceForm
             itemId={item.id}
             compareUnit={item.compare_unit}
-            storeNames={stores.map((s) => s.name)}
+            stores={stores}
+            // The wheels start at the latest price (same package, usually a small nudge).
+            initialPrice={history[0]?.price ?? 5}
           />
         </section>
 

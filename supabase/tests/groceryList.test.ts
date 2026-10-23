@@ -135,11 +135,11 @@ describe("last price at each store", () => {
     const rice = await addItem(alex, "Rice");
     const aldi = await one<{ id: string }>(
       alex,
-      "insert into public.stores (name) values ('Aldi') returning id",
+      "select id from public.stores where name = 'WinCo'",
     );
     const kroger = await one<{ id: string }>(
       alex,
-      "insert into public.stores (name) values ('Kroger') returning id",
+      "select id from public.stores where name = 'Costco'",
     );
     const add = (store: string, price: number, on: string) =>
       db.as(

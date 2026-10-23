@@ -49,7 +49,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
       .select("id, item_id, name, quantity, unit, checked, created_at"),
     supabase.from("items").select("id, name, compare_unit").order("name"),
     supabase.from("item_best_prices").select("item_id, store_id, unit_price_base"),
-    supabase.from("stores").select("id, name").order("name"),
+    supabase.from("stores").select("id, name").order("sort_order"),
     storeId
       ? supabase
           .from("item_latest_store_prices")

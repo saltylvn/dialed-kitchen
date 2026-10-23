@@ -81,7 +81,7 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
       .order("created_at", { ascending: false })
       .limit(100),
     supabase.from("item_best_prices").select("price_id").eq("item_id", itemId).maybeSingle(),
-    supabase.from("stores").select("id, name").order("name"),
+    supabase.from("stores").select("id, name").order("sort_order"),
   ]);
   if (item.error) fail("item", item.error);
   if (history.error) fail("item_prices", history.error);
