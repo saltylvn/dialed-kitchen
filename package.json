@@ -27,7 +27,7 @@
     "@electric-sql/pglite": "^0.5.11",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^24.19.2",
+    "@types/node": "^26.6.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
