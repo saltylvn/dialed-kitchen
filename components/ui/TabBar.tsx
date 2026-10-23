@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useToday } from "@/components/useToday";
+import { mondayOf } from "@/lib/plan";
 import { TABS, type TabId } from "@/lib/tabs";
 
 // The bottom tab bar: Plan · Recipes · Grocery (the list and prices). A small client
@@ -17,6 +19,10 @@ const ICONS: Record<TabId, () => React.JSX.Element> = {
 
 export function TabBar() {
   const pathname = usePathname();
+  // Plan opens on this week by the phone's own date, in one trip (no redirect).
+  const today = useToday();
+  const linkFor = (id: TabId, href: string) =>
+    id === "plan" && today ? `${href}?week=${mondayOf(today)}` : href;
 
   return (
     <nav
@@ -30,7 +36,7 @@ export function TabBar() {
           return (
             <li key={href} className="flex-1">
               <Link
-                href={href}
+                href={linkFor(id, href)}
                 aria-current={active ? "page" : undefined}
                 className={`relative flex min-h-16 flex-col items-center justify-center gap-1 text-[13px] ${
                   active ? "text-text font-medium" : "text-muted"
