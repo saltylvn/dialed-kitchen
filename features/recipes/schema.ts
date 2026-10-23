@@ -102,3 +102,15 @@ export const ingredientRowSchema = z.object({
   item_id: z.uuid().nullable(),
 });
 export type IngredientRow = z.infer<typeof ingredientRowSchema>;
+
+// What the recipe form starts from: an existing recipe (id set) or a new draft (an import).
+export type RecipeDraft = {
+  id?: string;
+  title: string;
+  servings: number;
+  source_type: SourceType;
+  source_name: string | null;
+  source_url: string | null;
+  ingredientsText: string;
+  stepsText: string;
+};

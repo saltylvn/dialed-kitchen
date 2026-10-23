@@ -60,7 +60,7 @@ Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Googl
 - Validate every form and server-action input (zod) before it touches the database.
 - Secret keys only in `.env.local` (git-ignored) and Vercel; never in browser code.
 - AI is called only from the server, its JSON reply validated before use, with a daily per-user limit.
-- Fetching a recipe URL: https only, block private/local network addresses, time and size limits.
+- **Fetching any link a person supplies goes through `lib/server/safeFetch.ts` `fetchPublicPage`** (docs/decisions/0015): https on 443 only, public addresses only, checked inside the connection's own DNS lookup (no DNS rebinding), redirects checked per hop, 10 s / 3 MB / HTML only. Never `fetch()` a user-supplied URL directly. Identify honestly; never try to get around a site's bot protection.
 - Recipe photos in a private storage bucket.
 
 ## Architecture (see docs/decisions/0005)
@@ -122,6 +122,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 
 - `npm run dev`: start the local dev server
 - `npm run build`: production build
+- `NETWORK_TESTS=1 npx vitest run lib/server/safeFetch.network.test.ts`: real-internet checks of the safe fetcher (not in CI)
 - `npm test`: run unit tests (vitest; `vitest.config.mts` maps the `@/` imports). Browser-only values such as the phone's date come from hooks like `components/useToday` (`useSyncExternalStore`), not `setState` in an effect.
 - `npm run lint`: lint
 - `npm run typecheck`: TypeScript check
@@ -138,7 +139,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 3. Grocery list with shopping mode ✅ (one shared list; List | Prices views; last price at the chosen store)
 4. Recipes entered by hand ✅ (typed ingredient lines, favorites, expand to cook, add to list)
    4b. "In stock" ✅ (the owner's term, never "have it"): one shared inventory (`pantry_items`); tick In stock on a recipe ingredient or a list entry, and it leaves the grocery list; Clear checked puts bought items In stock; recipes add only what's needed, never duplicates; Grocery tab views List · In stock · Prices. Names match by `matchKey` / `private.ingredient_key` (docs/decisions/0014).
-5. Recipe import from a website link
+5. Recipe import from a website link ✅ (schema.org Recipe data, SSRF-safe fetch; sites that block apps get a clear message)
 6. Recipe import from a photo
 7. Weekly meal planner
 8. Meal plan → grocery list with estimated cost

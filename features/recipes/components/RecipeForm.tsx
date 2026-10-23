@@ -2,15 +2,16 @@
 
 import { useActionState } from "react";
 import { saveRecipe, type SaveRecipeResult } from "../actions";
-import type { RecipeForEdit } from "../queries";
-import { SOURCE_TYPES } from "../schema";
+import { SOURCE_TYPES, type RecipeDraft } from "../schema";
 
 const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
 const SERVINGS = Array.from({ length: 20 }, (_, i) => i + 1);
 
 // Add or edit a recipe. Ingredients and steps are typed one per line; ingredient amounts
 // are read automatically ("1 1/2 cups flour") and matched to the price book on save.
-export function RecipeForm({ recipe }: { recipe?: RecipeForEdit }) {
+// recipe: an existing recipe (with id) to edit, or a draft (no id) to start from, such as an
+// import from a website.
+export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
   const [result, formAction, pending] = useActionState<SaveRecipeResult, FormData>(
     saveRecipe,
     null,
@@ -148,7 +149,7 @@ export function RecipeForm({ recipe }: { recipe?: RecipeForEdit }) {
         disabled={pending}
         className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
       >
-        {pending ? "Saving…" : recipe ? "Save changes" : "Save recipe"}
+        {pending ? "Saving…" : recipe?.id ? "Save changes" : "Save recipe"}
       </button>
     </form>
   );
