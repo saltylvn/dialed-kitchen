@@ -6,9 +6,13 @@
 type CspOptions = {
   nonce: string;
   isDev: boolean;
+  supabaseUrl: string; // sign-in hands off to Supabase, then Google (see form-action)
 };
 
-export function buildCsp({ nonce, isDev }: CspOptions): string {
+// Google's sign-in page, the last stop of the "Continue with Google" redirect chain.
+export const GOOGLE_SIGN_IN_ORIGIN = "https://accounts.google.com";
+
+export function buildCsp({ nonce, isDev, supabaseUrl }: CspOptions): string {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     // 'strict-dynamic': scripts loaded by a nonced script are trusted too (Next.js chunks).
@@ -26,7 +30,9 @@ export function buildCsp({ nonce, isDev }: CspOptions): string {
     "connect-src": ["'self'"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
-    "form-action": ["'self'"],
+    // Where forms may send you. Chrome also checks every redirect after a form post, and the
+    // sign-in button posts to us, then redirects to Supabase, then to Google.
+    "form-action": ["'self'", new URL(supabaseUrl).origin, GOOGLE_SIGN_IN_ORIGIN],
     "frame-ancestors": ["'none'"], // no one may show this app inside a frame (clickjacking)
     "upgrade-insecure-requests": [],
   };

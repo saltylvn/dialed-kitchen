@@ -1,5 +1,9 @@
-// Placeholder home page for Milestone 0: shows the name, the colors and fonts in use,
-// and what's coming. Replaced by the real tabs in Milestone 1.
+import { Wordmark } from "@/components/ui/Wordmark";
+import { signOut } from "@/features/auth/actions";
+import { requireUser } from "@/lib/server/auth";
+
+// Signed-in home for now: shows who you are and what's coming.
+// The tab layout (Plan, Recipes, List, Prices) replaces this in the next step.
 const COMING = [
   "Grocery lists with a shopping mode",
   "Best price per item, across every store",
@@ -7,11 +11,15 @@ const COMING = [
   "Weekly meal planning that builds your list",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const user = await requireUser();
+
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
-      <h1 className="text-3xl font-semibold">Dialed Kitchen</h1>
-      <p className="text-muted mt-1">Plan it, price it, cook it.</p>
+      <h1 className="flex justify-center">
+        <Wordmark size="sm" />
+      </h1>
+      <p className="text-muted mt-6 text-center">Signed in as {user.email}</p>
 
       <section className="border-border bg-surface mt-6 rounded-2xl border p-4">
         <h2 className="text-lg font-semibold">Coming soon</h2>
@@ -25,15 +33,16 @@ export default function Home() {
             </li>
           ))}
         </ul>
-        <p className="text-success-text mt-3 font-semibold">🎉 New best price! (sample)</p>
       </section>
 
-      <button
-        type="button"
-        className="bg-accent font-heading text-on-accent mt-6 min-h-12 w-full rounded-xl font-semibold"
-      >
-        Sample button
-      </button>
+      <form action={signOut} className="mt-6">
+        <button
+          type="submit"
+          className="border-border bg-surface min-h-12 w-full rounded-xl border font-semibold"
+        >
+          Sign out
+        </button>
+      </form>
     </main>
   );
 }
