@@ -6,7 +6,7 @@ import { TABS, type TabId } from "@/lib/tabs";
 export function TabPage({ tab, children }: { tab: TabId; children: React.ReactNode }) {
   const title = TABS.find((t) => t.id === tab)?.label;
   return (
-    <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[calc(env(safe-area-inset-bottom)+6rem)]">
+    <main className="pt-screen mx-auto w-full max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)]">
       <header className="flex min-h-12 items-center justify-between">
         <h1 className="font-display text-[36px] leading-tight font-light italic">{title}</h1>
         <Link

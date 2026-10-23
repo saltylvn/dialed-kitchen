@@ -14,7 +14,7 @@ export function SubPage({
   children: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[calc(env(safe-area-inset-bottom)+6rem)]">
+    <main className="pt-screen mx-auto w-full max-w-md px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)]">
       <Link href={backHref} className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
         ‹ {backLabel}
       </Link>

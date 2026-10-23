@@ -17,7 +17,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const backTo = tabFromParam(from); // the tab Settings was opened from
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
+    <main className="pt-screen mx-auto w-full max-w-md px-4 pb-[max(env(safe-area-inset-bottom),1.5rem)]">
       <Link href={backTo.href} className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
         ‹ {backTo.label}
       </Link>

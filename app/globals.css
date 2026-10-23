@@ -41,6 +41,15 @@
   --font-display: var(--font-cormorant);
 }
 
+/*
+  Top spacing for every app screen: the status bar's height (the notch / Dynamic Island,
+  0 in a browser) plus breathing room, so titles sit clear of iOS's blur under the clock.
+  One rule, so all screens stay lined up.
+*/
+@utility pt-screen {
+  padding-top: calc(env(safe-area-inset-top) + 1.25rem);
+}
+
 body {
   background: var(--bg);
   color: var(--text);
