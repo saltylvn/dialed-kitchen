@@ -172,11 +172,30 @@ describe("adding a recipe to the grocery list", () => {
       ]),
     );
 
-    // Again: Rice is already on the list, so only the plain avocado line is added.
+    // Again: both are already on the list (the plain avocado line too), so nothing is added.
     const second = await db.as<{ n: number }>(alex, "select public.add_recipe_to_list($1) as n", [
       id,
     ]);
-    expect(second.rows[0]!.n).toBe(1);
+    expect(second.rows[0]!.n).toBe(0);
+
+    // Once bought and cleared, adding the recipe again puts them back on the list.
+    await db.as(alex, "update public.grocery_list_items set checked = true");
+    await db.as(alex, "delete from public.grocery_list_items where checked");
+    const third = await db.as<{ n: number }>(alex, "select public.add_recipe_to_list($1) as n", [
+      id,
+    ]);
+    expect(third.rows[0]!.n).toBe(2);
+  });
+
+  it("adds an ingredient the recipe names twice only once", async () => {
+    const id = await save(alex, {
+      title: "Salty",
+      ingredients: [{ quantity: 1, unit: "tsp", name: "salt" }, { name: "Salt, to finish" }],
+    });
+    const added = await db.as<{ n: number }>(alex, "select public.add_recipe_to_list($1) as n", [
+      id,
+    ]);
+    expect(added.rows[0]!.n).toBe(1);
   });
 
   it("won't add another household's recipe", async () => {
