@@ -1,14 +1,27 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { importRecipe, type ImportResult } from "../importActions";
+import type { RecipeDraft } from "../schema";
+import { PhotoImport } from "./PhotoImport";
 import { RecipeForm } from "./RecipeForm";
 
-// The Add recipe screen: import from a link (fills in the form below to check and save), or
-// type a recipe in by hand.
+// The Add recipe screen: import from a link or from photos (each fills in the form below to
+// check and save), or type a recipe in by hand.
 export function NewRecipe() {
-  const [result, formAction, pending] = useActionState<ImportResult, FormData>(importRecipe, null);
-  const draft = result?.ok ? result.draft : undefined;
+  // The latest import, from either source. `version` gives each one a fresh form.
+  const [imported, setImported] = useState<{ draft: RecipeDraft; version: number }>();
+  const showDraft = (draft: RecipeDraft) =>
+    setImported((prev) => ({ draft, version: (prev?.version ?? 0) + 1 }));
+
+  const [result, formAction, pending] = useActionState<ImportResult, FormData>(
+    async (prev, formData) => {
+      const next = await importRecipe(prev, formData);
+      if (next?.ok) showDraft(next.draft);
+      return next;
+    },
+    null,
+  );
 
   return (
     <div className="space-y-6">
@@ -51,8 +64,10 @@ export function NewRecipe() {
         )}
       </form>
 
+      <PhotoImport onDraft={showDraft} />
+
       {/* key: a new import replaces the form's starting values. */}
-      <RecipeForm key={draft ? `${draft.source_url}-${draft.title}` : "blank"} recipe={draft} />
+      <RecipeForm key={imported?.version ?? 0} recipe={imported?.draft} />
     </div>
   );
 }

@@ -22,6 +22,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false, // don't advertise the framework to attackers
+  experimental: {
+    // Room for up to 3 recipe photos (shrunk on the phone to ~1.2 MB each). Vercel's own
+    // cap is 4.5 MB; everything else the app sends is tiny.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

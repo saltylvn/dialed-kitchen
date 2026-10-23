@@ -74,7 +74,7 @@ npm run build   # production build
 - [x] 4. Recipes entered by hand
 - [x] 4b. In stock: kitchen inventory synced with recipes and the list
 - [x] 5. Recipe import from a website
-- [ ] 6. Recipe import from a photo
+- [x] 6. Recipe import from a photo
 - [ ] 7. Weekly meal planner
 - [ ] 8. Meal plan → grocery list with estimated cost
 - [ ] 9. Price trends, cheapest store, meal-prep view (app icon done)

@@ -46,7 +46,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 - **Groceries:** `stores` is a **fixed list of six, in this order: WinCo, Trader Joe's, Harmons, Smith's, Costco, Walmart** (database-enforced: seeded per household, check constraint, read-only to the app; changing it needs a migration; docs/decisions/0012). `items` (one row per thing you buy: name, one comparison unit: per lb, per fl oz, or each).
 - **Prices:** `item_prices` (item, store, price, package quantity + unit, date, sale flag). Every price is kept as history. **Best price** = the lowest unit price ever entered for the item, computed from the history (not stored), shown with store and date; sale prices are labeled; prices older than 90 days are marked "older". Entering a price shows "🎉 New best price!" or "X% more than your best". Unit-price math in `lib/pricing.ts` with tests; an index keeps the best-price lookup fast.
 - **Grocery lists:** `grocery_lists`, `grocery_list_items` (item, amount, checked, source: manual or meal plan). Shopping mode with big checkboxes, best price and "last here" price per item.
-- **Recipes:** `recipes` (title, servings, steps, source), `recipe_ingredients` (linked to `items`, amount, unit). Import from a URL by reading the page's schema.org Recipe data (no AI); Gemini only as a fallback. Import from a photo of a cookbook/magazine page via Gemini, always shown as an editable form before saving.
+- **Recipes:** `recipes` (title, servings, steps, source), `recipe_ingredients` (linked to `items`, amount, unit). Import from a URL by reading the page's schema.org Recipe data (no AI). Import from photos (up to 3: a cookbook/magazine page, recipe card or screenshot) via Gemini, always shown as an editable form before saving (docs/decisions/0016).
 - **Meal plan:** `meal_plan_entries` (date, meal, recipe, servings). **Meals are exactly Breakfast, Lunch, Snacks, Dinner, in that order (snacks after lunch, before dinner), chosen with a swipe wheel.** → generate a grocery list (ingredients summed across recipes) with an estimated cost from best/latest prices.
 - **Units:** conversions in `lib/units.ts` with tests; anything that can't be converted is listed separately, never guessed.
 
@@ -61,7 +61,8 @@ Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Googl
 - Secret keys only in `.env.local` (git-ignored) and Vercel; never in browser code.
 - AI is called only from the server, its JSON reply validated before use, with a daily per-user limit.
 - **Fetching any link a person supplies goes through `lib/server/safeFetch.ts` `fetchPublicPage`** (docs/decisions/0015): https on 443 only, public addresses only, checked inside the connection's own DNS lookup (no DNS rebinding), redirects checked per hop, 10 s / 3 MB / HTML only. Never `fetch()` a user-supplied URL directly. Identify honestly; never try to get around a site's bot protection.
-- Recipe photos in a private storage bucket.
+- **AI** (docs/decisions/0016): only `lib/server/gemini.ts` talks to Google; `GEMINI_API_KEY` lives only in `.env.local` and Vercel (Sensitive). Replies are checked by `lib/ai/recipeFromImage.ts` (zod) before use. Each read costs one of 40 per person per rolling 24 hours, counted atomically by the database (`take_ai_request`). Recipe photos are shrunk to JPEG on the phone, checked by their bytes on the server (`lib/photos.ts`), sent to Gemini, and never stored.
+- Set a secret locally without it showing on screen or in shell history: `sh scripts/set-secret.sh NAME`; copy it to Vercel (Production and Preview, Sensitive): `sh scripts/vercel-secret.sh NAME`.
 
 ## Architecture (see docs/decisions/0005)
 
@@ -108,7 +109,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 - **Few round trips:** fetch on the server, independent reads in parallel (`Promise.all`), one query per screen where possible (joins or a database view over many small queries), never queries in a loop (N+1).
 - **Lean queries:** select only the columns the screen needs; index every foreign key and every column used to filter or sort; paginate long lists (price history).
 - **Cache what's safe:** static assets and fonts are cached by Vercel's CDN; user data is per-request (never cached across users).
-- **Images:** `next/image` with explicit sizes; recipe photos resized in the browser before upload.
+- **Images:** `next/image` with explicit sizes; recipe photos shrunk in the browser (1600 px JPEG, ≤1.2 MB) before upload.
 - Measure, don't guess: check Lighthouse on the deployed site after each milestone, and the build output's route sizes in PRs.
 
 ## Conventions
@@ -140,7 +141,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 4. Recipes entered by hand ✅ (typed ingredient lines, favorites, expand to cook, add to list)
    4b. "In stock" ✅ (the owner's term, never "have it"): one shared inventory (`pantry_items`); tick In stock on a recipe ingredient or a list entry, and it leaves the grocery list; Clear checked puts bought items In stock; recipes add only what's needed, never duplicates; Grocery tab views List · In stock · Prices. Names match by `matchKey` / `private.ingredient_key` (docs/decisions/0014).
 5. Recipe import from a website link ✅ (schema.org Recipe data, SSRF-safe fetch; sites that block apps get a clear message)
-6. Recipe import from a photo
+6. Recipe import from a photo ✅ (Gemini free tier with model fallback; up to 3 photos; 40 a day per person; photos never stored)
 7. Weekly meal planner
 8. Meal plan → grocery list with estimated cost
 9. Polish: price trends, cheapest store, meal-prep batch view (app icon ✅)
