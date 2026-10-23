@@ -67,8 +67,8 @@ npm run build   # production build
 ## Roadmap
 
 - [x] 0. Project setup, design tokens, CI, first deploy
-- [ ] 1. Google sign-in and app layout
-- [ ] 1b. Partner sharing: invite-only, for a married couple
+- [x] 1. Google sign-in and app layout (tabs still to come)
+- [x] 1b. Partner sharing: invite-only, for a married couple
 - [ ] 2. Stores, items, prices: unit price, best price, history
 - [ ] 3. Grocery lists and shopping mode
 - [ ] 4. Recipes entered by hand

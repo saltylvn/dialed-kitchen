@@ -122,6 +122,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 - `npm run typecheck`: TypeScript check
 - `npm run format` / `npm run format:check`: Prettier
 - CI runs: audit, format check, lint, typecheck, tests, build. Run the same locally before pushing.
+- **Database changes:** add a new file in `supabase/migrations/` (`YYYYMMDDHHMMSS_name.sql`; never edit one already applied), cover it in `supabase/tests/` (real Postgres via PGlite: `createTestDb()`, `db.as(user, sql)` runs with RLS as that user), then the owner applies it with `npx supabase db push`. **Always run Supabase CLI commands from this project folder** (`cd ~/Developer/dialed-kitchen` first): run elsewhere, the CLI links that folder instead and pushes nothing. The project is linked to `zitsdiffnbzyhleorcmg`; `npx supabase migration list` shows what's applied.
 
 ## Roadmap
 

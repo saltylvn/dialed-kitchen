@@ -43,7 +43,9 @@ export async function createInvite(_prev: InviteResult, formData: FormData): Pro
   // origin here is our own.
   const h = await headers();
   const origin = h.get("origin") ?? `https://${h.get("host")}`;
-  revalidatePath("/settings");
+  // Deliberately no revalidatePath here: refreshing the page would swap the form for the
+  // "Invite sent" view and lose the link before it's shown, and the link can't be fetched
+  // again (only its hash is stored). The page shows "Invite sent" on the next visit.
   return { ok: true, data: { link: inviteLink(origin, token), email: parsed.data.email } };
 }
 
