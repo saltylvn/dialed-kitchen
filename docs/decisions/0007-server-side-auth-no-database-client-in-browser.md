@@ -9,7 +9,9 @@ Supabase can be used directly from the browser: the page talks to the database A
 ## Decision
 
 - **All Supabase calls happen on the server:** pages, server actions and route handlers, through `lib/server/supabase.ts` (marked `server-only`, so the build fails if browser code imports it).
-- **Google sign-in starts on the server** (`features/auth/actions.ts`) with the PKCE flow: Supabase stores a one-time check code in a cookie, and `app/auth/callback` exchanges Google's code for a session cookie. The callback only ever redirects to fixed paths, so it can't be used as an open redirect.
+- **Google sign-in starts on the server** with the PKCE flow: the sign-in button is a plain HTML form posting to `app/auth/google`, which checks the request's Origin (CSRF) and redirects to Supabase and then Google. Supabase stores a one-time check code in a cookie, and `app/auth/callback` exchanges Google's code for a session cookie. The callback only ever redirects to fixed paths, so it can't be used as an open redirect.
+  - Why not a server action: when a server action redirects to another site, the Next.js client first tries to fetch that URL, which the CSP's `connect-src 'self'` blocks. A plain form lets the browser follow the redirects as a normal navigation.
+- **Login cookies are HttpOnly** (`lib/security/cookies.ts`): no browser code needs them, so injected scripts can't read or steal the session.
 - **Every request refreshes and verifies the session** in `proxy.ts` (`getClaims()` checks the token's signature). Signed-out visitors are redirected to `/login`.
 - **Pages check again** with `requireUser()` (`lib/server/auth.ts`), so a page stays protected even if a request skips the proxy (for example, link prefetches).
 - **Settings are validated at startup** (`lib/env.ts`): https Supabase URL only, and a secret key pasted into the public variable is rejected.

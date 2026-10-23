@@ -32,6 +32,14 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 
 ## Planned features and data model
 
+- **Partner sharing (married couples only; the only kind of sharing):** all data belongs to a `household`, not a user. Every new user gets a household of one. A spouse joins **only by invitation**:
+  - The invite is tied to the spouse's email and only works when they sign in with that email.
+  - Invite links are single-use, expire after 7 days, and are stored only as a hash.
+  - One open invite at a time.
+  - **At most two members per household, and each person belongs to exactly one household.** Both rules are enforced by database constraints, not just app code.
+  - No other sharing (no families, friends, guests or roles). The UI calls it **Partner**.
+  - Either partner can leave: the shared data stays with the household's creator, and the one who leaves starts fresh. A joining partner's old solo data stays private, never merged.
+  - Every data table has `household_id`, with RLS allowing only that household's members.
 - **Groceries:** `stores`, `items` (one row per thing you buy: name, category, default unit, one comparison unit: per lb, per fl oz, or each).
 - **Prices:** `item_prices` (item, store, price, package quantity + unit, date, sale flag). Every price is kept as history. **Best price** = the lowest unit price ever entered for the item, computed from the history (not stored), shown with store and date; sale prices are labeled; prices older than 90 days are marked "older". Entering a price shows "🎉 New best price!" or "X% more than your best". Unit-price math in `lib/pricing.ts` with tests; an index keeps the best-price lookup fast.
 - **Grocery lists:** `grocery_lists`, `grocery_list_items` (item, amount, checked, source: manual or meal plan). Shopping mode with big checkboxes, best price and "last here" price per item.
@@ -45,7 +53,7 @@ Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Googl
 
 ## Security
 
-- Row-level security on every Supabase table; every row is scoped to the signed-in user.
+- Row-level security on every Supabase table; every row belongs to one household and only that household's members can read or change it.
 - Validate every form and server-action input (zod) before it touches the database.
 - Secret keys only in `.env.local` (git-ignored) and Vercel; never in browser code.
 - AI is called only from the server, its JSON reply validated before use, with a daily per-user limit.
@@ -118,7 +126,8 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 ## Roadmap
 
 0. Project setup ✅ (Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records; live at https://dialed-kitchen.vercel.app, deployed by Vercel on every push to `main`)
-1. Google sign-in (new Supabase project) and the tab layout
+1. Google sign-in (new Supabase project), the wordmark, and the tab layout
+   1b. Partner sharing: households, invite-only partnership for a married couple
 2. Stores, items and price entry with unit prices, best price, "New best!" and history
 3. Grocery lists with shopping mode
 4. Recipes entered by hand
