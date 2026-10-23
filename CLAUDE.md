@@ -4,6 +4,16 @@
 
 An iPhone-first web app (installable PWA) for daily cooking, grocery shopping and meal prep: grocery lists, price tracking with the best price per item across stores, recipes (from websites, cookbooks, magazines, printed pages) and weekly meal planning that builds the grocery list. The owner is a beginner learning web development with Claude Code, so **explain what each change does and why**, and build in small steps.
 
+## Portfolio standards
+This repo showcases the owner's software engineering skills for future jobs, so keep the professional practices visible:
+- **Branch + pull request for every change** (never commit straight to `main`), with a PR description: what changed, why, how it was tested. CI must pass before merging.
+- **CI** (`.github/workflows/ci.yml`) runs lint, tests and a production build on every push and PR. Keep it green.
+- **Decision records** in `docs/decisions/` (numbered, short: context, decision, alternatives, consequences) for every significant design choice; add a row to `docs/decisions/README.md`. Write them in plain language the owner can explain in an interview.
+- **Database changes as versioned migration files** in the repo (Supabase CLI), never only clicked in the dashboard.
+- Keep `README.md` current (features, architecture, data model, security, roadmap checkboxes) as milestones land.
+- Tests for business logic and security-sensitive code (pricing, units, list building, URL fetching).
+- The owner must be able to explain every part, so keep explaining changes as they're made.
+
 ## Design (light mode only, built for daylight)
 - **Always light mode**, even when the phone is set to dark (`color-scheme: light` in `app/globals.css`, `viewport.colorScheme` in `app/layout.tsx`). No dark-mode styles; colors are still named tokens so one could be added later.
 - **Colors: Anthropic's palette** as tokens in `app/globals.css`, used through Tailwind names (`bg-accent`, `text-muted`…), never raw hex codes in components:
@@ -48,7 +58,7 @@ Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Googl
 - `npm run lint`: lint
 
 ## Roadmap
-0. Project setup: Next.js, colors and fonts, contrast test, GitHub repo, first deploy (in progress)
+0. Project setup: Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records, first deploy (in progress)
 1. Google sign-in (new Supabase project) and the tab layout
 2. Stores, items and price entry with unit prices, best price, "New best!" and history
 3. Grocery lists with shopping mode
