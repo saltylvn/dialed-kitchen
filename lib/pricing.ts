@@ -1,4 +1,4 @@
-import { pricePerUnit, UNITS, type Unit } from "./units";
+import { pricePerUnit, unitLabel, UNITS, type Unit } from "./units";
 
 // Comparing a price to the best one found so far, and showing prices. Prices are compared
 // by unit price in base units (lib/units). (docs/decisions/0003)
@@ -53,5 +53,5 @@ export function formatUnitPrice(pricePerBaseUnit: number, unit: Unit): string {
 
 // "5 lb", "1.5 gal", "12 each"
 export function formatPackage(quantity: number, unit: Unit): string {
-  return `${Number(quantity.toFixed(3))} ${UNITS[unit].plural}`;
+  return `${Number(quantity.toFixed(3))} ${unitLabel(quantity, unit)}`;
 }

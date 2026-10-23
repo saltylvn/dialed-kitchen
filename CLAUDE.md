@@ -136,7 +136,8 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
    1b. Partner sharing: households, invite-only partnership for a married couple ✅
 2. Stores, items and price entry with unit prices, best price, "New best!" and history ✅
 3. Grocery list with shopping mode ✅ (one shared list; List | Prices views; last price at the chosen store)
-4. Recipes entered by hand
+4. Recipes entered by hand ✅ (typed ingredient lines, favorites, expand to cook, add to list)
+   4b. "In stock" (the owner's term, never "have it"): tick ingredients In stock from a recipe or the list; each recipe shows what's In stock and what's needed; ticking In stock removes it from the grocery list (the Recipes and Grocery tabs stay in sync); the list shows only what to buy (next)
 5. Recipe import from a website link
 6. Recipe import from a photo
 7. Weekly meal planner

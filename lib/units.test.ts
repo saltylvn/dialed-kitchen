@@ -4,7 +4,7 @@ import { isUnit, pricePerBase, pricePerUnit, sameDimension, UNITS, unitsFor } fr
 describe("units", () => {
   it("groups units by dimension", () => {
     expect(unitsFor("weight")).toEqual(["oz", "lb", "g", "kg"]);
-    expect(unitsFor("volume")).toEqual(["fl_oz", "qt", "gal", "ml", "l"]);
+    expect(unitsFor("volume")).toEqual(["fl_oz", "tsp", "tbsp", "cup", "qt", "gal", "ml", "l"]);
     expect(unitsFor("count")).toEqual(["each", "dozen"]);
   });
 
@@ -12,6 +12,9 @@ describe("units", () => {
     expect(UNITS.lb.toBase / UNITS.oz.toBase).toBeCloseTo(16, 10);
     expect(UNITS.gal.toBase / UNITS.fl_oz.toBase).toBeCloseTo(128, 10);
     expect(UNITS.qt.toBase / UNITS.fl_oz.toBase).toBeCloseTo(32, 10);
+    expect(UNITS.cup.toBase / UNITS.fl_oz.toBase).toBeCloseTo(8, 10);
+    expect(UNITS.cup.toBase / UNITS.tbsp.toBase).toBeCloseTo(16, 10);
+    expect(UNITS.tbsp.toBase / UNITS.tsp.toBase).toBeCloseTo(3, 10);
   });
 
   it("never converts between dimensions", () => {
@@ -22,7 +25,7 @@ describe("units", () => {
 
   it("recognizes only known units", () => {
     expect(isUnit("lb")).toBe(true);
-    expect(isUnit("cup")).toBe(false);
+    expect(isUnit("pint")).toBe(false);
     expect(isUnit("toString")).toBe(false); // not fooled by object built-ins
   });
 });

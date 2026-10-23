@@ -1,4 +1,4 @@
-// Units for package sizes and unit prices. Each unit belongs to one dimension (weight,
+// Units for package sizes, unit prices and recipes. Each unit belongs to one dimension (weight,
 // volume or count) and converts to that dimension's base unit: grams, millilitres, or one
 // item. Prices are compared in base units, so a 2 lb bag and a 5 lb bag compare fairly.
 //
@@ -18,6 +18,10 @@ export const UNITS = {
   kg: { label: "kg", plural: "kg", dimension: "weight", toBase: 1000 },
   // volume → millilitres
   fl_oz: { label: "fl oz", plural: "fl oz", dimension: "volume", toBase: 29.5735295625 },
+  // US kitchen measures, exact: 1 cup = 8 fl oz, 1 tbsp = ½ fl oz, 1 tsp = ⅓ tbsp.
+  tsp: { label: "tsp", plural: "tsp", dimension: "volume", toBase: 4.92892159375 },
+  tbsp: { label: "tbsp", plural: "tbsp", dimension: "volume", toBase: 14.78676478125 },
+  cup: { label: "cup", plural: "cups", dimension: "volume", toBase: 236.5882365 },
   qt: { label: "qt", plural: "qt", dimension: "volume", toBase: 946.352946 },
   gal: { label: "gal", plural: "gal", dimension: "volume", toBase: 3785.411784 },
   ml: { label: "ml", plural: "ml", dimension: "volume", toBase: 1 },
@@ -57,4 +61,9 @@ export function pricePerBase(price: number, quantity: number, unit: Unit): numbe
 // A base-unit price shown in the item's chosen unit, e.g. $/g → $/lb.
 export function pricePerUnit(pricePerBaseUnit: number, unit: Unit): number {
   return pricePerBaseUnit * UNITS[unit].toBase;
+}
+
+// "cup" for one or less (½ cup, 1 cup), "cups" for more.
+export function unitLabel(quantity: number, unit: Unit): string {
+  return quantity > 1 ? UNITS[unit].plural : UNITS[unit].label;
 }
