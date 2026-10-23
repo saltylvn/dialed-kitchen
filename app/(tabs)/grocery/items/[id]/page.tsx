@@ -25,7 +25,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
   const year = Number(serverToday().slice(0, 4));
 
   return (
-    <SubPage backHref="/grocery" backLabel="Grocery" title={item.name}>
+    <SubPage backHref="/grocery/prices" backLabel="Prices" title={item.name}>
       <div className="space-y-4">
         <section aria-labelledby="best-heading" className={card}>
           <h2 id="best-heading" className={heading}>

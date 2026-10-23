@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Add item · Dialed Kitchen" };
 export default async function NewItemPage() {
   await requireUser();
   return (
-    <SubPage backHref="/grocery" backLabel="Grocery" title="Add item">
+    <SubPage backHref="/grocery/prices" backLabel="Prices" title="Add item">
       <CreateItemForm />
     </SubPage>
   );
