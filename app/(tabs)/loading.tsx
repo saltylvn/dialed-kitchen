@@ -1,11 +1,7 @@
 // Shown instantly while a tab loads, so every tap gets immediate feedback.
 export default function Loading() {
   return (
-    <main
-      aria-busy="true"
-      aria-label="Loading"
-      className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)]"
-    >
+    <main aria-busy="true" aria-label="Loading" className="pt-screen mx-auto w-full max-w-md px-4">
       <div className="flex min-h-12 items-center">
         <div className="bg-border h-8 w-32 animate-pulse rounded-lg" />
       </div>
