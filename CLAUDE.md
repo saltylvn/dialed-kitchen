@@ -47,7 +47,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 - **Prices:** `item_prices` (item, store, price, package quantity + unit, date, sale flag). Every price is kept as history. **Best price** = the lowest unit price ever entered for the item, computed from the history (not stored), shown with store and date; sale prices are labeled; prices older than 90 days are marked "older". Entering a price shows "🎉 New best price!" or "X% more than your best". Unit-price math in `lib/pricing.ts` with tests; an index keeps the best-price lookup fast.
 - **Grocery lists:** `grocery_lists`, `grocery_list_items` (item, amount, checked, source: manual or meal plan). Shopping mode with big checkboxes, best price and "last here" price per item.
 - **Recipes:** `recipes` (title, servings, steps, source), `recipe_ingredients` (linked to `items`, amount, unit). Import from a URL by reading the page's schema.org Recipe data (no AI). Import from photos (up to 3: a cookbook/magazine page, recipe card or screenshot) via Gemini, always shown as an editable form before saving (docs/decisions/0016).
-- **Meal plan:** `meal_plan_entries` (date, meal, recipe, servings). **Meals are exactly Breakfast, Lunch, Snacks, Dinner, in that order (snacks after lunch, before dinner), chosen with a swipe wheel.** → generate a grocery list (ingredients summed across recipes) with an estimated cost from best/latest prices.
+- **Meal plan:** `meal_plan_entries` (date, meal, recipe, servings). **Meals are exactly Breakfast, Lunch, Snacks, Dinner, in that order (snacks after lunch, before dinner); every day on the Plan tab always shows those four spots** (tap a spot, then pick the recipe and servings by swipe wheel). → generate a grocery list (ingredients summed across recipes) with an estimated cost from best/latest prices.
 - **Units:** conversions in `lib/units.ts` with tests; anything that can't be converted is listed separately, never guessed.
 
 ## Stack
@@ -142,6 +142,6 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
    4b. "In stock" ✅ (the owner's term, never "have it"): one shared inventory (`pantry_items`); tick In stock on a recipe ingredient or a list entry, and it leaves the grocery list; Clear checked puts bought items In stock; recipes add only what's needed, never duplicates; Grocery tab views List · In stock · Prices. Names match by `matchKey` / `private.ingredient_key` (docs/decisions/0014).
 5. Recipe import from a website link ✅ (schema.org Recipe data, SSRF-safe fetch; sites that block apps get a clear message)
 6. Recipe import from a photo ✅ (Gemini free tier with model fallback; up to 3 photos; 40 a day per person; photos never stored)
-7. Weekly meal planner
+7. Weekly meal planner ✅ (Mon–Sun weeks via `?week=`; every day has four spots, Breakfast · Lunch · Snacks · Dinner; recipe and servings by wheel; regulars = planned 3+ times in 8 weeks join favorites; docs/decisions/0017)
 8. Meal plan → grocery list with estimated cost
 9. Polish: price trends, cheapest store, meal-prep batch view (app icon ✅)
