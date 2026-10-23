@@ -86,7 +86,7 @@ Every request flows through the same layers; each one checks something:
 1. **UI** (`components`, server components by default; `"use client"` only for interactivity) never talks to the database directly.
 2. **Server action / page** parses input with the feature's zod schema (reject, don't fix up) and confirms the signed-in user.
 3. **Data access layer** (`queries.ts`, `actions.ts`) is server-only, uses the request's Supabase client (the user's session, so RLS applies; never the service key for user data) and returns only the fields the UI needs.
-4. **Postgres RLS** is the final guard: every table has `user_id` and policies so a user can only touch their own rows, even if app code has a bug.
+4. **Postgres RLS** is the final guard: every table has `household_id` and policies so only that household's members (the couple) can touch its rows, even if app code has a bug.
 
 Rules:
 
@@ -137,7 +137,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 2. Stores, items and price entry with unit prices, best price, "New best!" and history ✅
 3. Grocery list with shopping mode ✅ (one shared list; List | Prices views; last price at the chosen store)
 4. Recipes entered by hand ✅ (typed ingredient lines, favorites, expand to cook, add to list)
-   4b. "In stock" (the owner's term, never "have it"): tick ingredients In stock from a recipe or the list; each recipe shows what's In stock and what's needed; ticking In stock removes it from the grocery list (the Recipes and Grocery tabs stay in sync); the list shows only what to buy (next)
+   4b. "In stock" ✅ (the owner's term, never "have it"): one shared inventory (`pantry_items`); tick In stock on a recipe ingredient or a list entry, and it leaves the grocery list; Clear checked puts bought items In stock; recipes add only what's needed, never duplicates; Grocery tab views List · In stock · Prices. Names match by `matchKey` / `private.ingredient_key` (docs/decisions/0014).
 5. Recipe import from a website link
 6. Recipe import from a photo
 7. Weekly meal planner

@@ -99,5 +99,6 @@ describe("matchKey", () => {
     expect(matchKey("Chicken thighs, boneless")).toBe("chicken thighs");
     expect(matchKey("rice (jasmine)")).toBe("rice");
     expect(matchKey("Eggs")).toBe("eggs");
+    expect(matchKey("(optional) parsley")).toBe("(optional) parsley");
   });
 });

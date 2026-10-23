@@ -150,6 +150,8 @@ export function formatIngredient({ quantity, unit, name }: ParsedIngredient): st
 
 // The part of an ingredient name used to match the price book:
 // "Chicken thighs, boneless" → "chicken thighs".
+// The same rule exists in SQL (private.ingredient_key) for In stock; a test checks they agree.
 export function matchKey(name: string): string {
-  return name.split(/[,(]/)[0]!.trim().toLowerCase();
+  const key = name.split(/[,(]/)[0]!.trim().toLowerCase();
+  return key || name.trim().toLowerCase(); // "(optional) garnish" has nothing before the "("
 }

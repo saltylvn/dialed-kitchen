@@ -72,6 +72,7 @@ npm run build   # production build
 - [x] 2. Stores, items, prices: unit price, best price, history
 - [x] 3. Grocery list and shopping mode
 - [x] 4. Recipes entered by hand
+- [x] 4b. In stock: kitchen inventory synced with recipes and the list
 - [ ] 5. Recipe import from a website
 - [ ] 6. Recipe import from a photo
 - [ ] 7. Weekly meal planner

@@ -2,7 +2,8 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { sortList } from "@/lib/list";
-import { clearChecked, removeFromList, setChecked } from "../actions";
+import { clearCheckedIntoStock, setInStock } from "@/features/stock/actions";
+import { removeFromList, setChecked } from "../actions";
 import type { ListEntry } from "../queries";
 
 type Change = { type: "check"; id: string; checked: boolean } | { type: "remove"; id: string };
@@ -99,6 +100,18 @@ export function ShoppingList({
                 )}
               </span>
             </button>
+            {!entry.checked && (
+              <button
+                type="button"
+                aria-label={`${entry.name}: In stock, take it off the list`}
+                onClick={() =>
+                  run({ type: "remove", id: entry.id }, () => setInStock(entry.name, true))
+                }
+                className="text-muted border-border my-1 flex min-h-12 shrink-0 items-center rounded-lg border px-2.5 text-[14px]"
+              >
+                In stock
+              </button>
+            )}
             <button
               type="button"
               aria-label={`Remove ${entry.name} from the list`}
@@ -111,13 +124,14 @@ export function ShoppingList({
         ))}
       </ul>
       {checkedCount > 0 && (
-        <form action={clearChecked} className="mt-3">
+        <form action={clearCheckedIntoStock} className="mt-3">
           <button
             type="submit"
             className="border-border min-h-12 w-full rounded-xl border font-medium"
           >
             Clear checked ({checkedCount})
           </button>
+          <p className="text-muted mt-1 text-center text-[14px]">Bought items go In stock.</p>
         </form>
       )}
     </div>
