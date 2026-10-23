@@ -1,9 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "../env";
+import { hardenAuthCookie } from "../security/cookies";
+
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 // Pages anyone can open while signed out.
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+const PUBLIC_PATHS = ["/login", "/auth/google", "/auth/callback"];
 const HOME = "/";
 
 // Called by proxy.ts on every page request:
@@ -33,7 +36,7 @@ export async function updateSession(
         for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
         response = nextResponse();
         for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, hardenAuthCookie(options, IS_PRODUCTION));
         }
         // Stops CDNs from caching a response that carries someone's login cookies.
         for (const [key, value] of Object.entries(cacheHeaders)) response.headers.set(key, value);

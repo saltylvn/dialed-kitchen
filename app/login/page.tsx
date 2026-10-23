@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Wordmark } from "@/components/ui/Wordmark";
-import { signInWithGoogle } from "@/features/auth/actions";
 
 export const metadata: Metadata = { title: "Sign in · Dialed Kitchen" };
 
@@ -21,8 +20,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         cook it.
       </p>
 
-      {/* A plain form: it works even before JavaScript has loaded. */}
-      <form action={signInWithGoogle} className="mt-auto w-full pt-10">
+      {/* A plain HTML form posting to app/auth/google: the browser follows the sign-in
+          redirects itself, and it works even before JavaScript has loaded. */}
+      <form action="/auth/google" method="post" className="mt-auto w-full pt-10">
         {error && (
           <p role="alert" className="mb-4 text-center font-medium">
             ⚠️ Sign-in didn&apos;t work. Please try again.
