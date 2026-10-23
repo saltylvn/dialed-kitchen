@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "../env";
 import { hardenAuthCookie } from "../security/cookies";
+import { RETURN_TO_COOKIE, RETURN_TO_MAX_AGE_SECONDS, safeReturnPath } from "../security/returnTo";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -50,7 +51,18 @@ export async function updateSession(
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.includes(pathname);
 
-  if (!isSignedIn && !isPublic) return redirectKeepingCookies(request, response, "/login");
+  if (!isSignedIn && !isPublic) {
+    const redirect = redirectKeepingCookies(request, response, "/login");
+    // Signed out on an invite link: come back to it after signing in (lib/security/returnTo).
+    const returnTo = safeReturnPath(pathname);
+    if (returnTo) {
+      redirect.cookies.set(RETURN_TO_COOKIE, returnTo, {
+        ...hardenAuthCookie({ path: "/" }, IS_PRODUCTION),
+        maxAge: RETURN_TO_MAX_AGE_SECONDS,
+      });
+    }
+    return redirect;
+  }
   if (isSignedIn && pathname === "/login") return redirectKeepingCookies(request, response, HOME);
   return response;
 }
