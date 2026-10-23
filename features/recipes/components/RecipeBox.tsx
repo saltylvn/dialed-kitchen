@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { useWakeLock } from "@/components/useWakeLock";
+import { setInStock } from "@/features/stock/actions";
 import { addRecipeToList, setFavorite } from "../actions";
 import type { RecipeView } from "../queries";
 import { SOURCE_TYPES } from "../schema";
@@ -162,6 +163,26 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
   const wake = useWakeLock();
   const [adding, startAdding] = useTransition();
   const [added, setAdded] = useState<string | null>(null);
+  // In stock, updated on tap; the database also takes it off the grocery list.
+  const [ingredients, applyStock] = useOptimistic(
+    recipe.ingredients,
+    (state, change: { id: string; inStock: boolean }) =>
+      state.map((i) => (i.id === change.id ? { ...i, inStock: change.inStock } : i)),
+  );
+  const [, startStock] = useTransition();
+  const needed = ingredients.filter((i) => !i.inStock).length;
+
+  function toggleStock(id: string, name: string, inStock: boolean) {
+    setAdded(null);
+    startStock(async () => {
+      applyStock({ id, inStock });
+      try {
+        await setInStock(name, inStock);
+      } catch (e) {
+        setAdded(`⚠️ ${e instanceof Error ? e.message : "Couldn't save that."}`);
+      }
+    });
+  }
 
   function addToList() {
     setAdded(null);
@@ -170,7 +191,7 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
       setAdded(
         result.ok
           ? result.data.added === 0
-            ? "✓ Everything's already on your list."
+            ? "✓ Everything needed is already on your list."
             : `✓ Added ${result.data.added} to your grocery list.`
           : `⚠️ ${result.error}`,
       );
@@ -210,16 +231,31 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
         </label>
       )}
 
-      {recipe.ingredients.length > 0 && (
+      {ingredients.length > 0 && (
         <section aria-label="Ingredients">
           <h3 className="text-muted text-[12px] tracking-[0.2em] uppercase">Ingredients</h3>
-          <ul className="mt-2 space-y-1.5">
-            {recipe.ingredients.map((i) => (
-              <li key={i.id} className="flex gap-3">
-                <span className="w-20 shrink-0 text-right font-medium tabular-nums">
-                  {i.amount}
+          <p className="text-muted mt-1 text-[15px]">
+            {needed === 0
+              ? "Everything is In stock."
+              : `${needed} needed · ${ingredients.length - needed} In stock`}
+          </p>
+          <ul className="mt-2 divide-y divide-[var(--border)]">
+            {ingredients.map((i) => (
+              <li key={i.id} className="flex items-center gap-3 py-1.5">
+                <span className={`min-w-0 flex-1 break-words ${i.inStock ? "text-muted" : ""}`}>
+                  {i.amount && <span className="font-medium tabular-nums">{i.amount} </span>}
+                  {i.name}
                 </span>
-                <span className="min-w-0 break-words">{i.name}</span>
+                <label className="flex min-h-11 shrink-0 items-center gap-2 text-[14px]">
+                  <input
+                    type="checkbox"
+                    checked={i.inStock}
+                    onChange={(e) => toggleStock(i.id, i.name, e.target.checked)}
+                    aria-label={`${i.name}: In stock`}
+                    className="accent-success size-5"
+                  />
+                  In stock
+                </label>
               </li>
             ))}
           </ul>
@@ -275,10 +311,10 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
         <button
           type="button"
           onClick={addToList}
-          disabled={adding || recipe.ingredients.length === 0}
+          disabled={adding || needed === 0}
           className="bg-accent text-on-accent min-h-12 flex-1 rounded-xl font-medium disabled:opacity-60"
         >
-          {adding ? "Adding…" : "Add to grocery list"}
+          {adding ? "Adding…" : needed === 0 ? "All In stock" : `Add ${needed} needed to list`}
         </button>
         <Link
           href={`/recipes/${recipe.id}/edit`}

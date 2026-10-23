@@ -1,24 +1,27 @@
 import "server-only";
 import { z } from "zod";
-import { formatIngredient } from "@/lib/ingredients";
+import { formatIngredient, matchKey } from "@/lib/ingredients";
 import { formatAmount } from "@/lib/list";
 import { createClient } from "@/lib/server/supabase";
+import { inStockKeys } from "@/features/stock/queries";
 import { ingredientRowSchema, recipeRowSchema, type RecipeRow } from "./schema";
 
 // Reads for the recipe box (server-only, household-scoped by RLS, validated).
 
 export type RecipeView = RecipeRow & {
-  ingredients: { id: string; amount: string; name: string; linked: boolean }[];
+  ingredients: { id: string; amount: string; name: string; linked: boolean; inStock: boolean }[];
 };
 
 function fail(what: string, error: { message: string }): never {
   throw new Error(`${what} failed: ${error.message}`);
 }
 
-// Every recipe with its ingredients, in two parallel reads: favorites first, then by title.
+// Every recipe with its ingredients and what's In stock, read in parallel: favorites first,
+// then by title. An ingredient is In stock when its name, or its price-book item's name,
+// matches something In stock (the same rule the database uses).
 export async function listRecipes(): Promise<RecipeView[]> {
   const supabase = await createClient();
-  const [recipes, ingredients] = await Promise.all([
+  const [recipes, ingredients, items, stock] = await Promise.all([
     supabase
       .from("recipes")
       .select("id, title, servings, source_type, source_name, source_url, steps, favorite")
@@ -28,10 +31,19 @@ export async function listRecipes(): Promise<RecipeView[]> {
       .from("recipe_ingredients")
       .select("recipe_id, sort_order, quantity, unit, name, item_id")
       .order("sort_order"),
+    supabase.from("items").select("id, name"),
+    inStockKeys(),
   ]);
   if (recipes.error) fail("recipes", recipes.error);
   if (ingredients.error) fail("recipe_ingredients", ingredients.error);
+  if (items.error) fail("items", items.error);
 
+  const itemNames = new Map(
+    z
+      .array(z.object({ id: z.uuid(), name: z.string() }))
+      .parse(items.data)
+      .map((i) => [i.id, i.name]),
+  );
   const byRecipe = new Map<string, RecipeView["ingredients"]>();
   for (const row of z.array(ingredientRowSchema).parse(ingredients.data)) {
     const list = byRecipe.get(row.recipe_id) ?? [];
@@ -40,6 +52,9 @@ export async function listRecipes(): Promise<RecipeView[]> {
       amount: formatAmount(row.quantity, row.unit),
       name: row.name,
       linked: row.item_id !== null,
+      inStock:
+        stock.has(matchKey(row.name)) ||
+        (row.item_id !== null && stock.has(matchKey(itemNames.get(row.item_id) ?? row.name))),
     });
     byRecipe.set(row.recipe_id, list);
   }

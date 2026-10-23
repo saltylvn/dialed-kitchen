@@ -76,11 +76,3 @@ export async function removeFromList(id: string): Promise<void> {
   }
   revalidatePath("/grocery", "layout");
 }
-
-export async function clearChecked(): Promise<void> {
-  await requireUser();
-  const supabase = await createClient();
-  const { error } = await supabase.from("grocery_list_items").delete().eq("checked", true);
-  if (error) console.error("clear checked failed:", error.message);
-  revalidatePath("/grocery", "layout");
-}
