@@ -69,7 +69,7 @@ npm run build   # production build
 - [x] 0. Project setup, design tokens, CI, first deploy
 - [x] 1. Google sign-in and app layout (Plan · Recipes · Grocery tabs)
 - [x] 1b. Partner sharing: invite-only, for a married couple
-- [ ] 2. Stores, items, prices: unit price, best price, history
+- [x] 2. Stores, items, prices: unit price, best price, history
 - [ ] 3. Grocery lists and shopping mode
 - [ ] 4. Recipes entered by hand
 - [ ] 5. Recipe import from a website
