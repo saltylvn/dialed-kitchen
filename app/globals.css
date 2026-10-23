@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
+/*
+  Dialed Kitchen colors: Anthropic's palette, light mode only (built for daylight).
+  Every screen uses these names, never raw hex codes, so a color changes in one place.
+  Text colors must reach 4.5:1 contrast on --bg; lib/contrast.test.ts checks this file.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light; /* iOS keeps inputs, keyboards and scrollbars light too */
+
+  --bg: #faf9f5; /* cream page background */
+  --surface: #ffffff; /* cards */
+  --border: #e8e6dc; /* dividers, card edges */
+  --text: #141413; /* main text */
+  --muted: #5e5d58; /* dates, secondary info */
+
+  --accent: #d97757; /* clay orange: buttons, active tab */
+  --on-accent: #141413; /* text on the orange: always near-black, never white */
+
+  --success: #788c5d; /* olive green fills and checkmarks (not for text) */
+  --success-text: #556640; /* "New best price!", "under budget" */
+  --info: #6a9bcc; /* blue fills and icons (not for text) */
+  --info-text: #3b6896; /* links */
 }
 
+/* Lets Tailwind use the names, e.g. bg-accent, text-on-accent, text-muted, border-border. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-success-text: var(--success-text);
+  --color-info: var(--info);
+  --color-info-text: var(--info-text);
+  --font-sans: var(--font-lora);
+  --font-heading: var(--font-poppins);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 17px; /* readable at arm's length in sunlight; also stops iOS zooming into inputs */
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-poppins);
 }
