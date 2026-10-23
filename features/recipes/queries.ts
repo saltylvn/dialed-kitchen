@@ -3,12 +3,14 @@ import { z } from "zod";
 import { formatIngredient, matchKey } from "@/lib/ingredients";
 import { formatAmount } from "@/lib/list";
 import { createClient } from "@/lib/server/supabase";
+import { recentPlanCounts } from "@/features/plan/queries";
 import { inStockKeys } from "@/features/stock/queries";
 import { ingredientRowSchema, recipeRowSchema, type RecipeRow } from "./schema";
 
 // Reads for the recipe box (server-only, household-scoped by RLS, validated).
 
 export type RecipeView = RecipeRow & {
+  timesPlanned: number; // in the last few weeks (lib/plan RECENT_WEEKS)
   ingredients: { id: string; amount: string; name: string; linked: boolean; inStock: boolean }[];
 };
 
@@ -16,12 +18,12 @@ function fail(what: string, error: { message: string }): never {
   throw new Error(`${what} failed: ${error.message}`);
 }
 
-// Every recipe with its ingredients and what's In stock, read in parallel: favorites first,
-// then by title. An ingredient is In stock when its name, or its price-book item's name,
+// Every recipe with its ingredients, what's In stock, and how often it was planned lately,
+// read in parallel. An ingredient is In stock when its name, or its price-book item's name,
 // matches something In stock (the same rule the database uses).
 export async function listRecipes(): Promise<RecipeView[]> {
   const supabase = await createClient();
-  const [recipes, ingredients, items, stock] = await Promise.all([
+  const [recipes, ingredients, items, stock, planCounts] = await Promise.all([
     supabase
       .from("recipes")
       .select("id, title, servings, source_type, source_name, source_url, steps, favorite")
@@ -33,6 +35,7 @@ export async function listRecipes(): Promise<RecipeView[]> {
       .order("sort_order"),
     supabase.from("items").select("id, name"),
     inStockKeys(),
+    recentPlanCounts(),
   ]);
   if (recipes.error) fail("recipes", recipes.error);
   if (ingredients.error) fail("recipe_ingredients", ingredients.error);
@@ -61,7 +64,11 @@ export async function listRecipes(): Promise<RecipeView[]> {
   return z
     .array(recipeRowSchema)
     .parse(recipes.data)
-    .map((r) => ({ ...r, ingredients: byRecipe.get(r.id) ?? [] }));
+    .map((r) => ({
+      ...r,
+      timesPlanned: planCounts.get(r.id) ?? 0,
+      ingredients: byRecipe.get(r.id) ?? [],
+    }));
 }
 
 export type RecipeForEdit = RecipeRow & { ingredientsText: string; stepsText: string };
