@@ -14,3 +14,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0008](0008-type-only-wordmark-and-two-fonts.md)               | A type-only wordmark and two fonts                                 | Accepted |
 | [0009](0009-partner-sharing-households.md)                     | Partner sharing: households, invite-only, enforced in the database | Accepted |
 | [0010](0010-units-and-unit-prices.md)                          | Units, unit prices, and a database that keeps prices honest        | Accepted |
+| [0011](0011-one-shared-grocery-list.md)                        | One shared grocery list per household, with instant check-offs     | Accepted |

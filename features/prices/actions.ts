@@ -48,7 +48,7 @@ export async function createItem(
     console.error("create item failed:", error.message);
     return { ok: false, error: GENERIC_ERROR };
   }
-  revalidatePath("/grocery");
+  revalidatePath("/grocery", "layout"); // the list and the price book both show prices
   redirect(`/grocery/items/${data.id}`);
 }
 
@@ -110,8 +110,7 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
   const compareUnit = itemRowSchema.shape.compare_unit.parse(item.data.compare_unit);
   const unitPrice = pricePerBase(input.price, input.quantity, input.unit);
   const bestBefore = best.data ? Number(best.data.unit_price_base) : null;
-  revalidatePath("/grocery");
-  revalidatePath(`/grocery/items/${input.itemId}`);
+  revalidatePath("/grocery", "layout"); // the list and the price book both show prices
   return {
     ok: true,
     data: {
@@ -156,8 +155,7 @@ export async function deletePrice(formData: FormData): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("item_prices").delete().eq("id", ids.data.priceId);
   if (error) console.error("delete price failed:", error.message);
-  revalidatePath("/grocery");
-  revalidatePath(`/grocery/items/${ids.data.itemId}`);
+  revalidatePath("/grocery", "layout"); // the list and the price book both show prices
 }
 
 export async function deleteItem(formData: FormData): Promise<void> {
@@ -167,6 +165,6 @@ export async function deleteItem(formData: FormData): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from("items").delete().eq("id", itemId.data);
   if (error) console.error("delete item failed:", error.message);
-  revalidatePath("/grocery");
-  redirect("/grocery");
+  revalidatePath("/grocery", "layout"); // the list and the price book both show prices
+  redirect("/grocery/prices");
 }
