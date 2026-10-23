@@ -36,8 +36,9 @@
   --color-success-text: var(--success-text);
   --color-info: var(--info);
   --color-info-text: var(--info-text);
-  --font-sans: var(--font-lora);
-  --font-heading: var(--font-poppins);
+  --font-sans: var(--font-poppins);
+  /* Display headlines only (28px+): light italic serif. Too thin for small text in sunlight. */
+  --font-display: var(--font-cormorant);
 }
 
 body {
@@ -45,10 +46,4 @@ body {
   color: var(--text);
   font-size: 17px; /* readable at arm's length in sunlight; also stops iOS zooming into inputs */
   -webkit-tap-highlight-color: transparent;
-}
-
-h1,
-h2,
-h3 {
-  font-family: var(--font-poppins);
 }

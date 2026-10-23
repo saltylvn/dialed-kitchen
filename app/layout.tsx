@@ -1,19 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Lora, Poppins } from "next/font/google";
+import { Cormorant_Garamond, Poppins } from "next/font/google";
 import { connection } from "next/server";
 import "./globals.css";
 
-// Free Google Fonts close to Anthropic's own (paid) typefaces:
-// Poppins for headings, Lora for body text.
+// Two free Google Fonts, served from our own domain by next/font (docs/decisions/0008):
+// Poppins for the wordmark, text and buttons (sturdy and readable in sunlight), and
+// Cormorant Garamond light italic for large display headlines only.
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["300", "400", "500", "600"],
 });
 
-const lora = Lora({
-  variable: "--font-lora",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
+  weight: ["300"],
+  style: ["italic"],
 });
 
 // <head> info: the browser tab title, and what iPhone Safari reads on "Add to Home Screen".
@@ -42,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   await connection();
 
   return (
-    <html lang="en" className={`${poppins.variable} ${lora.variable} h-full antialiased`}>
+    <html lang="en" className={`${poppins.variable} ${cormorant.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

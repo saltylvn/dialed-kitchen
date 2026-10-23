@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/ui/Wordmark";
 import { signOut } from "@/features/auth/actions";
 import { requireUser } from "@/lib/server/auth";
 
@@ -15,8 +16,10 @@ export default async function Home() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
-      <h1 className="text-3xl font-semibold">Dialed Kitchen</h1>
-      <p className="text-muted mt-1">Signed in as {user.email}</p>
+      <h1 className="flex justify-center">
+        <Wordmark size="sm" />
+      </h1>
+      <p className="text-muted mt-6 text-center">Signed in as {user.email}</p>
 
       <section className="border-border bg-surface mt-6 rounded-2xl border p-4">
         <h2 className="text-lg font-semibold">Coming soon</h2>

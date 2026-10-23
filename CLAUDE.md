@@ -24,7 +24,9 @@ This repo showcases the owner's software engineering skills for future jobs, so 
   - `--accent` #d97757 (clay orange: buttons, active tab) with `--on-accent` #141413. **Text on the orange is always near-black (`text-on-accent`), never white** (white fails contrast).
   - `--success` #788c5d and `--info` #6a9bcc are for fills and icons only; for text use `--success-text` #556640 and `--info-text` #3b6896.
 - **Sunlight rule:** every text color must reach 4.5:1 contrast on its background. `lib/contrast.test.ts` reads `globals.css` and checks every text/background pair; add new pairs there when adding a text color.
-- Fonts: Poppins for headings (`font-heading`), Lora for body (free Google Fonts close to Anthropic's own).
+- **Look: calm, upscale, minimal** (like a good restaurant menu): generous space, type-led, one accent color used sparingly. No clip-art icons for branding.
+- **Logo:** `components/ui/Wordmark` (sizes `lg`, `sm`), type only: "DIALED" in light, widely spaced Poppins capitals over a smaller, wider-spaced "KITCHEN". Use it on the sign-in screen and in headers; never retype the name by hand.
+- **Fonts (two only):** Poppins for everything readable (body, prices, buttons; the default `font-sans`), and Cormorant Garamond light italic (`font-display`) for large display headlines only (28px+), never for small or essential text. See docs/decisions/0008.
 - Body text 17px or more; tap targets 48px or more (one hand, holding a basket). Color is never the only signal: pair it with text or an icon (🎉, ✓, strikethrough).
 - No Anthropic logo or name in the app; only the colors.
 

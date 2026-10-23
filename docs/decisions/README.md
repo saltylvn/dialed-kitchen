@@ -11,3 +11,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0005](0005-feature-folders-and-layered-data-access.md)        | Feature folders and layered data access                     | Accepted |
 | [0006](0006-security-headers-and-strict-csp.md)                | Security headers and a strict, nonce-based CSP              | Accepted |
 | [0007](0007-server-side-auth-no-database-client-in-browser.md) | Server-side sign-in; no database client in the browser      | Accepted |
+| [0008](0008-type-only-wordmark-and-two-fonts.md)               | A type-only wordmark and two fonts                          | Accepted |
