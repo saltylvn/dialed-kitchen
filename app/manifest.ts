@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Dialed Kitchen",
     short_name: "Dialed Kitchen",
     description: "Grocery lists, best prices, recipes and meal planning.",
-    start_url: "/",
+    start_url: "/plan",
     display: "standalone", // full-screen, like a native app
     background_color: "#faf9f5", // cream while the app opens, matching --bg
     theme_color: "#faf9f5",

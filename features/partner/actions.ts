@@ -13,6 +13,7 @@ import {
 } from "@/lib/invites";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
+import { HOME_TAB } from "@/lib/tabs";
 import { inviteFormSchema, PARTNER_ERRORS } from "./schema";
 
 // Partner actions. Each one checks sign-in and input here; the database functions check
@@ -86,5 +87,5 @@ export async function acceptInvite(
     return { ok: false, error: userMessage(error, PARTNER_ERRORS) };
   }
   revalidatePath("/", "layout");
-  redirect("/?joined=1");
+  redirect(`${HOME_TAB.href}?joined=1`);
 }
