@@ -74,7 +74,7 @@ features/<feature>/  one folder per feature (prices, lists, recipes, meal-plan):
   queries.ts         data access layer (reads): import "server-only"
   schema.ts          zod schemas: the shape of valid input
 components/ui/       shared, generic UI pieces (Button, Card, Sheet)
-lib/                 pure logic with no I/O (pricing, units, contrast), unit tested; relative imports
+lib/                 pure logic with no I/O (pricing, units, dates, contrast), unit tested
 lib/server/          server-only infrastructure: Supabase clients, env validation
 supabase/migrations/ versioned SQL: tables, indexes, RLS policies
 docs/decisions/      decision records
@@ -119,19 +119,19 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 
 - `npm run dev`: start the local dev server
 - `npm run build`: production build
-- `npm test`: run unit tests (vitest)
+- `npm test`: run unit tests (vitest; `vitest.config.mts` maps the `@/` imports). Browser-only values such as the phone's date come from hooks like `components/useToday` (`useSyncExternalStore`), not `setState` in an effect.
 - `npm run lint`: lint
 - `npm run typecheck`: TypeScript check
 - `npm run format` / `npm run format:check`: Prettier
 - CI runs: audit, format check, lint, typecheck, tests, build. Run the same locally before pushing.
-- **Database changes:** add a new file in `supabase/migrations/` (`YYYYMMDDHHMMSS_name.sql`; never edit one already applied), cover it in `supabase/tests/` (real Postgres via PGlite: `createTestDb()`, `db.as(user, sql)` runs with RLS as that user), then the owner applies it with `npx supabase db push`. **Always run Supabase CLI commands from this project folder** (`cd ~/Developer/dialed-kitchen` first): run elsewhere, the CLI links that folder instead and pushes nothing. The project is linked to `zitsdiffnbzyhleorcmg`; `npx supabase migration list` shows what's applied.
+- **Database changes:** add a new file in `supabase/migrations/` (`YYYYMMDDHHMMSS_name.sql`; never edit one already applied), cover it in `supabase/tests/` (real Postgres via PGlite: `createTestDb()`, `db.as(user, sql)` runs with RLS as that user), then apply it: Claude runs `npx supabase db push --dry-run`, shows the owner exactly which migrations will apply, and runs `npx supabase db push --yes` once the owner agrees (the CLI is logged in and linked on this Mac). Never paste CLI commands into Supabase's SQL Editor; it only runs SQL. **Always run Supabase CLI commands from this project folder** (`cd ~/Developer/dialed-kitchen` first): run elsewhere, the CLI links that folder instead and pushes nothing. The project is linked to `zitsdiffnbzyhleorcmg`; `npx supabase migration list` shows what's applied.
 
 ## Roadmap
 
 0. Project setup ✅ (Next.js, colors and fonts, contrast test, GitHub repo, README, CI, decision records; live at https://dialed-kitchen.vercel.app, deployed by Vercel on every push to `main`)
 1. Google sign-in, the wordmark, and the tab layout (Plan · Recipes · Grocery) ✅
    1b. Partner sharing: households, invite-only partnership for a married couple ✅
-2. Stores, items and price entry with unit prices, best price, "New best!" and history
+2. Stores, items and price entry with unit prices, best price, "New best!" and history ✅
 3. Grocery lists with shopping mode
 4. Recipes entered by hand
 5. Recipe import from a website link
