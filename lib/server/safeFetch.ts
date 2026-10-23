@@ -107,7 +107,7 @@ export async function fetchPublicPage(link: string): Promise<{ url: URL; html: s
     // protection). We respect that rather than trying to get around it.
     if (status === 401 || status === 403 || status === 429) {
       throw new FetchRefused(
-        "That site doesn't let apps read its recipes. Type it in below, or add it from a photo once that's available.",
+        "That site doesn't let apps read its recipes. Take a screenshot of the recipe and import it from a photo instead.",
       );
     }
     if (status === 404 || status === 410)
