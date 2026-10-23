@@ -17,14 +17,14 @@ Grocery prices vary a lot between stores and over time, and it's hard to remembe
 
 ## Architecture
 
-| Layer | Choice | Why |
-|---|---|---|
-| UI and server | Next.js 16 (App Router), React Server Components, TypeScript | One codebase for UI and server logic; server components keep data access and secrets off the phone |
-| Styling | Tailwind CSS v4 with named color tokens | One source of truth for colors; contrast verified by a test |
-| Database and auth | Supabase (Postgres, Google sign-in, private storage) | Real relational data with row-level security |
-| AI | Google Gemini (server-side only) | Reading recipes from photos; free tier |
-| Hosting | Vercel | Deploys every push to `main` |
-| Tests and CI | Vitest, ESLint, GitHub Actions | Lint, tests and a production build on every push and pull request |
+| Layer             | Choice                                                                  | Why                                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| UI and server     | Next.js 16 (App Router), React Server Components, TypeScript            | One codebase for UI and server logic; server components keep data access and secrets off the phone                               |
+| Styling           | Tailwind CSS v4 with named color tokens                                 | One source of truth for colors; contrast verified by a test                                                                      |
+| Database and auth | Supabase (Postgres, Google sign-in, private storage)                    | Real relational data with row-level security                                                                                     |
+| AI                | Google Gemini (server-side only)                                        | Reading recipes from photos; free tier                                                                                           |
+| Hosting           | Vercel                                                                  | Deploys every push to `main`                                                                                                     |
+| Quality and CI    | Vitest, ESLint, Prettier, strict TypeScript, GitHub Actions, Dependabot | Security audit, format, lint, type check, tests and a production build on every push and pull request; weekly dependency updates |
 
 Key design decisions and the alternatives considered are recorded in [`docs/decisions/`](docs/decisions/).
 
