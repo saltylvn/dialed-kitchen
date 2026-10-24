@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { SubPage } from "@/components/ui/SubPage";
 import { deleteItem, deletePrice } from "@/features/prices/actions";
 import { BestPriceLine, Tag } from "@/features/prices/components/BestPriceLine";
@@ -26,7 +27,16 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
   const year = Number(serverToday().slice(0, 4));
 
   return (
-    <SubPage backHref="/grocery/prices" backLabel="Prices" title={item.name}>
+    <SubPage
+      backHref="/grocery/prices"
+      backLabel="Prices"
+      title={
+        <>
+          <FoodEmoji name={item.name} />
+          {item.name}
+        </>
+      }
+    >
       <div className="space-y-4">
         <section aria-labelledby="best-heading" className={card}>
           <h2 id="best-heading" className={heading}>

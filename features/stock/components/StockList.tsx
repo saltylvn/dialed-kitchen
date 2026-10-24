@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useOptimistic, useState, useTransition } from "react";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { addInStock, setInStock, type AddInStockResult } from "../actions";
 import type { StockRow } from "../queries";
 
@@ -70,7 +71,10 @@ export function StockList({ items }: { items: StockRow[] }) {
               <span aria-hidden className="text-success-text">
                 ✓
               </span>
-              <span className="min-w-0 flex-1 break-words">{item.name}</span>
+              <span className="min-w-0 flex-1 break-words">
+                <FoodEmoji name={item.name} />
+                {item.name}
+              </span>
               <button
                 type="button"
                 aria-label={`${item.name}: used up`}

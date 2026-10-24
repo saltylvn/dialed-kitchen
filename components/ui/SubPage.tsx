@@ -10,7 +10,7 @@ export function SubPage({
 }: {
   backHref: string;
   backLabel: string;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
