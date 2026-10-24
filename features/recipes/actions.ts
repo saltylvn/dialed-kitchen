@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { GENERIC_ERROR, type ActionResult } from "@/lib/actionResult";
 import { matchKey } from "@/lib/ingredients";
+import { MEAL_IDS } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
 import { recipeFormSchema } from "./schema";
@@ -32,6 +33,7 @@ export async function saveRecipe(
     protein: formData.get("protein") ?? undefined,
     carbs: formData.get("carbs") ?? undefined,
     fat: formData.get("fat") ?? undefined,
+    meals: formData.getAll("meals"),
   });
   if (!parsed.success)
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
@@ -66,6 +68,7 @@ export async function saveRecipe(
       carbs_g: recipe.carbs,
       fat_g: recipe.fat,
     },
+    meals: recipe.meals,
   });
   if (error) {
     console.error("save recipe failed:", error.message);
@@ -111,4 +114,26 @@ export async function deleteRecipe(formData: FormData): Promise<void> {
   if (error) console.error("delete recipe failed:", error.message);
   revalidatePath("/recipes");
   redirect("/recipes");
+}
+
+// Sorts a recipe into meals from the Recipes tab (no full edit needed). Kept in meal order.
+export async function setRecipeMeals(id: string, meals: string[]): Promise<ActionResult> {
+  await requireUser();
+  const parsed = z
+    .object({ id: z.uuid(), meals: z.array(z.enum(MEAL_IDS)).max(4) })
+    .safeParse({ id, meals });
+  if (!parsed.success) return { ok: false, error: GENERIC_ERROR };
+  const ordered = MEAL_IDS.filter((m) => parsed.data.meals.includes(m));
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("recipes")
+    .update({ meals: ordered })
+    .eq("id", parsed.data.id);
+  if (error) {
+    console.error("set recipe meals failed:", error.message);
+    return { ok: false, error: "Couldn't save that. Check your connection and try again." };
+  }
+  revalidatePath("/recipes");
+  revalidatePath("/plan");
+  return { ok: true, data: undefined };
 }

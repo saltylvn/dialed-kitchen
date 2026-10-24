@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useState, useTransition } from "react";
 import { NO_NUTRITION, type Nutrition } from "@/lib/nutrition";
+import { MEALS } from "@/lib/plan";
 import { saveRecipe, type SaveRecipeResult } from "../actions";
 import { estimateRecipeNutrition } from "../importActions";
 import { SOURCE_TYPES, type RecipeDraft } from "../schema";
@@ -77,6 +78,34 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
           </select>
         </div>
       </div>
+
+      <fieldset>
+        <legend className="font-medium">
+          Meals <span className="text-muted font-normal">(tap all that fit)</span>
+        </legend>
+        <p className="text-muted text-[15px]">
+          Sorts it on the Recipes tab, and it’s offered for these meals on the Plan.
+        </p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {MEALS.map((m) => (
+            <label key={m.id} className="min-w-0">
+              <input
+                type="checkbox"
+                name="meals"
+                value={m.id}
+                defaultChecked={recipe?.meals?.includes(m.id)}
+                className="peer sr-only"
+              />
+              <span className="border-border bg-surface peer-checked:bg-accent peer-checked:text-on-accent peer-checked:border-accent peer-focus-visible:outline-accent flex min-h-12 cursor-pointer items-center justify-center rounded-xl border px-1 text-[15px] font-medium peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>.tick]:inline">
+                <span aria-hidden className="tick mr-1 hidden">
+                  ✓
+                </span>
+                {m.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <div>
         <label htmlFor="recipe-source-name" className="font-medium">
