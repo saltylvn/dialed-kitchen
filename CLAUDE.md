@@ -144,5 +144,5 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 6. Recipe import from a photo ✅ (Gemini free tier with model fallback; up to 3 photos; 40 a day per person; photos never stored)
 7. Weekly meal planner ✅ (Mon–Sun weeks via `?week=`; every day has four spots, Breakfast · Lunch · Snacks · Dinner; recipe and servings by wheel; regulars = planned 3+ times in 8 weeks join favorites; docs/decisions/0017)
    7b. Calories and macros ✅ (per serving on recipes; Calories and Macros dropdowns per day on Plan; docs/decisions/0018)
-8. Meal plan → grocery list with estimated cost
+8. Meal plan → grocery list with estimated cost ✅ (`week_shopping` / `add_week_to_list`: scaled to planned servings, combined across meals, In stock and on-list skipped, cost at best prices when units convert; "This week's groceries" card on Plan; docs/decisions/0019)
 9. Polish: price trends, cheapest store, meal-prep batch view (app icon ✅)

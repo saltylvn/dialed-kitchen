@@ -77,5 +77,5 @@ npm run build   # production build
 - [x] 6. Recipe import from a photo
 - [x] 7. Weekly meal planner
 - [x] 7b. Calories and macros per day on the plan
-- [ ] 8. Meal plan → grocery list with estimated cost
+- [x] 8. Meal plan → grocery list with estimated cost
 - [ ] 9. Price trends, cheapest store, meal-prep view (app icon done)
