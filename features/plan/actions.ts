@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
+import { weekFromParam } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
 import { addToPlanSchema, type AddToPlanInput } from "./schema";
@@ -50,4 +51,22 @@ export async function removeFromPlan(id: string): Promise<ActionResult> {
   revalidatePath("/plan");
   revalidatePath("/recipes");
   return { ok: true, data: undefined };
+}
+
+// Adds everything the week needs that isn't In stock or already on the list (one database
+// step, add_week_to_list).
+export async function addWeekToList(monday: string): Promise<ActionResult<{ added: number }>> {
+  await requireUser();
+  if (typeof monday !== "string" || weekFromParam(monday) !== monday) {
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("add_week_to_list", { week_start: monday });
+  if (error) {
+    console.error("add week to list failed:", error.message);
+    return { ok: false, error: "Couldn't add to the list. Check your connection and try again." };
+  }
+  revalidatePath("/grocery", "layout");
+  revalidatePath("/plan");
+  return { ok: true, data: { added: z.number().int().parse(data) } };
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { addDays, serverToday } from "@/lib/dates";
 import type { Nutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
+import type { ShoppingRow } from "@/lib/weekShopping";
 import { createClient } from "@/lib/server/supabase";
 import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
 import { planEntryRowSchema, type PlanEntryRow } from "./schema";
@@ -84,4 +85,24 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
     nutrition: nutritionOf(r),
   });
   return [...top.map(choice(true)), ...rest.map(choice(false))];
+}
+
+// What the week's meals need, with In stock, on-the-list and estimated cost (worked out by
+// the database's week_shopping, so the card and "Add to grocery list" always agree).
+export async function getWeekShopping(monday: string): Promise<ShoppingRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("week_shopping", { week_start: monday });
+  if (error) fail("week_shopping", error);
+  return z
+    .array(
+      z.object({
+        name: z.string(),
+        quantity: z.coerce.number().nullable(),
+        unit: z.string().nullable(),
+        in_stock: z.boolean(),
+        on_list: z.boolean(),
+        est_cost: z.coerce.number().nullable(),
+      }),
+    )
+    .parse(data);
 }
