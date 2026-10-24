@@ -1,10 +1,16 @@
 # Dialed Kitchen
 
+[![CI](https://github.com/saltylvn/dialed-kitchen/actions/workflows/ci.yml/badge.svg)](https://github.com/saltylvn/dialed-kitchen/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/saltylvn/dialed-kitchen/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/saltylvn/dialed-kitchen/security/code-scanning)
+![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
+![Node 24](https://img.shields.io/badge/Node-24.x-5fa04e)
+![License: all rights reserved](https://img.shields.io/badge/license-all%20rights%20reserved-5e5d58)
+
 **Plan it, price it, cook it.** An iPhone-first web app (installable PWA) that a couple uses every day to plan meals, cook from recipes, track grocery prices across stores and build the shopping list, with AI that reads recipes from photos and estimates nutrition.
 
 > **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · **Status:** in daily use; all roadmap milestones shipped.
 
-![Dialed Kitchen overview: 281 automated tests, 25 merged pull requests, 24 decision records, 11 row-level security policies, the Plan screen and the tech stack](docs/images/dialed-kitchen-overview.png)
+![Dialed Kitchen overview: 281 automated tests, 25 merged pull requests, 24 decision records, 11 row-level security policies, 13 migrations, the Plan screen on an iPhone and the tech stack](docs/images/dialed-kitchen-overview.png)
 
 ## What it does
 
@@ -65,6 +71,7 @@ Every table carries `household_id` with row-level security. Composite foreign ke
 - **Server-side auth only:** no database client in the browser; HttpOnly, SameSite, Secure cookies; Google sign-in starts from a POST with an Origin check (CSRF).
 - **SSRF-safe link import:** https on port 443 only, and every resolved address is checked inside the connection's own DNS lookup, which closes DNS rebinding. Redirects are re-checked at each hop, with time, size and type limits. Sites that block apps get a clear message; nothing tries to get around them.
 - **AI guard rails:** keys only on the server; every reply is validated and range-checked; prompts treat text inside photos as data; a 40-a-day per-person limit is counted atomically in Postgres (advisory lock); photos are shrunk in the browser (which strips GPS data) and never stored.
+- **Code scanning:** GitHub CodeQL analyzes every push and pull request for security issues.
 - **Supply chain:** a production dependency audit in CI, GitHub Actions pinned to commit SHAs, and Dependabot with written hold-back rules ([0024](docs/decisions/0024-dependency-updates.md)).
 
 ## AI features
@@ -113,3 +120,7 @@ npm run lint && npm run typecheck && npm run build
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
 - [x] 9. Price trends, cheapest store, meal-prep view, app icon, food emojis
+
+## License
+
+Copyright © 2026 Tyler Clark. All rights reserved. The code is public to be read and evaluated; see [LICENSE](LICENSE).
