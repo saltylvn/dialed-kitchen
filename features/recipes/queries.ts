@@ -5,7 +5,13 @@ import { formatAmount } from "@/lib/list";
 import { createClient } from "@/lib/server/supabase";
 import { recentPlanCounts } from "@/features/plan/queries";
 import { inStockKeys } from "@/features/stock/queries";
-import { ingredientRowSchema, recipeRowSchema, type RecipeRow } from "./schema";
+import {
+  ingredientRowSchema,
+  nutritionOf,
+  RECIPE_COLUMNS,
+  recipeRowSchema,
+  type RecipeRow,
+} from "./schema";
 
 // Reads for the recipe box (server-only, household-scoped by RLS, validated).
 
@@ -26,7 +32,7 @@ export async function listRecipes(): Promise<RecipeView[]> {
   const [recipes, ingredients, items, stock, planCounts] = await Promise.all([
     supabase
       .from("recipes")
-      .select("id, title, servings, source_type, source_name, source_url, steps, favorite")
+      .select(RECIPE_COLUMNS)
       .order("favorite", { ascending: false })
       .order("title"),
     supabase
@@ -71,18 +77,18 @@ export async function listRecipes(): Promise<RecipeView[]> {
     }));
 }
 
-export type RecipeForEdit = RecipeRow & { ingredientsText: string; stepsText: string };
+export type RecipeForEdit = RecipeRow & {
+  ingredientsText: string;
+  stepsText: string;
+  nutrition: ReturnType<typeof nutritionOf>;
+};
 
 // One recipe, with ingredients and steps turned back into editable text. null if not yours.
 export async function getRecipeForEdit(id: string): Promise<RecipeForEdit | null> {
   if (!z.uuid().safeParse(id).success) return null;
   const supabase = await createClient();
   const [recipe, ingredients] = await Promise.all([
-    supabase
-      .from("recipes")
-      .select("id, title, servings, source_type, source_name, source_url, steps, favorite")
-      .eq("id", id)
-      .maybeSingle(),
+    supabase.from("recipes").select(RECIPE_COLUMNS).eq("id", id).maybeSingle(),
     supabase
       .from("recipe_ingredients")
       .select("recipe_id, sort_order, quantity, unit, name, item_id")
@@ -102,5 +108,6 @@ export async function getRecipeForEdit(id: string): Promise<RecipeForEdit | null
       .map((i) => formatIngredient(i))
       .join("\n"),
     stepsText: row.steps.join("\n"),
+    nutrition: nutritionOf(row),
   };
 }

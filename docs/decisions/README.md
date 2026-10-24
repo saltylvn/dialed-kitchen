@@ -21,3 +21,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0015](0015-safe-recipe-import-from-links.md)                  | Importing recipes from links, safely                                              | Accepted |
 | [0016](0016-recipes-from-photos-with-ai.md)                    | Reading recipes from photos with AI, with a daily limit                           | Accepted |
 | [0017](0017-weekly-meal-plan.md)                               | The weekly meal plan: four fixed spots a day, shared by the couple                | Accepted |
+| [0018](0018-calories-and-macros.md)                            | Calories and macros: per serving on recipes, totaled per person on the plan       | Accepted |

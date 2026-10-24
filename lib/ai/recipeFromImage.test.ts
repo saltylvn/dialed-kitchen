@@ -23,7 +23,20 @@ describe("parseRecipeAnswer", () => {
         sourceName: "Joy of Cooking, p. 612",
         ingredients: ["2 cups flour", "1 tbsp baking powder"],
         steps: ["Heat the oven.", "Mix and bake."],
+        nutrition: { calories: null, protein: null, carbs: null, fat: null },
       },
+    });
+  });
+
+  it("keeps printed nutrition, and drops impossible values", () => {
+    const parsed = parseRecipeAnswer(
+      answer({ calories: 210, proteinGrams: 4.25, carbsGrams: null, fatGrams: 99999 }),
+    );
+    expect(parsed.ok && parsed.recipe.nutrition).toEqual({
+      calories: 210,
+      protein: 4.3,
+      carbs: null,
+      fat: null,
     });
   });
 

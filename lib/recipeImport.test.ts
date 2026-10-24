@@ -22,6 +22,11 @@ describe("extractRecipe", () => {
         { "@type": "HowToStep", text: "Roast for 25 minutes." },
       ],
       publisher: { "@type": "Organization", name: "Good Food" },
+      nutrition: {
+        "@type": "NutritionInformation",
+        calories: "320 calories",
+        proteinContent: "34 g",
+      },
     });
     expect(extractRecipe(html)).toEqual({
       title: "Lemon Chicken",
@@ -29,6 +34,7 @@ describe("extractRecipe", () => {
       ingredients: ["1 1/2 lb chicken thighs", "1 lemon"],
       steps: ["Season the chicken.", "Roast for 25 minutes."],
       siteName: "Good Food",
+      nutrition: { calories: 320, protein: 34, carbs: null, fat: null },
     });
   });
 

@@ -3,6 +3,13 @@
 import Link from "next/link";
 import { useId, useOptimistic, useState, useTransition } from "react";
 import { useToday } from "@/components/useToday";
+import {
+  dayTotals,
+  formatCalories,
+  formatGrams,
+  NO_NUTRITION,
+  type Nutrition,
+} from "@/lib/nutrition";
 import { dayLabels, MEALS, type MealId } from "@/lib/plan";
 import { addToPlan, removeFromPlan } from "../actions";
 import type { RecipeChoice } from "../queries";
@@ -30,7 +37,7 @@ export function PlanWeek({
   );
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const titles = new Map(recipes.map((r) => [r.id, r.title]));
+  const byId = new Map(recipes.map((r) => [r.id, r]));
 
   function add(entry: Omit<PlanEntryRow, "id">) {
     setError(null);
@@ -70,7 +77,7 @@ export function PlanWeek({
             isToday={day === today}
             isPast={today !== "" && day < today}
             entries={optimistic.filter((e) => e.plan_date === day)}
-            titles={titles}
+            byId={byId}
             recipes={recipes}
             onAdd={add}
             onRemove={remove}
@@ -86,7 +93,7 @@ function Day({
   isToday,
   isPast,
   entries,
-  titles,
+  byId,
   recipes,
   onAdd,
   onRemove,
@@ -95,7 +102,7 @@ function Day({
   isToday: boolean;
   isPast: boolean;
   entries: PlanEntryRow[];
-  titles: Map<string, string>;
+  byId: Map<string, RecipeChoice>;
   recipes: RecipeChoice[];
   onAdd: (entry: Omit<PlanEntryRow, "id">) => void;
   onRemove: (id: string) => void;
@@ -142,7 +149,7 @@ function Day({
                 ) : (
                   <ul className="min-w-0 flex-1">
                     {planned.map((entry) => {
-                      const title = titles.get(entry.recipe_id) ?? "Recipe";
+                      const title = byId.get(entry.recipe_id)?.title ?? "Recipe";
                       return (
                         <li key={entry.id} className="flex items-center">
                           <Link
@@ -182,7 +189,118 @@ function Day({
           );
         })}
       </ul>
+
+      {entries.length > 0 && <DayNutrition entries={entries} byId={byId} />}
     </li>
+  );
+}
+
+// The day's Calories and Macros, per person: one serving of each planned meal. Two native
+// dropdowns (<details>): the total shows on the closed row, the meal-by-meal list inside.
+function DayNutrition({
+  entries,
+  byId,
+}: {
+  entries: PlanEntryRow[];
+  byId: Map<string, RecipeChoice>;
+}) {
+  const meals = MEALS.flatMap((meal) =>
+    entries
+      .filter((e) => e.meal === meal.id)
+      .map((e) => {
+        const recipe = byId.get(e.recipe_id);
+        return {
+          key: e.id,
+          meal: meal.label,
+          title: recipe?.title ?? "Recipe",
+          label: `${meal.label} (${recipe?.title ?? "recipe"})`,
+          nutrition: recipe?.nutrition ?? NO_NUTRITION,
+        };
+      }),
+  );
+  const { totals, missing } = dayTotals(meals);
+  const macros = (n: Nutrition) =>
+    `P ${formatGrams(n.protein)} · C ${formatGrams(n.carbs)} · F ${formatGrams(n.fat)}`;
+
+  return (
+    <div className="border-border border-t">
+      <Dropdown label="Calories" summary={formatCalories(totals.calories)}>
+        <ul>
+          {meals.map((m) => (
+            <MealLine key={m.key} meal={m.meal} title={m.title}>
+              {formatCalories(m.nutrition.calories)}
+            </MealLine>
+          ))}
+        </ul>
+        <Missing meals={missing.calories} what="calories" />
+      </Dropdown>
+      <Dropdown label="Macros" summary={macros(totals)}>
+        <ul>
+          {meals.map((m) => (
+            <MealLine key={m.key} meal={m.meal} title={m.title}>
+              {macros(m.nutrition)}
+            </MealLine>
+          ))}
+        </ul>
+        <p className="text-muted mt-1 text-[14px]">P protein · C carbs · F fat</p>
+        <Missing meals={missing.macros} what="macros" />
+      </Dropdown>
+    </div>
+  );
+}
+
+function Dropdown({
+  label,
+  summary,
+  children,
+}: {
+  label: string;
+  summary: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="group border-border border-b last:border-b-0">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+        <span className="font-medium">{label}</span>
+        <span className="ml-auto text-[15px] tabular-nums">{summary}</span>
+        <span aria-hidden className="text-muted transition-transform group-open:rotate-90">
+          ›
+        </span>
+      </summary>
+      <div className="pb-3">
+        {children}
+        <p className="text-muted mt-1 text-[14px]">Per person: one serving of each meal.</p>
+      </div>
+    </details>
+  );
+}
+
+function MealLine({
+  meal,
+  title,
+  children,
+}: {
+  meal: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex items-baseline gap-2 py-1 text-[15px]">
+      <span className="min-w-0 flex-1 break-words">
+        <span className="text-muted">{meal}</span> · {title}
+      </span>
+      <span className="shrink-0 tabular-nums">{children}</span>
+    </li>
+  );
+}
+
+// Totals are honest: meals without numbers are named, so the total reads as "at least".
+function Missing({ meals, what }: { meals: string[]; what: string }) {
+  if (meals.length === 0) return null;
+  return (
+    <p className="mt-1 text-[14px]">
+      Not counted yet: {meals.join(", ")}. Add {what} on the recipe (Edit → Estimate with AI).
+    </p>
   );
 }
 

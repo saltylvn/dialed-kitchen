@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseIngredientLines, type ParsedIngredient } from "@/lib/ingredients";
+import { MAX_CALORIES, MAX_GRAMS, type Nutrition } from "@/lib/nutrition";
 import { isUnit, type Unit } from "@/lib/units";
 
 // Valid recipe input, and recipe rows read back from the database.
@@ -19,6 +20,22 @@ const optionalText = (max: number, label: string) =>
     .optional()
     .transform((s) => s?.trim().replace(/\s+/g, " ") || null)
     .pipe(z.string().max(max, `Keep the ${label} under ${max} characters`).nullable());
+
+// An optional number typed in a nutrition box: "" → null, "12.5" → 12.5.
+const nutritionValue = (max: number, label: string, decimals: number) =>
+  z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+      const text = s?.trim().replace(/,/g, "");
+      if (!text) return null;
+      const n = Number(text);
+      if (!Number.isFinite(n) || n < 0 || n > max) {
+        ctx.addIssue({ code: "custom", message: `${label} must be 0 to ${max}, or empty` });
+        return z.NEVER;
+      }
+      return Math.round(n * 10 ** decimals) / 10 ** decimals;
+    });
 
 export const recipeFormSchema = z.object({
   recipeId: z.uuid().nullable(),
@@ -58,6 +75,11 @@ export const recipeFormSchema = z.object({
           "Keep each ingredient under 200 characters",
         ),
     ),
+  // Per serving, all optional (lib/nutrition).
+  calories: nutritionValue(MAX_CALORIES, "Calories", 0),
+  protein: nutritionValue(MAX_GRAMS, "Protein", 1),
+  carbs: nutritionValue(MAX_GRAMS, "Carbs", 1),
+  fat: nutritionValue(MAX_GRAMS, "Fat", 1),
   // One step per line.
   steps: z
     .string()
@@ -90,6 +112,10 @@ export const recipeRowSchema = z.object({
   source_url: z.string().nullable(),
   steps: z.array(z.string()),
   favorite: z.boolean(),
+  calories: z.number().int().nullable(),
+  protein_g: z.coerce.number().nullable(),
+  carbs_g: z.coerce.number().nullable(),
+  fat_g: z.coerce.number().nullable(),
 });
 export type RecipeRow = z.infer<typeof recipeRowSchema>;
 
@@ -113,4 +139,15 @@ export type RecipeDraft = {
   source_url: string | null;
   ingredientsText: string;
   stepsText: string;
+  nutrition?: Nutrition;
 };
+
+// The columns every recipe read selects.
+export const RECIPE_COLUMNS =
+  "id, title, servings, source_type, source_name, source_url, steps, favorite, calories, protein_g, carbs_g, fat_g";
+
+export function nutritionOf(
+  row: Pick<RecipeRow, "calories" | "protein_g" | "carbs_g" | "fat_g">,
+): Nutrition {
+  return { calories: row.calories, protein: row.protein_g, carbs: row.carbs_g, fat: row.fat_g };
+}

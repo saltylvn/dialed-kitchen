@@ -6,6 +6,9 @@ import { RecipeForm } from "@/features/recipes/components/RecipeForm";
 import { getRecipeForEdit } from "@/features/recipes/queries";
 import { requireUser } from "@/lib/server/auth";
 
+// "Estimate with AI" can take a while (docs/decisions/0018).
+export const maxDuration = 60;
+
 export const metadata: Metadata = { title: "Edit recipe · Dialed Kitchen" };
 
 export default async function EditRecipePage({ params }: PageProps<"/recipes/[id]/edit">) {

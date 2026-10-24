@@ -2,12 +2,15 @@
 // which most recipe sites include for search engines. No AI, no guessing: if a page has no
 // recipe data, this says so. (docs/decisions/0004, 0015)
 
+import { nutritionFromSchemaOrg, type Nutrition } from "./nutrition";
+
 export type ImportedRecipe = {
   title: string;
   servings: number | null;
   ingredients: string[]; // as written: "1 1/2 cups flour"; lib/ingredients reads them
   steps: string[];
   siteName: string | null;
+  nutrition: Nutrition; // per serving, when the page includes it
 };
 
 const NAMED_ENTITIES: Record<string, string> = {
@@ -131,6 +134,7 @@ export function extractRecipe(html: string): ImportedRecipe | null {
         .map((s) => s.slice(0, 2000))
         .slice(0, 100),
       siteName: cleanText(publisher?.name) || siteNameFrom(html),
+      nutrition: nutritionFromSchemaOrg(recipe.nutrition),
     };
   }
   return null;
