@@ -1,67 +1,100 @@
 # Dialed Kitchen
 
-**Plan it, price it, cook it.** An iPhone-first web app for daily cooking, grocery shopping and meal prep: grocery lists, price tracking that remembers the best price for every item across stores, recipes imported from websites or photographed from cookbooks, and weekly meal plans that build the grocery list and estimate its cost.
+**Plan it, price it, cook it.** An iPhone-first web app (installable PWA) that a couple uses every day to plan meals, cook from recipes, track grocery prices across stores and build the shopping list, with AI that reads recipes from photos and estimates nutrition.
 
-> **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · Status: early development. See the [roadmap](#roadmap).
+> **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · **Status:** in daily use; all roadmap milestones shipped.
 
-## Why it exists
+![Dialed Kitchen overview: 281 automated tests, 25 merged pull requests, 24 decision records, 11 row-level security policies, the Plan screen and the tech stack](docs/images/dialed-kitchen-overview.png)
 
-Grocery prices vary a lot between stores and over time, and it's hard to remember whether a price is a good one while standing in the aisle. Dialed Kitchen keeps a price history for every item, compares prices by **unit price** (so a 5 lb bag and a 2 lb bag compare fairly), and shows your best price found so far, right on the shopping list.
+## What it does
 
-## Features (planned)
+- **Plan:** a Monday-to-Sunday week with four spots a day (Breakfast, Lunch, Snacks, Dinner). Each spot offers only that meal's recipes. Each day shows **Calories** and **Macros** per person. **This week's groceries** adds up every ingredient (scaled to the servings planned), skips what's already in the kitchen, estimates the cost at your best prices, and adds it all to the list in one tap. **Meal prep** shows what to batch-cook and which ingredients to prep once.
+- **Recipes:** grouped by meal, with favorites and "regulars" (recipes you plan often) first. Recipes come from:
+  - a **website link**, read from the page's schema.org recipe data, with no AI;
+  - **photos** of a cookbook, magazine or recipe card, read by Google Gemini;
+  - or typing.
+    Open a recipe to cook from your phone (with the screen kept awake), tick ingredients **In stock**, and add what's missing to the list. **Estimate with AI** fills in calories and macros.
+- **Grocery:** one shared list with big checkboxes, an **In stock** kitchen inventory that stays in sync with recipes and the list, and a **price book**. Every price is kept as history and compared by unit price, so a 5 lb bag and a 2 lb bag compare fairly. Each item shows its best price, its **cheapest store right now**, and its **price trend**.
+- **Partner sharing:** a married couple shares everything through an invite-only household (at most two people), enforced by the database.
+- Food emojis next to every item and ingredient (🍗 🍚 🥚), worked out from the name.
 
-- **Best price per item:** every price is kept as history; the lowest unit price is shown with store and date. Entering a price shows "🎉 New best price!" or "12% more than your best".
-- **Grocery lists** with a one-handed shopping mode.
-- **Recipes** from a website link (parsed from the page's schema.org data, no AI needed), from a photo of a cookbook or magazine page (AI-assisted, always reviewed before saving), or typed by hand.
-- **Meal planning** for the week ahead → one combined grocery list with an estimated cost.
+## How it was built: AI-assisted engineering
+
+I built Dialed Kitchen with **Claude Code** as an AI pair programmer. I owned the product and the engineering decisions:
+
+- the features and how each screen should work, tested on my own iPhone;
+- the architecture, the data model and the security model, each written up as a [decision record](docs/decisions/) with the alternatives considered;
+- reviewing every change and verifying it in the browser at phone size against the live database;
+- a professional delivery pipeline: a branch and pull request per change, CI that blocks merging until format, lint, type check, tests, build and a security audit all pass, versioned database migrations, and Dependabot updates tested one at a time.
+
+Inside the product, AI is used where it earns its place, with guard rails: **Google Gemini** reads recipe photos and estimates nutrition (see [AI features](#ai-features)).
 
 ## Architecture
 
-| Layer             | Choice                                                                  | Why                                                                                                                              |
-| ----------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| UI and server     | Next.js 16 (App Router), React Server Components, TypeScript            | One codebase for UI and server logic; server components keep data access and secrets off the phone                               |
-| Styling           | Tailwind CSS v4 with named color tokens                                 | One source of truth for colors; contrast verified by a test                                                                      |
-| Database and auth | Supabase (Postgres, Google sign-in, private storage)                    | Real relational data with row-level security                                                                                     |
-| AI                | Google Gemini (server-side only)                                        | Reading recipes from photos; free tier                                                                                           |
-| Hosting           | Vercel                                                                  | Deploys every push to `main`                                                                                                     |
-| Quality and CI    | Vitest, ESLint, Prettier, strict TypeScript, GitHub Actions, Dependabot | Security audit, format, lint, type check, tests and a production build on every push and pull request; weekly dependency updates |
+| Layer             | Choice                                                                                       | Why                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| UI and server     | Next.js 16 (App Router), React 19 Server Components and Server Actions, TypeScript (strict)  | One codebase; data access and secrets stay on the server, and little JavaScript ships to phones |
+| Styling           | Tailwind CSS v4 with named design tokens                                                     | One source of truth for colors; text contrast is checked by a test                              |
+| Database and auth | Supabase: Postgres, row-level security, Google sign-in (PKCE)                                | Real relational data; the database itself enforces who can see what                             |
+| AI                | Google Gemini (server-side only), structured JSON output, model fallback chain               | Reads recipe photos and estimates nutrition on the free tier                                    |
+| Validation        | Zod at every trust boundary: forms, URL parameters, fetched pages, AI replies, database rows | Types aren't validation                                                                         |
+| Hosting and CI    | Vercel (Node 24), GitHub Actions, Dependabot                                                 | Every push is checked; every merge to `main` deploys                                            |
 
-Key design decisions and the alternatives considered are recorded in [`docs/decisions/`](docs/decisions/).
+**Request flow, with a check at each layer:** UI → Server Action (Zod validation and sign-in check) → server-only data access (the user's own session, never a service key) → **Postgres row-level security**, the final guard even if app code has a bug.
 
-### Data model (planned)
+**Code layout:** `features/<feature>/` holds each feature's components, actions (writes), queries (reads) and schemas. `lib/` holds pure, unit-tested logic (pricing, units, nutrition, plan rules). `lib/server/` holds server-only infrastructure. `supabase/migrations/` holds versioned SQL.
+
+### Data model
 
 ```
-stores ─┐
-        ├─< item_prices >── items ──< recipe_ingredients >── recipes ──< meal_plan_entries
-        │                     │
-        │                     └──< grocery_list_items >── grocery_lists
+households ──< household_members                        household_invites (hashed, single-use, 7 days)
+    │
+    ├──< stores (fixed six) ──< item_prices >── items ──< grocery_list_items
+    ├──< pantry_items (In stock)                  │
+    └──< recipes ──< recipe_ingredients ──────────┘
+            └──< meal_plan_entries
+ai_requests (per-person daily AI limit)
 ```
 
-- `item_prices` stores price, package quantity and unit, date and a sale flag; **unit price and best price are computed**, never stored, so they can't go stale.
-- Pure business logic (unit price, best price, unit conversion, building a list from a meal plan) lives in `lib/` with unit tests.
+Every table carries `household_id` with row-level security. Composite foreign keys (`(id, household_id)`) stop rows from pointing at another household's data. Unit price and best price are **computed from history**, never stored, so they can't go stale. The week's shopping list, its cost and the meal-prep totals come from **one SQL function**, so they always agree.
 
-### Security
+## Security
 
-- Row-level security on every table: each row belongs to one user, enforced by the database itself, not only by app code.
-- All form and server-action input is validated before it reaches the database.
-- Secrets live only in environment variables on the server; none are sent to the browser.
-- Recipe-URL import is protected against server-side request forgery: https only, private network addresses blocked, time and size limits.
-- AI responses are validated against a schema before use; AI calls have a daily per-user limit.
+- **Strict Content Security Policy** with a per-request nonce (no inline scripts or styles in production), plus HSTS, nosniff, COOP, frame blocking and a tight Permissions-Policy.
+- **Row-level security on all 12 tables**, column-level grants (the app can't set `household_id`), and `check` constraints for every invariant (46 in all).
+- **Server-side auth only:** no database client in the browser; HttpOnly, SameSite, Secure cookies; Google sign-in starts from a POST with an Origin check (CSRF).
+- **SSRF-safe link import:** https on port 443 only, and every resolved address is checked inside the connection's own DNS lookup, which closes DNS rebinding. Redirects are re-checked at each hop, with time, size and type limits. Sites that block apps get a clear message; nothing tries to get around them.
+- **AI guard rails:** keys only on the server; every reply is validated and range-checked; prompts treat text inside photos as data; a 40-a-day per-person limit is counted atomically in Postgres (advisory lock); photos are shrunk in the browser (which strips GPS data) and never stored.
+- **Supply chain:** a production dependency audit in CI, GitHub Actions pinned to commit SHAs, and Dependabot with written hold-back rules ([0024](docs/decisions/0024-dependency-updates.md)).
 
-### Design
+## AI features
 
-Light mode only, built to be readable in daylight in a grocery store: Anthropic-inspired warm palette, 17px+ body text, 48px+ tap targets. Every text color is checked by an automated test to meet the WCAG AA contrast ratio (4.5:1).
+| Feature            | How                                                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Recipe from photos | Up to 3 photos, resized on the phone, sent to Gemini (multimodal) with a JSON schema; the answer is validated with Zod and fills an editable form; nothing saves on its own |
+| Nutrition estimate | Gemini estimates per-serving calories and macros from the ingredients; any impossible value rejects the whole estimate                                                      |
+| Reliability        | A chain of free models: overloaded or slow models fall through to the next, a bad key stops at once, with per-model timeouts and a total time budget                        |
+| Cost control       | A shared 40-a-day limit per person, counted in Postgres                                                                                                                     |
+
+## Quality
+
+- **281 automated tests** (Vitest). **103 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
+- **CI on every pull request:** production security audit, Prettier, ESLint, TypeScript type check, all tests, and a production build.
+- **Accessibility:** WCAG AA text contrast enforced by a test that reads the CSS, 48px tap targets, 17px+ text, labels on every control, and meaning never shown by color alone.
+- **24 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
 
 ## Running locally
 
-Requires Node.js 22 or newer.
+Requires Node.js 24 and a Supabase project.
 
 ```bash
+cp .env.example .env.local   # fill in the Supabase URL and publishable key (and optionally a Gemini key)
 npm install
-npm run dev     # http://localhost:3100 via .claude/launch.json, or http://localhost:3000 by default
-npm test        # unit tests
-npm run lint
-npm run build   # production build
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push         # applies the migrations in supabase/migrations
+npm run dev                  # http://localhost:3000
+npm test                     # unit and database tests
+npm run lint && npm run typecheck && npm run build
 ```
 
 ## Roadmap
@@ -79,4 +112,4 @@ npm run build   # production build
 - [x] 7b. Calories and macros per day on the plan
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
-- [x] 9. Price trends, cheapest store, meal-prep view, app icon
+- [x] 9. Price trends, cheapest store, meal-prep view, app icon, food emojis

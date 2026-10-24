@@ -2,7 +2,7 @@
 
 # Dialed Kitchen
 
-An iPhone-first web app (installable PWA) for daily cooking, grocery shopping and meal prep: grocery lists, price tracking with the best price per item across stores, recipes (from websites, cookbooks, magazines, printed pages) and weekly meal planning that builds the grocery list. The owner is a beginner learning web development with Claude Code, so **explain what each change does and why**, and build in small steps.
+An iPhone-first web app (installable PWA) for daily cooking, grocery shopping and meal prep: grocery lists, price tracking with the best price per item across stores, recipes (from websites, cookbooks, magazines, printed pages) and weekly meal planning that builds the grocery list. The owner directs this project with Claude Code and must be able to explain every part of it, so **explain what each change does and why**, and build in small steps.
 
 ## Portfolio standards
 
