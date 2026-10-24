@@ -1,8 +1,10 @@
 import "server-only";
 import { z } from "zod";
 import { addDays, serverToday } from "@/lib/dates";
+import type { Nutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
 import { createClient } from "@/lib/server/supabase";
+import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
 import { planEntryRowSchema, type PlanEntryRow } from "./schema";
 
 // Reads for the meal plan (server-only, household-scoped by RLS, validated).
@@ -40,23 +42,35 @@ export async function recentPlanCounts(): Promise<Map<string, number>> {
   return counts;
 }
 
-export type RecipeChoice = { id: string; title: string; servings: number; top: boolean };
+export type RecipeChoice = {
+  id: string;
+  title: string;
+  servings: number;
+  top: boolean;
+  nutrition: Nutrition; // per serving
+};
 
 // The recipes to plan from: favorites and regulars first (most planned first), then the rest.
 export async function getRecipeChoices(): Promise<RecipeChoice[]> {
   const supabase = await createClient();
   const [recipes, counts] = await Promise.all([
-    supabase.from("recipes").select("id, title, servings, favorite"),
+    supabase
+      .from("recipes")
+      .select("id, title, servings, favorite, calories, protein_g, carbs_g, fat_g"),
     recentPlanCounts(),
   ]);
   if (recipes.error) fail("recipes", recipes.error);
   const rows = z
     .array(
-      z.object({
-        id: z.uuid(),
-        title: z.string(),
-        servings: z.number().int(),
-        favorite: z.boolean(),
+      recipeRowSchema.pick({
+        id: true,
+        title: true,
+        servings: true,
+        favorite: true,
+        calories: true,
+        protein_g: true,
+        carbs_g: true,
+        fat_g: true,
       }),
     )
     .parse(recipes.data)
@@ -67,6 +81,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
     title: r.title,
     servings: r.servings,
     top: isTop,
+    nutrition: nutritionOf(r),
   });
   return [...top.map(choice(true)), ...rest.map(choice(false))];
 }
