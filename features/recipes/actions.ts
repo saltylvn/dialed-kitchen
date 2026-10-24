@@ -28,6 +28,10 @@ export async function saveRecipe(
     sourceUrl: formData.get("sourceUrl") ?? undefined,
     ingredients: formData.get("ingredients") ?? "",
     steps: formData.get("steps") ?? "",
+    calories: formData.get("calories") ?? undefined,
+    protein: formData.get("protein") ?? undefined,
+    carbs: formData.get("carbs") ?? undefined,
+    fat: formData.get("fat") ?? undefined,
   });
   if (!parsed.success)
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
@@ -56,6 +60,12 @@ export async function saveRecipe(
       name: i.name,
       item_id: itemIds.get(matchKey(i.name)) ?? null,
     })),
+    nutrition: {
+      calories: recipe.calories,
+      protein_g: recipe.protein,
+      carbs_g: recipe.carbs,
+      fat_g: recipe.fat,
+    },
   });
   if (error) {
     console.error("save recipe failed:", error.message);

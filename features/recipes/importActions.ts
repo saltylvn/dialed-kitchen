@@ -1,13 +1,15 @@
 "use server";
 
 import { formatIngredient, parseIngredientLines } from "@/lib/ingredients";
+import { z } from "zod";
+import type { Nutrition } from "@/lib/nutrition";
 import { checkPhotos } from "@/lib/photos";
 import { extractRecipe, pageTitle } from "@/lib/recipeImport";
 import { LinkRefused } from "@/lib/security/fetchUrl";
 import { requireUser } from "@/lib/server/auth";
-import { readRecipeFromPhotos } from "@/lib/server/gemini";
+import { DAILY_AI_LIMIT, takeAiRequest } from "@/lib/server/aiLimit";
+import { estimateNutrition, readRecipeFromPhotos } from "@/lib/server/gemini";
 import { fetchPublicPage, FetchRefused } from "@/lib/server/safeFetch";
-import { createClient } from "@/lib/server/supabase";
 import type { RecipeDraft } from "./schema";
 
 // Import a recipe from a link or from photos: fetch the page safely (lib/server/safeFetch), read its
@@ -70,12 +72,10 @@ export async function importRecipe(_prev: ImportResult, formData: FormData): Pro
         .map(formatIngredient)
         .join("\n"),
       stepsText: recipe.steps.join("\n"),
+      nutrition: recipe.nutrition,
     },
   };
 }
-
-// AI photo reads per person per 24 hours: protects the free Gemini quota (docs/decisions/0016).
-const DAILY_AI_LIMIT = 40;
 
 const PHOTO_ERRORS = {
   not_configured: "Reading photos isn't set up yet. You can type the recipe in below.",
@@ -99,18 +99,12 @@ export async function importRecipeFromPhotos(
   if (!check.ok) return check;
 
   // Count this request against the daily limit (atomic, in the database).
-  const supabase = await createClient();
-  const { data: allowed, error } = await supabase.rpc("take_ai_request", {
-    daily_limit: DAILY_AI_LIMIT,
-  });
-  if (error) {
-    console.error("take_ai_request failed:", error.message);
-    return { ok: false, error: PHOTO_ERRORS.failed };
-  }
-  if (!allowed) {
+  const allowance = await takeAiRequest();
+  if (allowance === "error") return { ok: false, error: PHOTO_ERRORS.failed };
+  if (allowance === "limit") {
     return {
       ok: false,
-      error: `You've read ${DAILY_AI_LIMIT} photos in the last day. Try again tomorrow, or type the recipe in below.`,
+      error: `You've used all ${DAILY_AI_LIMIT} AI requests for the last day. Try again tomorrow, or type the recipe in below.`,
     };
   }
 
@@ -131,6 +125,66 @@ export async function importRecipeFromPhotos(
         .map(formatIngredient)
         .join("\n"),
       stepsText: recipe.steps.join("\n"),
+      nutrition: recipe.nutrition,
     },
   };
 }
+
+export type EstimateNutritionResult =
+  { ok: true; nutrition: Nutrition } | { ok: false; error: string } | null;
+
+const ESTIMATE_ERRORS = {
+  not_configured: "AI estimates aren't set up yet. You can type the numbers in.",
+  busy: "The AI is busy right now (free tier). Try again in a minute.",
+  not_estimable: "Couldn't estimate from these ingredients. Add amounts, like “2 cups rice”.",
+  failed: "Couldn't estimate that. Try again, or type the numbers in.",
+} as const;
+
+// Estimates nutrition per serving from the recipe form's current ingredients (not saved
+// yet). The numbers only fill the form; the person checks them and saves.
+export async function estimateRecipeNutrition(input: {
+  title: string;
+  servings: number;
+  ingredients: string;
+}): Promise<EstimateNutritionResult> {
+  await requireUser();
+  const parsed = estimateInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? ESTIMATE_ERRORS.failed };
+  }
+  const { title, servings, ingredients } = parsed.data;
+
+  const allowance = await takeAiRequest();
+  if (allowance === "error") return { ok: false, error: ESTIMATE_ERRORS.failed };
+  if (allowance === "limit") {
+    return {
+      ok: false,
+      error: `You've used all ${DAILY_AI_LIMIT} AI requests for the last day. Try again tomorrow, or type the numbers in.`,
+    };
+  }
+
+  const result = await estimateNutrition({
+    title: title || "Recipe",
+    servings,
+    ingredients: ingredients.map(formatIngredient),
+  });
+  return result.ok ? result : { ok: false, error: ESTIMATE_ERRORS[result.reason] };
+}
+
+const estimateInputSchema = z.object({
+  title: z
+    .string()
+    .max(120)
+    .transform((s) => s.trim()),
+  servings: z.number().int().min(1).max(50),
+  ingredients: z
+    .string()
+    .max(20_000)
+    .transform((s) => parseIngredientLines(s))
+    .pipe(
+      z
+        .array(z.custom<ReturnType<typeof parseIngredientLines>[number]>())
+        .min(1, "Add the ingredients first, then estimate.")
+        .max(200),
+    ),
+});

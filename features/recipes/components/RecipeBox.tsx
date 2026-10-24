@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { useWakeLock } from "@/components/useWakeLock";
+import { formatCalories, formatGrams, hasNutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
 import { setInStock } from "@/features/stock/actions";
 import { addRecipeToList, setFavorite } from "../actions";
 import type { RecipeView } from "../queries";
-import { SOURCE_TYPES } from "../schema";
+import { nutritionOf, SOURCE_TYPES } from "../schema";
 
 // The recipe box: favorites and regulars (planned often lately) first, most planned first,
 // then the rest. Tapping a recipe opens it in place with
@@ -235,6 +236,8 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
         </label>
       )}
 
+      <NutritionLine recipe={recipe} />
+
       {ingredients.length > 0 && (
         <section aria-label="Ingredients">
           <h3 className="text-muted text-[12px] tracking-[0.2em] uppercase">Ingredients</h3>
@@ -333,5 +336,23 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
         </p>
       )}
     </div>
+  );
+}
+
+// "Per serving: 450 kcal · Protein 32 g · Carbs 40 g · Fat 12 g", only the known values.
+function NutritionLine({ recipe }: { recipe: RecipeView }) {
+  const n = nutritionOf(recipe);
+  if (!hasNutrition(n)) return null;
+  const parts = [
+    n.calories !== null && formatCalories(n.calories),
+    n.protein !== null && `Protein ${formatGrams(n.protein)}`,
+    n.carbs !== null && `Carbs ${formatGrams(n.carbs)}`,
+    n.fat !== null && `Fat ${formatGrams(n.fat)}`,
+  ].filter(Boolean);
+  return (
+    <p className="text-[15px]">
+      <span className="text-muted">Per serving: </span>
+      {parts.join(" · ")}
+    </p>
   );
 }

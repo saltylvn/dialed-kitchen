@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
+import { NO_NUTRITION, type Nutrition } from "@/lib/nutrition";
 import { saveRecipe, type SaveRecipeResult } from "../actions";
+import { estimateRecipeNutrition } from "../importActions";
 import { SOURCE_TYPES, type RecipeDraft } from "../schema";
 
 const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
@@ -17,8 +19,10 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
     null,
   );
 
+  const form = useRef<HTMLFormElement>(null);
+
   return (
-    <form action={formAction} className="space-y-5">
+    <form ref={form} action={formAction} className="space-y-5">
       <input type="hidden" name="recipeId" value={recipe?.id ?? ""} />
 
       <div>
@@ -138,6 +142,8 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
         />
       </div>
 
+      <NutritionFields initial={recipe?.nutrition ?? NO_NUTRITION} form={form} />
+
       {result?.ok === false && (
         <p role="alert" className="font-medium">
           ⚠️ {result.error}
@@ -152,5 +158,99 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
         {pending ? "Saving…" : recipe?.id ? "Save changes" : "Save recipe"}
       </button>
     </form>
+  );
+}
+
+const NUTRIENTS = [
+  { key: "calories", name: "calories", label: "Calories", unit: "kcal", max: 5000 },
+  { key: "protein", name: "protein", label: "Protein", unit: "g", max: 1000 },
+  { key: "carbs", name: "carbs", label: "Carbs", unit: "g", max: 1000 },
+  { key: "fat", name: "fat", label: "Fat", unit: "g", max: 1000 },
+] as const;
+
+const asText = (n: Nutrition) =>
+  Object.fromEntries(
+    NUTRIENTS.map(({ key }) => [key, n[key] === null ? "" : String(n[key])]),
+  ) as Record<keyof Nutrition, string>;
+
+// Calories and macros per serving, all optional. Filled by an import when the page has
+// them, by "Estimate with AI" from the ingredients typed above, or by hand.
+function NutritionFields({
+  initial,
+  form,
+}: {
+  initial: Nutrition;
+  form: React.RefObject<HTMLFormElement | null>;
+}) {
+  const [values, setValues] = useState(() => asText(initial));
+  const [message, setMessage] = useState<{ error: boolean; text: string } | null>(null);
+  const [estimating, startEstimate] = useTransition();
+
+  function estimate() {
+    const data = form.current ? new FormData(form.current) : null;
+    if (!data) return;
+    setMessage(null);
+    startEstimate(async () => {
+      const result = await estimateRecipeNutrition({
+        title: String(data.get("title") ?? ""),
+        servings: Number(data.get("servings")) || 4,
+        ingredients: String(data.get("ingredients") ?? ""),
+      });
+      if (result?.ok) {
+        setValues(asText(result.nutrition));
+        setMessage({
+          error: false,
+          text: "✓ Estimated per serving. Check the numbers, then save.",
+        });
+      } else if (result) {
+        setMessage({ error: true, text: result.error });
+      }
+    });
+  }
+
+  return (
+    <fieldset>
+      <legend className="font-medium">
+        Nutrition per serving <span className="text-muted font-normal">(optional)</span>
+      </legend>
+      <p className="text-muted text-[15px]">Adds up on the Plan tab as calories and macros.</p>
+      <div className="mt-1 grid grid-cols-4 gap-2">
+        {NUTRIENTS.map(({ key, name, label, unit, max }) => (
+          <div key={key} className="min-w-0">
+            <label htmlFor={`recipe-${name}`} className="text-muted block text-[14px]">
+              {label} <span className="sr-only">in {unit === "g" ? "grams" : "calories"}</span>
+            </label>
+            <input
+              id={`recipe-${name}`}
+              name={name}
+              inputMode="decimal"
+              autoComplete="off"
+              value={values[key]}
+              onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+              placeholder={unit}
+              aria-describedby={`recipe-${name}-max`}
+              className="border-border bg-surface mt-1 min-h-12 w-full min-w-0 rounded-xl border px-2 text-center text-[17px]"
+            />
+            <span id={`recipe-${name}-max`} className="sr-only">
+              0 to {max} {unit}
+            </span>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={estimate}
+        disabled={estimating}
+        className="border-border mt-3 min-h-12 w-full rounded-xl border px-4 font-medium disabled:opacity-60"
+      >
+        {estimating ? "Estimating…" : "Estimate with AI"}
+      </button>
+      {message && (
+        <p role={message.error ? "alert" : "status"} className="mt-2 font-medium">
+          {message.error ? "⚠️ " : ""}
+          {message.text}
+        </p>
+      )}
+    </fieldset>
   );
 }
