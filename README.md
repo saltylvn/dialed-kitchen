@@ -22,6 +22,7 @@
     Open a recipe to cook from your phone (with the screen kept awake), tick ingredients **In stock**, and add what's missing to the list. **Estimate with AI** fills in calories and macros.
 - **Grocery:** one shared list with big checkboxes, an **In stock** kitchen inventory that stays in sync with recipes and the list, and a **price book**. Every price is kept as history and compared by unit price, so a 5 lb bag and a 2 lb bag compare fairly. Each item shows its best price, its **cheapest store right now**, and its **price trend**.
 - **Partner sharing:** a married couple shares everything through an invite-only household (at most two people), enforced by the database.
+- **Personal by design:** sign-up is capped at 25 accounts, enforced by Postgres ([0025](docs/decisions/0025-account-limit.md)).
 - Food emojis next to every item and ingredient (🍗 🍚 🥚), worked out from the name.
 
 ## How it was built: AI-assisted engineering
@@ -88,7 +89,7 @@ Every table carries `household_id` with row-level security. Composite foreign ke
 - **281 automated tests** (Vitest). **103 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
 - **CI on every pull request:** production security audit, Prettier, ESLint, TypeScript type check, all tests, and a production build.
 - **Accessibility:** WCAG AA text contrast enforced by a test that reads the CSS, 48px tap targets, 17px+ text, labels on every control, and meaning never shown by color alone.
-- **24 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
+- **25 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
 
 ## Running locally
 

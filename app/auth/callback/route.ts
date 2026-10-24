@@ -22,5 +22,22 @@ export async function GET(request: NextRequest) {
     }
     console.error("Sign-in callback failed:", error.message);
   }
+
+  // Supabase sends an error instead of a code when it couldn't create a new account. If the
+  // 25-account limit is why (docs/decisions/0025), say so instead of "try again".
+  const description = request.nextUrl.searchParams.get("error_description") ?? "";
+  if (!code && /saving new user/i.test(description) && !(await acceptingNewAccounts())) {
+    return NextResponse.redirect(new URL("/login?error=full", request.url));
+  }
   return NextResponse.redirect(new URL("/login?error=signin", request.url));
+}
+
+async function acceptingNewAccounts(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("accepting_new_accounts");
+  if (error) {
+    console.error("accepting_new_accounts failed:", error.message);
+    return true; // unknown: fall back to the general message
+  }
+  return data === true;
 }

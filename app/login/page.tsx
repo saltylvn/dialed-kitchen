@@ -23,10 +23,17 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       {/* A plain HTML form posting to app/auth/google: the browser follows the sign-in
           redirects itself, and it works even before JavaScript has loaded. */}
       <form action="/auth/google" method="post" className="mt-auto w-full pt-10">
-        {error && (
+        {error === "full" ? (
           <p role="alert" className="mb-4 text-center font-medium">
-            ⚠️ Sign-in didn&apos;t work. Please try again.
+            Dialed Kitchen is a personal project and isn&apos;t taking new accounts. Existing
+            accounts can still sign in.
           </p>
+        ) : (
+          error && (
+            <p role="alert" className="mb-4 text-center font-medium">
+              ⚠️ Sign-in didn&apos;t work. Please try again.
+            </p>
+          )
         )}
         <button
           type="submit"

@@ -28,3 +28,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0022](0022-meal-prep-view.md)                                 | A meal-prep view: batch cook and prep once                                        | Accepted |
 | [0023](0023-food-emojis.md)                                    | Food emojis, worked out from the name                                             | Accepted |
 | [0024](0024-dependency-updates.md)                             | Dependency updates: test each one, hold back what the ecosystem isn't ready for   | Accepted |
+| [0025](0025-account-limit.md)                                  | At most 25 accounts                                                               | Accepted |
