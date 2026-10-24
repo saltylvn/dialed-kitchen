@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { addDays, serverToday } from "@/lib/dates";
 import type { Nutrition } from "@/lib/nutrition";
-import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
+import { rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
 import type { ShoppingRow } from "@/lib/weekShopping";
 import { createClient } from "@/lib/server/supabase";
 import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
@@ -49,6 +49,7 @@ export type RecipeChoice = {
   servings: number;
   top: boolean;
   nutrition: Nutrition; // per serving
+  meals: MealId[]; // empty: not sorted yet
 };
 
 // The recipes to plan from: favorites and regulars first (most planned first), then the rest.
@@ -57,7 +58,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
   const [recipes, counts] = await Promise.all([
     supabase
       .from("recipes")
-      .select("id, title, servings, favorite, calories, protein_g, carbs_g, fat_g"),
+      .select("id, title, servings, favorite, calories, protein_g, carbs_g, fat_g, meals"),
     recentPlanCounts(),
   ]);
   if (recipes.error) fail("recipes", recipes.error);
@@ -72,6 +73,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
         protein_g: true,
         carbs_g: true,
         fat_g: true,
+        meals: true,
       }),
     )
     .parse(recipes.data)
@@ -83,6 +85,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
     servings: r.servings,
     top: isTop,
     nutrition: nutritionOf(r),
+    meals: r.meals,
   });
   return [...top.map(choice(true)), ...rest.map(choice(false))];
 }
