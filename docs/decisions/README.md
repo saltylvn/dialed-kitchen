@@ -22,3 +22,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0016](0016-recipes-from-photos-with-ai.md)                    | Reading recipes from photos with AI, with a daily limit                           | Accepted |
 | [0017](0017-weekly-meal-plan.md)                               | The weekly meal plan: four fixed spots a day, shared by the couple                | Accepted |
 | [0018](0018-calories-and-macros.md)                            | Calories and macros: per serving on recipes, totaled per person on the plan       | Accepted |
+| [0020](0020-price-trends-and-cheapest-store.md)                | Price trends and the cheapest store, per item                                     | Accepted |

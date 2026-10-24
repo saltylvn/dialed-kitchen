@@ -145,4 +145,4 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 7. Weekly meal planner ✅ (Mon–Sun weeks via `?week=`; every day has four spots, Breakfast · Lunch · Snacks · Dinner; recipe and servings by wheel; regulars = planned 3+ times in 8 weeks join favorites; docs/decisions/0017)
    7b. Calories and macros ✅ (per serving on recipes; Calories and Macros dropdowns per day on Plan; docs/decisions/0018)
 8. Meal plan → grocery list with estimated cost
-9. Polish: price trends, cheapest store, meal-prep batch view (app icon ✅)
+9. Polish: price trends and cheapest store per item ✅ (By store · latest price, and a trend sentence + SVG chart on each item page; docs/decisions/0020), meal-prep batch view, app icon ✅
