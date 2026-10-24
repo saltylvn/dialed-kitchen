@@ -2,7 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { addDays, serverToday } from "@/lib/dates";
 import type { Nutrition } from "@/lib/nutrition";
-import { rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
+import { MEAL_IDS, rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
+import type { Use } from "@/lib/mealPrep";
 import type { ShoppingRow } from "@/lib/weekShopping";
 import { createClient } from "@/lib/server/supabase";
 import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
@@ -92,7 +93,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
 
 // What the week's meals need, with In stock, on-the-list and estimated cost (worked out by
 // the database's week_shopping, so the card and "Add to grocery list" always agree).
-export async function getWeekShopping(monday: string): Promise<ShoppingRow[]> {
+export async function getWeekShopping(monday: string): Promise<(ShoppingRow & { uses: Use[] })[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("week_shopping", { week_start: monday });
   if (error) fail("week_shopping", error);
@@ -105,6 +106,14 @@ export async function getWeekShopping(monday: string): Promise<ShoppingRow[]> {
         in_stock: z.boolean(),
         on_list: z.boolean(),
         est_cost: z.coerce.number().nullable(),
+        uses: z.array(
+          z.object({
+            entry: z.uuid(),
+            date: z.string(),
+            meal: z.enum(MEAL_IDS),
+            recipe: z.string(),
+          }),
+        ),
       }),
     )
     .parse(data);

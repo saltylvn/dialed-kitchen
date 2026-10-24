@@ -147,4 +147,4 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
    7b. Calories and macros ✅ (per serving on recipes; Calories and Macros dropdowns per day on Plan; docs/decisions/0018)
 8. Meal plan → grocery list with estimated cost ✅ (`week_shopping` / `add_week_to_list`: scaled to planned servings, combined across meals, In stock and on-list skipped, cost at best prices when units convert; "This week's groceries" card on Plan; docs/decisions/0019)
    8b. Recipes sorted by meal ✅ (docs/decisions/0021)
-9. Polish: price trends and cheapest store per item ✅ (By store · latest price, and a trend sentence + SVG chart on each item page; docs/decisions/0020), meal-prep batch view, app icon ✅
+9. Polish: price trends and cheapest store per item ✅ (By store · latest price, and a trend sentence + SVG chart on each item page; docs/decisions/0020), meal-prep view ✅ (`/plan/prep`: batch cook recipes planned twice+, prep once ingredients shared by meals, from `week_shopping.uses`; docs/decisions/0022), app icon ✅

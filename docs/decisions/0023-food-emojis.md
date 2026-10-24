@@ -15,7 +15,7 @@ The owner wants an emoji next to every food item and ingredient (🍗 chicken th
   - Two-word foods first ("peanut butter" 🥜, "bell pepper" 🫑, "olive oil" 🫒).
   - Then the **last** food word wins, because English puts the main thing last: "chicken **broth**" 🍲, "garlic **salt**" 🧂, "**chicken** thighs" 🍗.
 - **Never a wrong guess:** unknown foods get no emoji. A name that already contains an emoji ("Tacos 🌮") is left as written.
-- **Shown by one component** (`components/ui/FoodEmoji`): on the grocery list, In stock, the price book (list and item title) and each recipe's ingredients. It's `aria-hidden`, so VoiceOver reads only the name.
+- **Shown by one component** (`components/ui/FoodEmoji`): on the grocery list, In stock, the price book (list and item title), each recipe's ingredients and the meal-prep "Prep once" list. It's `aria-hidden`, so VoiceOver reads only the name.
 
 ## Alternatives considered
 
