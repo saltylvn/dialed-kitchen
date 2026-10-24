@@ -175,6 +175,24 @@ describe("week_shopping", () => {
     ]);
   });
 
+  it("says where each ingredient is used, in week and meal order", async () => {
+    const bowl = await recipe(alex, "Rice bowl", 2, [{ quantity: 1, unit: "cup", name: "rice" }]);
+    const fried = await recipe(alex, "Fried rice", 2, [{ quantity: 1, unit: "cup", name: "rice" }]);
+    await plan(alex, fried, 2, "2026-10-28", "dinner");
+    await plan(alex, bowl, 2, "2026-10-28", "lunch"); // same day: lunch comes before dinner
+    await plan(alex, bowl, 2, "2026-10-26", "dinner");
+    const { rows } = await db.as<{ uses: { date: string; meal: string; recipe: string }[] }>(
+      alex,
+      "select uses from public.week_shopping($1)",
+      [WEEK],
+    );
+    expect(rows[0]!.uses.map((u) => [u.date, u.meal, u.recipe])).toEqual([
+      ["2026-10-26", "dinner", "Rice bowl"],
+      ["2026-10-28", "lunch", "Rice bowl"],
+      ["2026-10-28", "dinner", "Fried rice"],
+    ]);
+  });
+
   it("shows other households nothing", async () => {
     const a = await recipe(alex, "A", 1, [{ quantity: 1, unit: "each", name: "lemon" }]);
     await plan(alex, a, 1);

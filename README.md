@@ -79,4 +79,4 @@ npm run build   # production build
 - [x] 7b. Calories and macros per day on the plan
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
-- [ ] 9. Price trends and cheapest store (done), meal-prep view (app icon done)
+- [x] 9. Price trends, cheapest store, meal-prep view, app icon
