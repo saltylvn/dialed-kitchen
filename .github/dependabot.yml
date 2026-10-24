@@ -9,6 +9,19 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    # Held back on purpose (docs/decisions/0024). Security updates still come through.
+    ignore:
+      # Types must match the Node version Vercel runs (24.x). Lift together with Vercel's
+      # Node setting and "engines" in package.json.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # eslint-plugin-react, -jsx-a11y and -import (via eslint-config-next) support ESLint 9
+      # at most. Lift when they support 10.
+      - dependency-name: "eslint"
+        versions: [">=10"]
+      # typescript-eslint supports TypeScript below 6.1. Lift when it supports 7.
+      - dependency-name: "typescript"
+        versions: [">=6.1"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
