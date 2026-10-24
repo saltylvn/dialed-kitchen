@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   dayLabels,
+  groupByMeal,
   MEALS,
+  type MealId,
   mondayOf,
   rankRecipes,
   weekDays,
@@ -64,5 +66,29 @@ describe("rankRecipes", () => {
     ]);
     expect(top.map((x) => x.title)).toEqual(["Tacos", "Chili", "Biscuits"]);
     expect(rest.map((x) => x.title)).toEqual(["Soup", "Salad"]);
+  });
+});
+
+describe("groupByMeal", () => {
+  const r = (title: string, meals: MealId[], favorite = false, timesPlanned = 0) => ({
+    title,
+    meals,
+    favorite,
+    timesPlanned,
+  });
+
+  it("sorts recipes into the four meals in order, then the unsorted, skipping empty ones", () => {
+    const sections = groupByMeal([
+      r("Tacos", ["dinner"], true),
+      r("Soup", ["lunch", "dinner"]),
+      r("Oatmeal", ["breakfast"]),
+      r("Mystery", []),
+    ]);
+    expect(sections.map((s) => [s.label, [...s.top, ...s.rest].map((x) => x.title)])).toEqual([
+      ["Breakfast", ["Oatmeal"]],
+      ["Lunch", ["Soup"]],
+      ["Dinner", ["Tacos", "Soup"]], // a favorite first
+      ["Not sorted yet", ["Mystery"]],
+    ]);
   });
 });

@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { useWakeLock } from "@/components/useWakeLock";
 import { formatCalories, formatGrams, hasNutrition } from "@/lib/nutrition";
-import { rankRecipes, RECENT_WEEKS } from "@/lib/plan";
+import { groupByMeal, MEALS, RECENT_WEEKS, type MealId } from "@/lib/plan";
 import { setInStock } from "@/features/stock/actions";
-import { addRecipeToList, setFavorite } from "../actions";
+import { addRecipeToList, setFavorite, setRecipeMeals } from "../actions";
 import type { RecipeView } from "../queries";
 import { nutritionOf, SOURCE_TYPES } from "../schema";
 
-// The recipe box: favorites and regulars (planned often lately) first, most planned first,
-// then the rest. Tapping a recipe opens it in place with
+// The recipe box, by meal: Breakfast, Lunch, Snacks, Dinner, then "Not sorted yet". In each,
+// favorites and regulars (planned often lately) first, most planned first. Tapping a recipe opens it in place with
 // everything needed to cook from the phone: ingredients, steps you can tick off as you go,
 // a keep-the-screen-on switch, and "Add to grocery list". One recipe is open at a time.
 export function RecipeBox({
@@ -21,7 +21,14 @@ export function RecipeBox({
   recipes: RecipeView[];
   initialOpenId: string | null;
 }) {
-  const [openId, setOpenId] = useState<string | null>(initialOpenId);
+  // A recipe for two meals shows in both sections, so "open" is per section: "dinner:<id>".
+  const [openKey, setOpenKey] = useState<string | null>(() => {
+    if (!initialOpenId) return null;
+    const first = groupByMeal(recipes).find((s) =>
+      [...s.top, ...s.rest].some((r) => r.id === initialOpenId),
+    );
+    return first ? `${first.meal ?? "unsorted"}:${initialOpenId}` : null;
+  });
   const [optimistic, applyFavorite] = useOptimistic(
     recipes,
     (state, change: { id: string; favorite: boolean }) =>
@@ -42,16 +49,21 @@ export function RecipeBox({
     });
   }
 
-  const { top: favorites, rest: others } = rankRecipes(optimistic);
-  const card = (recipe: RecipeView) => (
-    <RecipeCard
-      key={recipe.id}
-      recipe={recipe}
-      open={openId === recipe.id}
-      onToggle={() => setOpenId((id) => (id === recipe.id ? null : recipe.id))}
-      onFavorite={() => toggleFavorite(recipe.id, !recipe.favorite)}
-    />
-  );
+  const sections = groupByMeal(optimistic);
+  function card(section: string, recipe: RecipeView) {
+    const key = `${section}:${recipe.id}`;
+    return (
+      <RecipeCard
+        key={key}
+        panelKey={key}
+        recipe={recipe}
+        sortable={section === "unsorted"}
+        open={openKey === key}
+        onToggle={() => setOpenKey((k) => (k === key ? null : key))}
+        onFavorite={() => toggleFavorite(recipe.id, !recipe.favorite)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -60,47 +72,48 @@ export function RecipeBox({
           ⚠️ {error}
         </p>
       )}
-      <section aria-labelledby="favorites-heading">
-        <h2
-          id="favorites-heading"
-          className="text-muted mb-2 text-[12px] tracking-[0.2em] uppercase"
-        >
-          ★ Favorites & regulars
-        </h2>
-        {favorites.length > 0 ? (
-          <ul className="space-y-3">{favorites.map(card)}</ul>
-        ) : (
-          <p className="text-muted text-[15px]">
-            Tap ☆ on a recipe you two love to keep it up here. Recipes you plan often join them on
-            their own.
-          </p>
-        )}
-      </section>
-      {others.length > 0 && (
-        <section aria-labelledby="all-heading">
-          <h2 id="all-heading" className="text-muted mb-2 text-[12px] tracking-[0.2em] uppercase">
-            {favorites.length > 0 ? "More recipes" : "Recipes"}
-          </h2>
-          <ul className="space-y-3">{others.map(card)}</ul>
-        </section>
-      )}
+      {sections.map((section) => {
+        const id = section.meal ?? "unsorted";
+        return (
+          <section key={id} aria-labelledby={`meal-${id}`}>
+            <h2
+              id={`meal-${id}`}
+              className="text-muted mb-2 text-[12px] tracking-[0.2em] uppercase"
+            >
+              {section.label}
+            </h2>
+            {section.meal === null && (
+              <p className="text-muted mb-2 text-[15px]">
+                Tap a recipe’s meals, then Save, to sort it.
+              </p>
+            )}
+            <ul className="space-y-3">
+              {[...section.top, ...section.rest].map((recipe) => card(id, recipe))}
+            </ul>
+          </section>
+        );
+      })}
     </div>
   );
 }
 
 function RecipeCard({
+  panelKey,
+  sortable,
   recipe,
   open,
   onToggle,
   onFavorite,
 }: {
+  panelKey: string;
+  sortable: boolean;
   recipe: RecipeView;
   open: boolean;
   onToggle: () => void;
   onFavorite: () => void;
 }) {
   const ref = useRef<HTMLLIElement>(null);
-  const panelId = `recipe-${recipe.id}`;
+  const panelId = `recipe-${panelKey.replace(":", "-")}`;
   const source =
     recipe.source_type === "own"
       ? null
@@ -153,6 +166,8 @@ function RecipeCard({
           <span aria-hidden>{recipe.favorite ? "★" : "☆"}</span>
         </button>
       </div>
+
+      {sortable && !open && <QuickSort recipe={recipe} />}
 
       {open && (
         <div id={panelId} className="border-border border-t px-4 pt-3 pb-4">
@@ -354,5 +369,73 @@ function NutritionLine({ recipe }: { recipe: RecipeView }) {
       <span className="text-muted">Per serving: </span>
       {parts.join(" · ")}
     </p>
+  );
+}
+
+// Sorting a recipe into meals right from the "Not sorted yet" list: tap its meals, then
+// Save. It then moves to those sections (and is offered for them on the Plan).
+function QuickSort({ recipe }: { recipe: RecipeView }) {
+  const [chosen, setChosen] = useState<MealId[]>([]);
+  const [saving, startSaving] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function save() {
+    setError(null);
+    startSaving(async () => {
+      const result = await setRecipeMeals(recipe.id, chosen);
+      if (!result.ok) setError(result.error);
+    });
+  }
+
+  return (
+    <fieldset className="border-border border-t px-4 pt-2 pb-3">
+      <legend className="sr-only">Meals for {recipe.title}</legend>
+      <div className="grid grid-cols-4 gap-2">
+        {MEALS.map((m) => {
+          const on = chosen.includes(m.id);
+          return (
+            <button
+              key={m.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => setChosen((c) => (on ? c.filter((x) => x !== m.id) : [...c, m.id]))}
+              className={`relative min-h-12 min-w-0 rounded-xl border px-1 text-[14px] font-medium ${
+                on ? "bg-accent text-on-accent border-accent" : "border-border bg-surface"
+              }`}
+            >
+              {/* Never color alone: a check badge marks the chosen meals. */}
+              {on && (
+                <span
+                  aria-hidden
+                  className="bg-text text-surface absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full text-[11px]"
+                >
+                  ✓
+                </span>
+              )}
+              {m.label}
+            </button>
+          );
+        })}
+      </div>
+      {chosen.length > 0 && (
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="border-border mt-2 min-h-12 w-full rounded-xl border px-3 font-medium disabled:opacity-60"
+        >
+          {saving
+            ? "Saving…"
+            : `Save to ${MEALS.filter((m) => chosen.includes(m.id))
+                .map((m) => m.label)
+                .join(" & ")}`}
+        </button>
+      )}
+      {error && (
+        <p role="alert" className="mt-2 font-medium">
+          ⚠️ {error}
+        </p>
+      )}
+    </fieldset>
   );
 }

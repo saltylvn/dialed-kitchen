@@ -64,3 +64,26 @@ export function rankRecipes<T extends { title: string; favorite: boolean; timesP
   const isTop = (r: T) => r.favorite || r.timesPlanned >= REGULAR_MIN_PLANS;
   return { top: sorted.filter(isTop), rest: sorted.filter((r) => !isTop(r)) };
 }
+
+export type MealSection<T> = { meal: MealId | null; label: string; top: T[]; rest: T[] };
+
+// The recipe box by meal: Breakfast, Lunch, Snacks, Dinner (each ranked like rankRecipes),
+// then "Not sorted yet" for recipes with no meal. A recipe for two meals is in both.
+// Empty sections are left out.
+export function groupByMeal<
+  T extends { title: string; favorite: boolean; timesPlanned: number; meals: readonly MealId[] },
+>(recipes: readonly T[]): MealSection<T>[] {
+  const sections: MealSection<T>[] = [
+    ...MEALS.map((m) => ({
+      meal: m.id,
+      label: m.label,
+      ...rankRecipes(recipes.filter((r) => r.meals.includes(m.id))),
+    })),
+    {
+      meal: null,
+      label: "Not sorted yet",
+      ...rankRecipes(recipes.filter((r) => r.meals.length === 0)),
+    },
+  ];
+  return sections.filter((s) => s.top.length + s.rest.length > 0);
+}

@@ -176,6 +176,7 @@ function Day({
               </div>
               {adding === meal.id && (
                 <AddMeal
+                  meal={meal}
                   where={where}
                   recipes={recipes}
                   onCancel={() => setAdding(null)}
@@ -307,16 +308,22 @@ function Missing({ meals, what }: { meals: string[]; what: string }) {
 const SERVING_CHOICES = Array.from({ length: 12 }, (_, i) => i + 1);
 
 function AddMeal({
+  meal,
   where,
-  recipes,
+  recipes: allRecipes,
   onAdd,
   onCancel,
 }: {
+  meal: { id: MealId; label: string };
   where: string;
   recipes: RecipeChoice[];
   onAdd: (recipeId: string, servings: number) => void;
   onCancel: () => void;
 }) {
+  // Only this meal's recipes, then any not sorted yet (so nothing is ever unplannable).
+  const forMeal = allRecipes.filter((r) => r.meals.includes(meal.id));
+  const unsorted = allRecipes.filter((r) => r.meals.length === 0);
+  const recipes = [...forMeal, ...unsorted];
   const [recipeId, setRecipeId] = useState(recipes[0]?.id ?? "");
   const [servings, setServings] = useState(recipes[0]?.servings ?? 4);
   const id = useId();
@@ -324,7 +331,11 @@ function AddMeal({
   if (recipes.length === 0) {
     return (
       <div className="pb-3">
-        <p>Add a recipe first, then plan it here.</p>
+        <p>
+          {allRecipes.length === 0
+            ? "Add a recipe first, then plan it here."
+            : `No ${meal.label.toLowerCase()} recipes yet. Edit a recipe and tap ${meal.label} under Meals, or add a new one.`}
+        </p>
         <div className="mt-2 flex gap-2">
           <Link
             href="/recipes/new"
@@ -344,8 +355,8 @@ function AddMeal({
     );
   }
 
-  const top = recipes.filter((r) => r.top);
-  const rest = recipes.filter((r) => !r.top);
+  const top = forMeal.filter((r) => r.top);
+  const rest = forMeal.filter((r) => !r.top);
   const servingChoices = SERVING_CHOICES.includes(servings)
     ? SERVING_CHOICES
     : [...SERVING_CHOICES, servings].sort((a, b) => a - b);
@@ -385,8 +396,17 @@ function AddMeal({
               </optgroup>
             )}
             {rest.length > 0 && (
-              <optgroup label={top.length > 0 ? "More recipes" : "Recipes"}>
+              <optgroup label={top.length > 0 ? `More ${meal.label.toLowerCase()}` : meal.label}>
                 {rest.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {unsorted.length > 0 && (
+              <optgroup label="Not sorted yet">
+                {unsorted.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.title}
                   </option>

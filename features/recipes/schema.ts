@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parseIngredientLines, type ParsedIngredient } from "@/lib/ingredients";
 import { MAX_CALORIES, MAX_GRAMS, type Nutrition } from "@/lib/nutrition";
+import { MEAL_IDS, type MealId } from "@/lib/plan";
 import { isUnit, type Unit } from "@/lib/units";
 
 // Valid recipe input, and recipe rows read back from the database.
@@ -75,6 +76,8 @@ export const recipeFormSchema = z.object({
           "Keep each ingredient under 200 characters",
         ),
     ),
+  // Which meals it's for (any of the four, or none yet).
+  meals: z.array(z.enum(MEAL_IDS)).max(4),
   // Per serving, all optional (lib/nutrition).
   calories: nutritionValue(MAX_CALORIES, "Calories", 0),
   protein: nutritionValue(MAX_GRAMS, "Protein", 1),
@@ -116,6 +119,7 @@ export const recipeRowSchema = z.object({
   protein_g: z.coerce.number().nullable(),
   carbs_g: z.coerce.number().nullable(),
   fat_g: z.coerce.number().nullable(),
+  meals: z.array(z.enum(MEAL_IDS)),
 });
 export type RecipeRow = z.infer<typeof recipeRowSchema>;
 
@@ -140,11 +144,12 @@ export type RecipeDraft = {
   ingredientsText: string;
   stepsText: string;
   nutrition?: Nutrition;
+  meals?: MealId[];
 };
 
 // The columns every recipe read selects.
 export const RECIPE_COLUMNS =
-  "id, title, servings, source_type, source_name, source_url, steps, favorite, calories, protein_g, carbs_g, fat_g";
+  "id, title, servings, source_type, source_name, source_url, steps, favorite, calories, protein_g, carbs_g, fat_g, meals";
 
 export function nutritionOf(
   row: Pick<RecipeRow, "calories" | "protein_g" | "carbs_g" | "fat_g">,

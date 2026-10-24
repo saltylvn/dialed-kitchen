@@ -24,3 +24,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0018](0018-calories-and-macros.md)                            | Calories and macros: per serving on recipes, totaled per person on the plan       | Accepted |
 | [0019](0019-plan-to-grocery-list.md)                           | From the meal plan to the grocery list, with an estimated cost                    | Accepted |
 | [0020](0020-price-trends-and-cheapest-store.md)                | Price trends and the cheapest store, per item                                     | Accepted |
+| [0021](0021-recipes-sorted-by-meal.md)                         | Recipes sorted by meal, and a picker that only offers that meal                   | Accepted |
