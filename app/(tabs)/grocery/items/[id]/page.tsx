@@ -4,6 +4,7 @@ import { SubPage } from "@/components/ui/SubPage";
 import { deleteItem, deletePrice } from "@/features/prices/actions";
 import { BestPriceLine, Tag } from "@/features/prices/components/BestPriceLine";
 import { LogPriceForm } from "@/features/prices/components/LogPriceForm";
+import { PriceTrend, StorePrices } from "@/features/prices/components/PriceInsights";
 import { getItemPage } from "@/features/prices/queries";
 import { compareUnitLabel } from "@/features/prices/schema";
 import { formatShortDate, serverToday } from "@/lib/dates";
@@ -45,6 +46,14 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
             )}
           </p>
         </section>
+
+        <StorePrices
+          history={history}
+          stores={stores}
+          compareUnit={item.compare_unit}
+          year={year}
+        />
+        <PriceTrend history={history} compareUnit={item.compare_unit} year={year} />
 
         <section aria-labelledby="log-heading" className={card}>
           <h2 id="log-heading" className={`${heading} mb-3`}>
