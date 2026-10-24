@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { useWakeLock } from "@/components/useWakeLock";
 import { formatCalories, formatGrams, hasNutrition } from "@/lib/nutrition";
 import { groupByMeal, MEALS, RECENT_WEEKS, type MealId } from "@/lib/plan";
@@ -265,6 +266,7 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
             {ingredients.map((i) => (
               <li key={i.id} className="flex items-center gap-3 py-1.5">
                 <span className={`min-w-0 flex-1 break-words ${i.inStock ? "text-muted" : ""}`}>
+                  <FoodEmoji name={i.name} />
                   {i.amount && <span className="font-medium tabular-nums">{i.amount} </span>}
                   {i.name}
                 </span>

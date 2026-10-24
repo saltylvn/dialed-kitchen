@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { SubPage } from "@/components/ui/SubPage";
 import { getRecipeChoices, getWeekPlan, getWeekShopping } from "@/features/plan/queries";
 import { formatAmount } from "@/lib/list";
@@ -86,6 +87,7 @@ export default async function MealPrepPage({ searchParams }: PageProps<"/plan/pr
                       <span className="font-medium tabular-nums">
                         {formatAmount(s.quantity, isUnit(s.unit) ? s.unit : null)}
                       </span>{" "}
+                      <FoodEmoji name={s.name} />
                       {s.name}
                     </p>
                     <p className="text-muted text-[15px]">

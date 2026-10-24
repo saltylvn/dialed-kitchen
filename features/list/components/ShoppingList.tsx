@@ -1,6 +1,7 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { sortList } from "@/lib/list";
 import { clearCheckedIntoStock, setInStock } from "@/features/stock/actions";
 import { removeFromList, setChecked } from "../actions";
@@ -83,6 +84,7 @@ export function ShoppingList({
                 <span
                   className={`block break-words ${entry.checked ? "text-muted line-through" : "font-medium"}`}
                 >
+                  <FoodEmoji name={entry.name} />
                   {entry.name}
                   {entry.amount && (
                     <span className="text-muted font-normal"> · {entry.amount}</span>

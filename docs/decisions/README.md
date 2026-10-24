@@ -26,3 +26,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0020](0020-price-trends-and-cheapest-store.md)                | Price trends and the cheapest store, per item                                     | Accepted |
 | [0021](0021-recipes-sorted-by-meal.md)                         | Recipes sorted by meal, and a picker that only offers that meal                   | Accepted |
 | [0022](0022-meal-prep-view.md)                                 | A meal-prep view: batch cook and prep once                                        | Accepted |
+| [0023](0023-food-emojis.md)                                    | Food emojis, worked out from the name                                             | Accepted |

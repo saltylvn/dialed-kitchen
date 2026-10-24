@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { EmptyState, TabPage } from "@/components/ui/TabPage";
 import { GroceryViews } from "@/features/list/components/GroceryViews";
 import { BestPriceLine } from "@/features/prices/components/BestPriceLine";
@@ -41,7 +42,10 @@ export default async function PricesPage() {
                 className="flex min-h-16 items-center gap-3 px-4 py-3"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block font-medium break-words">{item.name}</span>
+                  <span className="block font-medium break-words">
+                    <FoodEmoji name={item.name} />
+                    {item.name}
+                  </span>
                   <span className="mt-0.5 block text-[15px]">
                     {item.best ? (
                       <BestPriceLine
