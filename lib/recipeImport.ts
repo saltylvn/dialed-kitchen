@@ -39,16 +39,29 @@ const NAMED_ENTITIES: Record<string, string> = {
 };
 
 // Recipe data often contains HTML entities and tags inside its text: turn them into plain text.
+// Entities are decoded FIRST, then tags are stripped until none are left, so neither an encoded
+// tag ("&lt;script&gt;") nor a nested one ("<<b>script>") can survive as markup. (The text is
+// only ever shown as plain text by React, but cleaning should be complete on its own.)
 export function cleanText(value: unknown): string {
   if (typeof value !== "string") return "";
-  return value
+  const decoded = value
     .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]*>/g, "")
     .replace(/&#(\d+);/g, (_, n: string) => safeCodePoint(Number(n)))
     .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => safeCodePoint(parseInt(n, 16)))
-    .replace(/&([a-z]+\d*);/gi, (m, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/&([a-z]+\d*);/gi, (m, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? m);
+  return stripTags(decoded).replace(/\s+/g, " ").trim();
+}
+
+// Removes tags until the text stops changing, then any half-tag left over ("<script" with no
+// ">"). A "<" that can't start a tag stays: "cook < 5 minutes".
+function stripTags(text: string): string {
+  let current = text;
+  let previous;
+  do {
+    previous = current;
+    current = current.replace(/<[^<>]*>/g, "");
+  } while (current !== previous);
+  return current.replace(/<(?=[a-z/!?])/gi, "");
 }
 
 function safeCodePoint(n: number): string {

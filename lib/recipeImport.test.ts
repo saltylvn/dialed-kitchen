@@ -116,6 +116,20 @@ describe("cleanText and pageTitle", () => {
     expect(cleanText(42)).toBe("");
   });
 
+  it("never lets markup through, even encoded or nested", () => {
+    expect(cleanText("&lt;script&gt;alert(1)&lt;/script&gt; Stir")).toBe("alert(1) Stir");
+    expect(cleanText("&#60;img src=x onerror=alert(1)&#62;Salt")).toBe("Salt");
+    expect(cleanText("<<b>script>alert(1)<</b>/script>")).toBe("alert(1)");
+    expect(cleanText("Bake <script")).toBe("Bake script");
+    for (const s of ["&lt;script&gt;", "<<b>script>", "&lt;<b>img&gt;", "<scr<b>ipt>"]) {
+      expect(cleanText(s), s).not.toMatch(/<[a-z/!?]/i);
+    }
+  });
+
+  it("keeps a plain less-than sign", () => {
+    expect(cleanText("Cook &lt; 5 minutes, 3 &lt;= 4")).toBe("Cook < 5 minutes, 3 <= 4");
+  });
+
   it("reads the page title", () => {
     expect(pageTitle("<title> Best Tacos | Site </title>")).toBe("Best Tacos | Site");
     expect(pageTitle("<p>no title</p>")).toBeNull();
