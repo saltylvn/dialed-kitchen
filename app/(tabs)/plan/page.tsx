@@ -4,10 +4,12 @@ import { TabPage } from "@/components/ui/TabPage";
 import { getMyHousehold } from "@/features/partner/queries";
 import { PlanWeek } from "@/features/plan/components/PlanWeek";
 import { GoToThisWeek, ThisWeekLink } from "@/features/plan/components/WeekLinks";
-import { getRecipeChoices, getWeekPlan } from "@/features/plan/queries";
+import { WeekGroceries } from "@/features/plan/components/WeekGroceries";
+import { getRecipeChoices, getWeekPlan, getWeekShopping } from "@/features/plan/queries";
 import { addDays } from "@/lib/dates";
 import { weekDays, weekFromParam, weekRangeLabel } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
+import { summarizeWeek } from "@/lib/weekShopping";
 
 export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
 
@@ -16,11 +18,12 @@ export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { joined, week: weekParam } = await searchParams;
   const week = weekFromParam(weekParam);
-  const [, household, entries, recipes] = await Promise.all([
+  const [, household, entries, recipes, shopping] = await Promise.all([
     requireUser(),
     getMyHousehold(),
     week ? getWeekPlan(week) : [],
     week ? getRecipeChoices() : [],
+    week ? getWeekShopping(week) : [],
   ]);
   const partner = household.members.find((m) => !m.is_me);
 
@@ -58,6 +61,13 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
               <ThisWeekLink week={week} />
             </span>
           </nav>
+          {shopping.length > 0 && (
+            <WeekGroceries
+              key={`groceries-${week}`}
+              week={week}
+              summary={summarizeWeek(shopping)}
+            />
+          )}
           <PlanWeek key={week} days={weekDays(week)} entries={entries} recipes={recipes} />
         </>
       ) : (
