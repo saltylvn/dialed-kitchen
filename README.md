@@ -10,7 +10,7 @@
 
 > **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · **Status:** in daily use; all roadmap milestones shipped.
 
-![Dialed Kitchen overview: 281 automated tests, 25 merged pull requests, 24 decision records, 11 row-level security policies, 13 migrations, the Plan screen on an iPhone and the tech stack](docs/images/dialed-kitchen-overview.png)
+![Dialed Kitchen: a meal planner, recipe box and grocery list. Six engineering areas (multi-tenant Postgres, application security, production AI, data correctness, testing, delivery), the architecture, the tech stack, and the Plan screen on an iPhone](docs/images/dialed-kitchen-overview.png)
 
 ## What it does
 
@@ -72,7 +72,7 @@ Every table carries `household_id` with row-level security. Composite foreign ke
 - **Server-side auth only:** no database client in the browser; HttpOnly, SameSite, Secure cookies; Google sign-in starts from a POST with an Origin check (CSRF).
 - **SSRF-safe link import:** https on port 443 only, and every resolved address is checked inside the connection's own DNS lookup, which closes DNS rebinding. Redirects are re-checked at each hop, with time, size and type limits. Sites that block apps get a clear message; nothing tries to get around them.
 - **AI guard rails:** keys only on the server; every reply is validated and range-checked; prompts treat text inside photos as data; a 40-a-day per-person limit is counted atomically in Postgres (advisory lock); photos are shrunk in the browser (which strips GPS data) and never stored.
-- **Code scanning:** GitHub CodeQL analyzes every push and pull request for security issues.
+- **Code scanning:** GitHub CodeQL analyzes every push and pull request; its first finding (incomplete HTML sanitization) was fixed with a regression test. Secret scanning with push protection blocks committed keys.
 - **Supply chain:** a production dependency audit in CI, GitHub Actions pinned to commit SHAs, and Dependabot with written hold-back rules ([0024](docs/decisions/0024-dependency-updates.md)).
 
 ## AI features
@@ -86,7 +86,7 @@ Every table carries `household_id` with row-level security. Composite foreign ke
 
 ## Quality
 
-- **281 automated tests** (Vitest). **103 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
+- **287 automated tests** (Vitest). **107 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
 - **CI on every pull request:** production security audit, Prettier, ESLint, TypeScript type check, all tests, and a production build.
 - **Accessibility:** WCAG AA text contrast enforced by a test that reads the CSS, 48px tap targets, 17px+ text, labels on every control, and meaning never shown by color alone.
 - **25 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
@@ -121,6 +121,10 @@ npm run lint && npm run typecheck && npm run build
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
 - [x] 9. Price trends, cheapest store, meal-prep view, app icon, food emojis
+
+## Reporting a vulnerability
+
+See [SECURITY.md](SECURITY.md).
 
 ## License
 
