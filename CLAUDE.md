@@ -36,6 +36,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 
 ## Planned features and data model
 
+- **"Try the demo"** (docs/decisions/0026): one shared password account (`demo@dialed-kitchen.vercel.app`, password only in `DEMO_PASSWORD` env) with sample data reset daily on sign-in (`refresh_demo_if_stale`); only Google can create other accounts; the demo can't invite and gets 10 AI requests a day. Supabase refuses UPDATE/DELETE without WHERE: `supabase/tests/safeUpdates.test.ts` checks every function.
 - **At most 25 accounts** (personal and portfolio app, not a public service): a Postgres trigger on `auth.users` refuses the 26th; the sign-in page explains it (docs/decisions/0025). Raising it needs a migration.
 - **Partner sharing (married couples only; the only kind of sharing):** all data belongs to a `household`, not a user. Every new user gets a household of one. A spouse joins **only by invitation**:
   - The invite is tied to the spouse's email and only works when they sign in with that email.

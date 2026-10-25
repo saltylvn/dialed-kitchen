@@ -14,7 +14,12 @@ const SUPABASE_STAND_IN = `
   create role service_role nologin bypassrls;
   create schema auth;
   grant usage on schema auth to anon, authenticated;
-  create table auth.users (id uuid primary key, email text unique);
+  create table auth.users (
+    id uuid primary key,
+    email text unique,
+    -- How the account signed up, like Supabase's column ("google", "email"…).
+    raw_app_meta_data jsonb not null default '{"provider": "google"}'
+  );
   create function auth.uid() returns uuid language sql stable as $$
     select nullif(
       coalesce(current_setting('request.jwt.claim.sub', true),
@@ -46,11 +51,16 @@ export async function createTestDb({ usersBeforeMigrations = [] as TestUser[] } 
   return {
     pg,
 
-    // Signs up a user the way Supabase Auth does: a row in auth.users.
-    async createUser(email: string): Promise<TestUser> {
+    // Signs up a user the way Supabase Auth does: a row in auth.users. Google sign-in by
+    // default; pass provider "email" for a password account (the demo).
+    async createUser(email: string, provider = "google"): Promise<TestUser> {
       userCount += 1;
       const id = `00000000-0000-4000-8000-${String(userCount).padStart(12, "0")}`;
-      await pg.query("insert into auth.users (id, email) values ($1, $2)", [id, email]);
+      await pg.query("insert into auth.users (id, email, raw_app_meta_data) values ($1, $2, $3)", [
+        id,
+        email,
+        JSON.stringify({ provider }),
+      ]);
       return { id, email };
     },
 
