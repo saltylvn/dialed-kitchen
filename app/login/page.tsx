@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Wordmark } from "@/components/ui/Wordmark";
+import { signInAsDemo } from "@/features/auth/actions";
+import { demoPassword } from "@/lib/server/demo";
 
 export const metadata: Metadata = { title: "Sign in · Dialed Kitchen" };
 
@@ -42,6 +44,20 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           Continue with Google
         </button>
       </form>
+
+      {demoPassword() && (
+        <form action={signInAsDemo} className="mt-3 w-full">
+          <button
+            type="submit"
+            className="border-border bg-surface min-h-12 w-full rounded-xl border text-[17px] font-medium"
+          >
+            Try the demo
+          </button>
+          <p className="text-muted mt-2 text-center text-[14px]">
+            For hiring teams: a shared demo kitchen with sample data, reset daily.
+          </p>
+        </form>
+      )}
     </main>
   );
 }

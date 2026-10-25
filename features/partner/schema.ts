@@ -56,4 +56,5 @@ export const PARTNER_ERRORS = [
   "You're already in this household",
   "End your current partnership before joining another",
   "You don't have a partner",
+  "The demo can't send invites",
 ] as const;

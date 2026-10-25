@@ -9,6 +9,8 @@
 **Plan it, price it, cook it.** An iPhone-first web app (installable PWA) that a couple uses every day to plan meals, cook from recipes, track grocery prices across stores and build the shopping list, with AI that reads recipes from photos and estimates nutrition.
 
 > **Live:** [dialed-kitchen.vercel.app](https://dialed-kitchen.vercel.app) · **Status:** in daily use; all roadmap milestones shipped.
+>
+> **Try it:** open the app and tap **Try the demo**: a shared demo kitchen with sample recipes, a planned week and price history, reset daily ([how it's built](docs/decisions/0026-demo-account.md)).
 
 ![Dialed Kitchen: a meal planner, recipe box and grocery list. Six engineering areas (multi-tenant Postgres, application security, production AI, data correctness, testing, delivery), the architecture, the tech stack, and the Plan screen on an iPhone](docs/images/dialed-kitchen-overview.png)
 
@@ -89,10 +91,10 @@ Every table carries `household_id` with row-level security. Composite foreign ke
 
 ## Quality
 
-- **287 automated tests** (Vitest). **107 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
+- **296 automated tests** (Vitest). **116 of them run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with every migration applied, testing row-level security as real users: partners can share, strangers see nothing, nobody can forge or move rows.
 - **CI on every pull request:** production security audit, Prettier, ESLint, TypeScript type check, all tests, and a production build.
 - **Accessibility:** WCAG AA text contrast enforced by a test that reads the CSS, 48px tap targets, 17px+ text, labels on every control, and meaning never shown by color alone.
-- **25 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
+- **26 [architecture decision records](docs/decisions/)**, each with context, decision, alternatives and consequences.
 
 ## Running locally
 

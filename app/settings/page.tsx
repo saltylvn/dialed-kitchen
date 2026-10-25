@@ -3,6 +3,7 @@ import Link from "next/link";
 import { signOut } from "@/features/auth/actions";
 import { PartnerCard } from "@/features/partner/components/PartnerCard";
 import { getMyHousehold } from "@/features/partner/queries";
+import { isDemoEmail } from "@/lib/demo";
 import { requireUser } from "@/lib/server/auth";
 import { tabFromParam } from "@/lib/tabs";
 
@@ -24,7 +25,22 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       <h1 className="font-display mt-1 text-[36px] leading-tight font-light italic">Settings</h1>
 
       <div className="mt-6 space-y-4">
-        <PartnerCard household={household} />
+        {isDemoEmail(user.email) ? (
+          <section
+            aria-labelledby="partner-heading"
+            className="border-border bg-surface rounded-2xl border p-4"
+          >
+            <h2 id="partner-heading" className="text-muted text-[12px] tracking-[0.2em] uppercase">
+              Partner
+            </h2>
+            <p className="mt-3">
+              Partner sharing is turned off in the demo. In a real account, a couple shares one
+              kitchen through an invite-only link.
+            </p>
+          </section>
+        ) : (
+          <PartnerCard household={household} />
+        )}
 
         <section
           aria-labelledby="account-heading"
