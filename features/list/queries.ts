@@ -16,6 +16,7 @@ export type ListEntry = {
   id: string;
   itemId: string | null;
   name: string;
+  emoji: string | null; // the item's custom emoji, if one was chosen
   amount: string;
   checked: boolean;
   createdAt: string;
@@ -48,7 +49,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
     supabase
       .from("grocery_list_items")
       .select("id, item_id, name, quantity, unit, checked, created_at"),
-    supabase.from("items").select("id, name, compare_unit").order("name"),
+    supabase.from("items").select("id, name, compare_unit, emoji").order("name"),
     supabase.from("item_best_prices").select("item_id, store_id, unit_price_base"),
     supabase.from("stores").select("id, name").order("sort_order"),
     storeId
@@ -67,6 +68,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
   const itemList = z.array(itemRowSchema).parse(items.data);
   const storeList = z.array(storeRowSchema).parse(stores.data);
   const units = new Map(itemList.map((i) => [i.id, i.compare_unit]));
+  const emojis = new Map(itemList.map((i) => [i.id, i.emoji]));
   const itemIdsByName = new Map(itemList.map((i) => [nameKey(i.name), i.id]));
   const storeNames = new Map(storeList.map((s) => [s.id, s.name]));
   const bestByItem = new Map(
@@ -98,6 +100,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
         id: row.id,
         itemId,
         name: row.name,
+        emoji: (itemId && emojis.get(itemId)) || null,
         amount: formatAmount(row.quantity, row.unit),
         checked: row.checked,
         createdAt: row.created_at,

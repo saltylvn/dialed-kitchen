@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { addDays, serverToday } from "../../lib/dates";
-import { itemFormSchema, parseMoney, parseQuantity, priceFormSchema } from "./schema";
+import {
+  itemEmojiFormSchema,
+  itemFormSchema,
+  parseMoney,
+  parseQuantity,
+  priceFormSchema,
+} from "./schema";
 
 const ITEM = "00000000-0000-4000-8000-000000000001";
 const valid = {
@@ -70,5 +76,25 @@ describe("itemFormSchema", () => {
       compareUnit: "lb",
     });
     expect(itemFormSchema.safeParse({ name: "Milk", compareUnit: "pints" }).success).toBe(false);
+  });
+});
+
+describe("itemEmojiFormSchema", () => {
+  const itemId = "7d8f7a3e-1c2b-4e5f-9a0b-1c2d3e4f5a6b";
+
+  it("accepts one emoji, trimmed", () => {
+    expect(itemEmojiFormSchema.parse({ itemId, emoji: " 🧻 " })).toEqual({ itemId, emoji: "🧻" });
+  });
+
+  it("turns empty into null (back to the automatic emoji)", () => {
+    expect(itemEmojiFormSchema.parse({ itemId, emoji: "" }).emoji).toBeNull();
+  });
+
+  it.each(["paper", "🧻🧻", "<img>"])("refuses %j", (emoji) => {
+    expect(itemEmojiFormSchema.safeParse({ itemId, emoji }).success).toBe(false);
+  });
+
+  it("refuses a bad item id", () => {
+    expect(itemEmojiFormSchema.safeParse({ itemId: "1", emoji: "🧻" }).success).toBe(false);
   });
 });

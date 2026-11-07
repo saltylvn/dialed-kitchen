@@ -31,3 +31,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0025](0025-account-limit.md)                                  | At most 25 accounts                                                               | Accepted |
 | [0026](0026-demo-account.md)                                   | A "Try the demo" account for hiring teams                                         | Accepted |
 | [0027](0027-prices-view-from-the-list.md)                      | The Prices view starts from the grocery list, grouped by store section            | Accepted |
+| [0028](0028-custom-item-emoji.md)                              | Choose an item's emoji when the name doesn't give one                             | Accepted |

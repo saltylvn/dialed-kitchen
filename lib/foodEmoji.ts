@@ -175,3 +175,16 @@ export function foodMatch(name: string): { key: string; emoji: string } | null {
   }
   return null;
 }
+
+// Exactly one emoji, as the iPhone emoji keyboard types it: one grapheme (so skin tones,
+// flags and joined emojis like 👩🏽‍🍳 count as one) that is a pictograph. Used to check a
+// custom emoji chosen for an item before it's saved.
+export function isSingleEmoji(text: string): boolean {
+  const graphemes = [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text)];
+  return (
+    graphemes.length === 1 &&
+    text.length <= 16 &&
+    /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(text) &&
+    !/[\p{L}\p{N}\s]/u.test(text.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ""))
+  );
+}
