@@ -4,6 +4,7 @@ import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { SubPage } from "@/components/ui/SubPage";
 import { deleteItem, deletePrice } from "@/features/prices/actions";
 import { ItemEmojiForm } from "@/features/prices/components/ItemEmojiForm";
+import { ItemPhotoForm } from "@/features/prices/components/ItemPhotoForm";
 import { BestPriceLine, Tag } from "@/features/prices/components/BestPriceLine";
 import { LogPriceForm } from "@/features/prices/components/LogPriceForm";
 import { PriceTrend, StorePrices } from "@/features/prices/components/PriceInsights";
@@ -24,7 +25,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
   const page = await getItemPage(id);
   if (!page) notFound();
 
-  const { item, history, stores, bestPriceId } = page;
+  const { item, photo, history, stores, bestPriceId } = page;
   const best = history.find((p) => p.id === bestPriceId);
   const year = Number(serverToday().slice(0, 4));
 
@@ -34,7 +35,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
       backLabel="Price Tracker"
       title={
         <>
-          <FoodEmoji name={item.name} custom={item.emoji} />
+          <FoodEmoji name={item.name} custom={item.emoji} photo={photo} />
           {item.name}
         </>
       }
@@ -120,8 +121,10 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
 
         <section id="emoji" aria-labelledby="emoji-heading" className={`${card} scroll-mt-4`}>
           <h2 id="emoji-heading" className={`${heading} mb-3`}>
-            Emoji
+            Photo or emoji
           </h2>
+          <ItemPhotoForm itemId={item.id} photo={photo} />
+          <p className="text-muted my-4 text-center text-[15px]">or an emoji</p>
           <ItemEmojiForm itemId={item.id} custom={item.emoji} automatic={foodEmoji(item.name)} />
         </section>
 
