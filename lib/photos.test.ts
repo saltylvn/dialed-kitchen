@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { checkPhotos, isJpeg, MAX_PHOTO_BYTES, scaledSize } from "./photos";
+import {
+  centerSquare,
+  checkItemPhoto,
+  checkPhotos,
+  isJpeg,
+  MAX_ITEM_PHOTO_BYTES,
+  MAX_PHOTO_BYTES,
+  scaledSize,
+} from "./photos";
 
 const jpeg = (size = 100) => {
   const bytes = new Uint8Array(size);
@@ -38,5 +46,33 @@ describe("scaledSize", () => {
 
   it("never enlarges a small photo", () => {
     expect(scaledSize(800, 600)).toEqual({ width: 800, height: 600 });
+  });
+});
+
+describe("checkItemPhoto", () => {
+  const jpeg = (size: number) => new Uint8Array([0xff, 0xd8, 0xff, ...new Array(size - 3).fill(0)]);
+
+  it("accepts a small JPEG", () => {
+    expect(checkItemPhoto(jpeg(20_000))).toEqual({ ok: true });
+  });
+
+  it("refuses an empty file, a large one, and anything that isn't a JPEG", () => {
+    expect(checkItemPhoto(new Uint8Array()).ok).toBe(false);
+    expect(checkItemPhoto(jpeg(MAX_ITEM_PHOTO_BYTES + 1)).ok).toBe(false);
+    expect(checkItemPhoto(new Uint8Array([0x89, 0x50, 0x4e, 0x47])).ok).toBe(false); // PNG
+  });
+});
+
+describe("centerSquare", () => {
+  it("takes the middle of a tall photo", () => {
+    expect(centerSquare(3000, 4000)).toEqual({ x: 0, y: 500, side: 3000 });
+  });
+
+  it("takes the middle of a wide photo", () => {
+    expect(centerSquare(4000, 3000)).toEqual({ x: 500, y: 0, side: 3000 });
+  });
+
+  it("keeps a square photo whole", () => {
+    expect(centerSquare(1000, 1000)).toEqual({ x: 0, y: 0, side: 1000 });
   });
 });

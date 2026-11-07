@@ -32,3 +32,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0026](0026-demo-account.md)                                   | A "Try the demo" account for hiring teams                                         | Accepted |
 | [0027](0027-prices-view-from-the-list.md)                      | The Prices view starts from the grocery list, grouped by store section            | Accepted |
 | [0028](0028-custom-item-emoji.md)                              | Choose an item's emoji when the name doesn't give one                             | Accepted |
+| [0029](0029-item-photos.md)                                    | A photo per item, stored as a small square in the database                        | Accepted |
