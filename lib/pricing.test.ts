@@ -4,6 +4,7 @@ import {
   daysBetween,
   formatMoney,
   formatPackage,
+  formatUnitAmount,
   formatUnitPrice,
   isOlder,
 } from "./pricing";
@@ -64,5 +65,12 @@ describe("formatting", () => {
     expect(formatPackage(5, "lb")).toBe("5 lb");
     expect(formatPackage(1.5, "gal")).toBe("1.5 gal");
     expect(formatPackage(0.3333333, "kg")).toBe("0.333 kg");
+  });
+});
+
+describe("formatUnitAmount", () => {
+  it("is the unit price without its unit", () => {
+    expect(formatUnitAmount(pricePerBase(6.49, 5, "lb"), "lb")).toBe("$1.30");
+    expect(formatUnitAmount(pricePerBase(5.99, 6, "each"), "each")).toBe("$0.998");
   });
 });
