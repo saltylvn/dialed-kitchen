@@ -194,13 +194,23 @@ export async function setItemPhoto(
   if (!check.ok) return check;
 
   const supabase = await createClient();
-  const { error } = await supabase
+  // bytea is sent as hex text (\x…); RLS and the foreign key keep it in your household.
+  const photo = `\\x${Buffer.from(bytes).toString("hex")}`;
+  // Replace the photo if there is one, otherwise add it. (Not an upsert: that would also
+  // rewrite item_id, and the database only lets the app update the photo column.)
+  const replaced = await supabase
     .from("item_photos")
-    // bytea is sent as hex text (\x…); RLS and the foreign key keep it in your household.
-    .upsert(
-      { item_id: itemId.data, photo: `\\x${Buffer.from(bytes).toString("hex")}` },
-      { onConflict: "item_id" },
-    );
+    .update({ photo })
+    .eq("item_id", itemId.data)
+    .select("item_id");
+  let error = replaced.error;
+  if (!error && (replaced.data ?? []).length === 0) {
+    ({ error } = await supabase.from("item_photos").insert({ item_id: itemId.data, photo }));
+    // Your partner added one at the same moment: replace theirs.
+    if (error?.code === UNIQUE_VIOLATION) {
+      ({ error } = await supabase.from("item_photos").update({ photo }).eq("item_id", itemId.data));
+    }
+  }
   if (error) {
     console.error("set item photo failed:", error.message);
     return { ok: false, error: GENERIC_ERROR };

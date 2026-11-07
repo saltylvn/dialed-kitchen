@@ -90,6 +90,23 @@ describe("item photos", () => {
     await expect(setPhoto(alex, itemId, big)).rejects.toThrow(/check/);
   });
 
+  it("can't have their item changed (the app replaces a photo by updating only photo)", async () => {
+    await setPhoto(alex, itemId, JPEG);
+    const other = await addItem(alex, "Dish soap");
+    // What a PostgREST upsert sends: it rewrites every column it was given, item_id too.
+    await expect(
+      db.as(
+        alex,
+        `insert into public.item_photos (item_id, photo) values ($1, decode($2, 'hex'))
+         on conflict (item_id) do update set item_id = excluded.item_id, photo = excluded.photo`,
+        [itemId, JPEG],
+      ),
+    ).rejects.toThrow(/permission/);
+    await expect(
+      db.as(alex, "update public.item_photos set item_id = $1 where item_id = $2", [other, itemId]),
+    ).rejects.toThrow(/permission/);
+  });
+
   it("can't have their household or date set by the app", async () => {
     await expect(
       db.as(
