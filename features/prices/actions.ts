@@ -49,7 +49,7 @@ export async function createItem(
     return { ok: false, error: GENERIC_ERROR };
   }
   revalidatePath("/grocery", "layout"); // the list and the price book both show prices
-  redirect(`/grocery/items/${data.id}`);
+  redirect(`/grocery/items/${data.id}#log-price`); // straight to its first price
 }
 
 export type LogPriceResult = ActionResult<{

@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { formatShortDate, serverToday } from "@/lib/dates";
 import { formatAmount, sortList } from "@/lib/list";
+import { itemIdFor, nameKey } from "@/lib/priceBook";
 import { formatUnitPrice } from "@/lib/pricing";
 import { createClient } from "@/lib/server/supabase";
 import { itemRowSchema, storeRowSchema, type StoreRow } from "@/features/prices/schema";
@@ -66,6 +67,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
   const itemList = z.array(itemRowSchema).parse(items.data);
   const storeList = z.array(storeRowSchema).parse(stores.data);
   const units = new Map(itemList.map((i) => [i.id, i.compare_unit]));
+  const itemIdsByName = new Map(itemList.map((i) => [nameKey(i.name), i.id]));
   const storeNames = new Map(storeList.map((s) => [s.id, s.name]));
   const bestByItem = new Map(
     z
@@ -87,12 +89,14 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
     .array(listRowSchema)
     .parse(list.data)
     .map((row): ListEntry => {
-      const unit = row.item_id ? units.get(row.item_id) : undefined;
-      const b = row.item_id ? bestByItem.get(row.item_id) : undefined;
-      const h = row.item_id ? hereByItem.get(row.item_id) : undefined;
+      // Linked, or an item with the same name (added after the entry was typed).
+      const itemId = itemIdFor({ itemId: row.item_id, name: row.name }, itemIdsByName);
+      const unit = itemId ? units.get(itemId) : undefined;
+      const b = itemId ? bestByItem.get(itemId) : undefined;
+      const h = itemId ? hereByItem.get(itemId) : undefined;
       return {
         id: row.id,
-        itemId: row.item_id,
+        itemId,
         name: row.name,
         amount: formatAmount(row.quantity, row.unit),
         checked: row.checked,

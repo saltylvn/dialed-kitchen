@@ -30,3 +30,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0024](0024-dependency-updates.md)                             | Dependency updates: test each one, hold back what the ecosystem isn't ready for   | Accepted |
 | [0025](0025-account-limit.md)                                  | At most 25 accounts                                                               | Accepted |
 | [0026](0026-demo-account.md)                                   | A "Try the demo" account for hiring teams                                         | Accepted |
+| [0027](0027-prices-view-from-the-list.md)                      | The Prices view starts from the grocery list, grouped by store section            | Accepted |

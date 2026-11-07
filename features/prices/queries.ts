@@ -1,6 +1,9 @@
 import "server-only";
 import { z } from "zod";
+import { formatAmount, sortList } from "@/lib/list";
+import { splitPriceBook } from "@/lib/priceBook";
 import { createClient } from "@/lib/server/supabase";
+import { listRowSchema } from "@/features/list/schema";
 import {
   bestPriceRowSchema,
   itemRowSchema,
@@ -20,15 +23,58 @@ const PRICE_COLUMNS =
 const BEST_COLUMNS =
   "price_id, item_id, store_id, price, package_quantity, package_unit, on_sale, observed_on, unit_price_base";
 
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
 export type ItemWithBest = ItemRow & { best: (BestPriceRow & { storeName: string }) | null };
 
 function fail(what: string, error: { message: string }): never {
   throw new Error(`${what} failed: ${error.message}`);
 }
 
-// Every item with its best price, alphabetically.
-export async function listItemsWithBest(): Promise<ItemWithBest[]> {
+export type ListPriceRow = {
+  entryId: string;
+  name: string;
+  amount: string; // "2 lb", or "" when no amount was given
+  checked: boolean;
+  item: ItemWithBest | null; // null: not in the price book yet
+};
+
+export type PricesPage = { onList: ListPriceRow[]; others: ItemWithBest[] };
+
+// The Prices view: everything on the grocery list (in list order) with its best price,
+// then the rest of the price book. One round trip of waiting: all reads run in parallel.
+export async function getPricesPage(): Promise<PricesPage> {
   const supabase = await createClient();
+  const [items, list] = await Promise.all([
+    listItemsWithBest(supabase),
+    supabase
+      .from("grocery_list_items")
+      .select("id, item_id, name, quantity, unit, checked, created_at"),
+  ]);
+  if (list.error) fail("grocery_list_items", list.error);
+
+  const entries = sortList(
+    z
+      .array(listRowSchema)
+      .parse(list.data)
+      .map((row) => ({ ...row, itemId: row.item_id, createdAt: row.created_at })),
+  );
+  const { onList, others } = splitPriceBook(items, entries);
+  return {
+    onList: onList.map(({ entry, item }) => ({
+      entryId: entry.id,
+      name: item?.name ?? entry.name,
+      amount: formatAmount(entry.quantity, entry.unit),
+      checked: entry.checked,
+      item,
+    })),
+    others,
+  };
+}
+
+// Every item with its best price, alphabetically.
+export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWithBest[]> {
+  const supabase = client ?? (await createClient());
   const [items, best, stores] = await Promise.all([
     supabase.from("items").select("id, name, compare_unit").order("name"),
     supabase.from("item_best_prices").select(BEST_COLUMNS),
