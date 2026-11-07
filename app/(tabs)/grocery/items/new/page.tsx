@@ -12,7 +12,7 @@ export default async function NewItemPage({ searchParams }: PageProps<"/grocery/
   const [, { name }] = await Promise.all([requireUser(), searchParams]);
   const defaultName = itemFormSchema.shape.name.safeParse(name);
   return (
-    <SubPage backHref="/grocery/prices" backLabel="Prices" title="Add item">
+    <SubPage backHref="/grocery/prices" backLabel="Price Tracker" title="Add item">
       <CreateItemForm defaultName={defaultName.success ? defaultName.data : ""} />
     </SubPage>
   );
