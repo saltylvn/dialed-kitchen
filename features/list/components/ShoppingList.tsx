@@ -84,7 +84,7 @@ export function ShoppingList({
                 <span
                   className={`block break-words ${entry.checked ? "text-muted line-through" : "font-medium"}`}
                 >
-                  <FoodEmoji name={entry.name} custom={entry.emoji} />
+                  <FoodEmoji name={entry.name} custom={entry.emoji} photo={entry.photo} />
                   {entry.name}
                   {entry.amount && (
                     <span className="text-muted font-normal"> · {entry.amount}</span>

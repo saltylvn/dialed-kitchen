@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
+import { checkItemPhoto } from "@/lib/photos";
 import { compareToBest, formatUnitPrice, type Comparison } from "@/lib/pricing";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
@@ -173,4 +174,64 @@ export async function setItemEmoji(
   }
   revalidatePath("/grocery", "layout"); // every grocery view shows the emoji
   return { ok: true, data: { emoji: parsed.data.emoji } };
+}
+
+export type ItemPhotoResult = ActionResult | null;
+
+// Saves (or replaces) an item's photo. The phone has already cropped and shrunk it to a
+// small square JPEG; here its bytes are checked, never the name or type the browser claims.
+export async function setItemPhoto(
+  _prev: ItemPhotoResult,
+  formData: FormData,
+): Promise<ItemPhotoResult> {
+  await requireUser();
+  const itemId = z.uuid().safeParse(formData.get("itemId"));
+  const file = formData.get("photo");
+  if (!itemId.success || !(file instanceof File)) return { ok: false, error: "Choose a photo." };
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const check = checkItemPhoto(bytes);
+  if (!check.ok) return check;
+
+  const supabase = await createClient();
+  // bytea is sent as hex text (\x…); RLS and the foreign key keep it in your household.
+  const photo = `\\x${Buffer.from(bytes).toString("hex")}`;
+  // Replace the photo if there is one, otherwise add it. (Not an upsert: that would also
+  // rewrite item_id, and the database only lets the app update the photo column.)
+  const replaced = await supabase
+    .from("item_photos")
+    .update({ photo })
+    .eq("item_id", itemId.data)
+    .select("item_id");
+  let error = replaced.error;
+  if (!error && (replaced.data ?? []).length === 0) {
+    ({ error } = await supabase.from("item_photos").insert({ item_id: itemId.data, photo }));
+    // Your partner added one at the same moment: replace theirs.
+    if (error?.code === UNIQUE_VIOLATION) {
+      ({ error } = await supabase.from("item_photos").update({ photo }).eq("item_id", itemId.data));
+    }
+  }
+  if (error) {
+    console.error("set item photo failed:", error.message);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  revalidatePath("/grocery", "layout"); // every grocery view shows the photo
+  return { ok: true, data: undefined };
+}
+
+export async function removeItemPhoto(
+  _prev: ItemPhotoResult,
+  formData: FormData,
+): Promise<ItemPhotoResult> {
+  await requireUser();
+  const itemId = z.uuid().safeParse(formData.get("itemId"));
+  if (!itemId.success) return { ok: false, error: GENERIC_ERROR };
+  const supabase = await createClient();
+  const { error } = await supabase.from("item_photos").delete().eq("item_id", itemId.data);
+  if (error) {
+    console.error("remove item photo failed:", error.message);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  revalidatePath("/grocery", "layout");
+  return { ok: true, data: undefined };
 }

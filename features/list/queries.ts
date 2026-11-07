@@ -5,6 +5,7 @@ import { formatAmount, sortList } from "@/lib/list";
 import { itemIdFor, nameKey } from "@/lib/priceBook";
 import { formatUnitPrice } from "@/lib/pricing";
 import { createClient } from "@/lib/server/supabase";
+import { readItemPhotos } from "@/features/prices/queries";
 import { itemRowSchema, storeRowSchema, type StoreRow } from "@/features/prices/schema";
 import { listRowSchema } from "./schema";
 
@@ -17,6 +18,7 @@ export type ListEntry = {
   itemId: string | null;
   name: string;
   emoji: string | null; // the item's custom emoji, if one was chosen
+  photo: string | null; // the item's photo address, if it has one
   amount: string;
   checked: boolean;
   createdAt: string;
@@ -45,7 +47,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
   const storeId = z.uuid().safeParse(storeParam).success ? storeParam! : null;
   const supabase = await createClient();
 
-  const [list, items, best, stores, here] = await Promise.all([
+  const [list, items, best, stores, here, photos] = await Promise.all([
     supabase
       .from("grocery_list_items")
       .select("id, item_id, name, quantity, unit, checked, created_at"),
@@ -58,6 +60,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
           .select("item_id, observed_on, unit_price_base")
           .eq("store_id", storeId)
       : Promise.resolve({ data: [], error: null }),
+    readItemPhotos(supabase),
   ]);
   if (list.error) fail("grocery_list_items", list.error);
   if (items.error) fail("items", items.error);
@@ -101,6 +104,7 @@ export async function getListPage(storeParam: string | undefined): Promise<ListP
         itemId,
         name: row.name,
         emoji: (itemId && emojis.get(itemId)) || null,
+        photo: (itemId && photos.get(itemId)) || null,
         amount: formatAmount(row.quantity, row.unit),
         checked: row.checked,
         createdAt: row.created_at,

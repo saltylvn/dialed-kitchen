@@ -30,8 +30,8 @@ export function PriceBookRow({
       <div className="min-w-0 flex-1">
         {item ? (
           <div className="flex items-center gap-2">
-            {!item.emoji && !foodEmoji(name) && (
-              // No emoji for this name: a spot to choose one.
+            {!item.photo && !item.emoji && !foodEmoji(name) && (
+              // No photo or emoji for this item: a spot to choose one.
               <Link
                 href={`/grocery/items/${item.id}#emoji`}
                 aria-label={`Choose an emoji for ${name}`}
@@ -44,7 +44,7 @@ export function PriceBookRow({
               href={`/grocery/items/${item.id}`}
               className="block min-h-6 min-w-0 font-medium break-words"
             >
-              <FoodEmoji name={name} custom={item.emoji} />
+              <FoodEmoji name={name} custom={item.emoji} photo={item.photo} />
               {name}
             </Link>
           </div>
