@@ -7,7 +7,7 @@ import { getPricesPage } from "@/features/prices/queries";
 import { groupByCategory } from "@/lib/foodCategory";
 import { requireUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Prices · Dialed Kitchen" };
+export const metadata: Metadata = { title: "Price Tracker · Dialed Kitchen" };
 
 const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
 

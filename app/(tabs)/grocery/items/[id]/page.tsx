@@ -32,7 +32,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
   return (
     <SubPage
       backHref="/grocery/prices"
-      backLabel="Prices"
+      backLabel="Price Tracker"
       title={
         <>
           <FoodEmoji name={item.name} custom={item.emoji} photo={photo} />
