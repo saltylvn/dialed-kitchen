@@ -45,10 +45,16 @@ export function formatMoney(amount: number): string {
 // "$1.30/lb", "$0.03/fl oz", "$0.30 each". Unit prices under a dollar keep a third
 // decimal place when it matters ($0.034/fl oz), so cheap items still compare clearly.
 export function formatUnitPrice(pricePerBaseUnit: number, unit: Unit): string {
-  const value = pricePerUnit(pricePerBaseUnit, unit);
-  const amount =
-    value < 1 && Math.round(value * 1000) % 10 !== 0 ? `$${value.toFixed(3)}` : formatMoney(value);
+  const amount = formatUnitAmount(pricePerBaseUnit, unit);
   return unit === "each" ? `${amount} each` : `${amount}/${UNITS[unit].label}`;
+}
+
+// Just the amount, for where the unit is shown once nearby: "$1.30", "$0.998".
+export function formatUnitAmount(pricePerBaseUnit: number, unit: Unit): string {
+  const value = pricePerUnit(pricePerBaseUnit, unit);
+  return value < 1 && Math.round(value * 1000) % 10 !== 0
+    ? `$${value.toFixed(3)}`
+    : formatMoney(value);
 }
 
 // "5 lb", "1.5 gal", "12 each"

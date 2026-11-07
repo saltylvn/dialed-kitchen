@@ -34,3 +34,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0028](0028-custom-item-emoji.md)                              | Choose an item's emoji when the name doesn't give one                             | Accepted |
 | [0029](0029-item-photos.md)                                    | A photo per item, stored as a small square in the database                        | Accepted |
 | [0030](0030-grocery-list-and-price-tracker.md)                 | Two Grocery sub-tabs: Grocery List (with In stock) and Price Tracker              | Accepted |
+| [0031](0031-main-stores-on-price-tracker.md)                   | Your three main stores on every Price Tracker row                                 | Accepted |
