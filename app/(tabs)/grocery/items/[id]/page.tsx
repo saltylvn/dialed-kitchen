@@ -65,7 +65,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
         />
         <PriceTrend history={history} compareUnit={item.compare_unit} year={year} />
 
-        <section aria-labelledby="log-heading" className={card}>
+        <section id="log-price" aria-labelledby="log-heading" className={`${card} scroll-mt-4`}>
           <h2 id="log-heading" className={`${heading} mb-3`}>
             Log a price
           </h2>

@@ -151,6 +151,12 @@ export function singular(word: string): string {
 export function foodEmoji(name: string): string | null {
   // Someone already put an emoji in the name ("Roma Tomato 🍅", "Tacos 🌮"): keep theirs.
   if (/\p{Extended_Pictographic}/u.test(name)) return null;
+  return foodMatch(name)?.emoji ?? null;
+}
+
+// The food word (or two-word phrase) a name was recognized by, and its emoji:
+// "Chicken thighs" → { key: "chicken", emoji: "🍗" }. Shared with lib/foodCategory.ts.
+export function foodMatch(name: string): { key: string; emoji: string } | null {
   const words = (name.split(/[,(]/)[0] ?? "")
     .toLowerCase()
     .replace(/[^a-zñé\s-]/g, " ")
@@ -159,11 +165,13 @@ export function foodEmoji(name: string): string | null {
     .map(singular);
   for (let i = words.length - 1; i >= 0; i--) {
     if (i > 0) {
-      const phrase = PHRASES[`${words[i - 1]} ${words[i]}`];
-      if (phrase) return phrase;
+      const key = `${words[i - 1]} ${words[i]}`;
+      const phrase = PHRASES[key];
+      if (phrase) return { key, emoji: phrase };
     }
-    const emoji = WORDS.get(words[i]!);
-    if (emoji) return emoji;
+    const key = words[i]!;
+    const emoji = WORDS.get(key);
+    if (emoji) return { key, emoji };
   }
   return null;
 }

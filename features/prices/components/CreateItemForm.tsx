@@ -7,7 +7,7 @@ import { compareUnitLabel } from "../schema";
 
 const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
-export function CreateItemForm() {
+export function CreateItemForm({ defaultName = "" }: { defaultName?: string }) {
   const [result, formAction, pending] = useActionState<CreateItemResult, FormData>(
     createItem,
     null,
@@ -24,6 +24,7 @@ export function CreateItemForm() {
           name="name"
           required
           maxLength={80}
+          defaultValue={defaultName}
           autoComplete="off"
           placeholder="Chicken thighs"
           className="border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]"

@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { EmptyState, TabPage } from "@/components/ui/TabPage";
 import { GroceryViews } from "@/features/list/components/GroceryViews";
-import { BestPriceLine } from "@/features/prices/components/BestPriceLine";
-import { listItemsWithBest } from "@/features/prices/queries";
+import { PriceBookRow } from "@/features/prices/components/PriceBookRow";
+import { getPricesPage } from "@/features/prices/queries";
+import { groupByCategory } from "@/lib/foodCategory";
 import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Prices · Dialed Kitchen" };
 
-// The price book: every item you buy with the best price you've found for it.
+const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
+
+// The price book: everything on the grocery list first, then every other item you buy,
+// each grouped by store section with its best price and where it was found.
 export default async function PricesPage() {
-  const [, items] = await Promise.all([requireUser(), listItemsWithBest()]);
+  const [, { onList, others }] = await Promise.all([requireUser(), getPricesPage()]);
 
   return (
     <TabPage tab="grocery">
       <GroceryViews current="/grocery/prices" />
-      <div className="mt-5 flex items-center justify-between">
-        <h2 className="text-muted text-[12px] tracking-[0.2em] uppercase">Best prices</h2>
+      <div className="mt-5 flex justify-end">
         <Link
           href="/grocery/items/new"
           className="bg-accent text-on-accent flex min-h-12 items-center rounded-xl px-4 font-medium"
@@ -26,7 +28,7 @@ export default async function PricesPage() {
         </Link>
       </div>
 
-      {items.length === 0 ? (
+      {onList.length === 0 && others.length === 0 ? (
         <div className="mt-4">
           <EmptyState
             heading="Start your price book"
@@ -34,40 +36,57 @@ export default async function PricesPage() {
           />
         </div>
       ) : (
-        <ul className="border-border bg-surface mt-4 divide-y divide-[var(--border)] rounded-2xl border">
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={`/grocery/items/${item.id}`}
-                className="flex min-h-16 items-center gap-3 px-4 py-3"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium break-words">
-                    <FoodEmoji name={item.name} />
-                    {item.name}
-                  </span>
-                  <span className="mt-0.5 block text-[15px]">
-                    {item.best ? (
-                      <BestPriceLine
-                        unitPriceBase={item.best.unit_price_base}
-                        compareUnit={item.compare_unit}
-                        storeName={item.best.storeName}
-                        observedOn={item.best.observed_on}
-                        onSale={item.best.on_sale}
-                      />
-                    ) : (
-                      <span className="text-muted">No prices yet</span>
-                    )}
-                  </span>
-                </span>
-                <span aria-hidden className="text-muted text-xl">
-                  ›
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-2 space-y-8">
+          {onList.length > 0 && (
+            <Part title="On your list">
+              {groupByCategory(onList, (r) => r.name).map((group) => (
+                <Section key={group.id} label={group.label}>
+                  {group.things.map((row) => (
+                    <PriceBookRow
+                      key={row.entryId}
+                      name={row.name}
+                      item={row.item}
+                      amount={row.amount}
+                      checked={row.checked}
+                    />
+                  ))}
+                </Section>
+              ))}
+            </Part>
+          )}
+          {others.length > 0 && (
+            <Part title={onList.length > 0 ? "Rest of the price book" : "Price book"}>
+              {groupByCategory(others, (i) => i.name).map((group) => (
+                <Section key={group.id} label={group.label}>
+                  {group.things.map((item) => (
+                    <PriceBookRow key={item.id} name={item.name} item={item} />
+                  ))}
+                </Section>
+              ))}
+            </Part>
+          )}
+        </div>
       )}
     </TabPage>
+  );
+}
+
+function Part({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="font-display text-[28px] leading-tight font-light italic">{title}</h2>
+      <div className="mt-3 space-y-5">{children}</div>
+    </section>
+  );
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className={heading}>{label}</h3>
+      <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
+        {children}
+      </ul>
+    </div>
   );
 }
