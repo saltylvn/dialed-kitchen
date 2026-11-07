@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { formatShortDate, serverToday } from "@/lib/dates";
+import { foodEmoji } from "@/lib/foodEmoji";
 import { formatUnitPrice, isOlder } from "@/lib/pricing";
 import type { ItemWithBest } from "../queries";
 import { Tag } from "./BestPriceLine";
@@ -8,6 +9,7 @@ import { Tag } from "./BestPriceLine";
 // One row of the Prices view: the food (emoji on the left, name, amount on the list), a
 // "Best price" box with the store it was found at, and a Log price button.
 // An item not in the price book yet logs its first price by adding it (name filled in).
+// An item with no emoji (custom or recognized from the name) gets a spot to choose one.
 export function PriceBookRow({
   name,
   item,
@@ -27,13 +29,25 @@ export function PriceBookRow({
     <li className="flex gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
         {item ? (
-          <Link
-            href={`/grocery/items/${item.id}`}
-            className="block min-h-6 font-medium break-words"
-          >
-            <FoodEmoji name={name} />
-            {name}
-          </Link>
+          <div className="flex items-center gap-2">
+            {!item.emoji && !foodEmoji(name) && (
+              // No emoji for this name: a spot to choose one.
+              <Link
+                href={`/grocery/items/${item.id}#emoji`}
+                aria-label={`Choose an emoji for ${name}`}
+                className="border-border text-muted flex size-12 shrink-0 items-center justify-center rounded-xl border border-dashed text-xl"
+              >
+                ＋
+              </Link>
+            )}
+            <Link
+              href={`/grocery/items/${item.id}`}
+              className="block min-h-6 min-w-0 font-medium break-words"
+            >
+              <FoodEmoji name={name} custom={item.emoji} />
+              {name}
+            </Link>
+          </div>
         ) : (
           <p className="font-medium break-words">
             <FoodEmoji name={name} />

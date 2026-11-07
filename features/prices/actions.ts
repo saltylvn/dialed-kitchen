@@ -8,7 +8,13 @@ import { compareToBest, formatUnitPrice, type Comparison } from "@/lib/pricing";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
 import { pricePerBase, UNITS } from "@/lib/units";
-import { itemFormSchema, itemRowSchema, PRICE_ERRORS, priceFormSchema } from "./schema";
+import {
+  itemEmojiFormSchema,
+  itemFormSchema,
+  itemRowSchema,
+  PRICE_ERRORS,
+  priceFormSchema,
+} from "./schema";
 
 // Price actions. Input is validated here; the database checks everything again (household,
 // units, constraints) and is the final word.
@@ -140,4 +146,31 @@ export async function deleteItem(formData: FormData): Promise<void> {
   if (error) console.error("delete item failed:", error.message);
   revalidatePath("/grocery", "layout"); // the list and the price book both show prices
   redirect("/grocery/prices");
+}
+
+export type SetItemEmojiResult = ActionResult<{ emoji: string | null }> | null;
+
+// Sets an item's emoji, or clears it (empty) to use the one worked out from its name.
+export async function setItemEmoji(
+  _prev: SetItemEmojiResult,
+  formData: FormData,
+): Promise<SetItemEmojiResult> {
+  await requireUser();
+  const parsed = itemEmojiFormSchema.safeParse({
+    itemId: formData.get("itemId"),
+    emoji: formData.get("emoji") ?? "",
+  });
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("items")
+    .update({ emoji: parsed.data.emoji })
+    .eq("id", parsed.data.itemId);
+  if (error) {
+    console.error("set item emoji failed:", error.message);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  revalidatePath("/grocery", "layout"); // every grocery view shows the emoji
+  return { ok: true, data: { emoji: parsed.data.emoji } };
 }

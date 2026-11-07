@@ -76,7 +76,7 @@ export async function getPricesPage(): Promise<PricesPage> {
 export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWithBest[]> {
   const supabase = client ?? (await createClient());
   const [items, best, stores] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit").order("name"),
+    supabase.from("items").select("id, name, compare_unit, emoji").order("name"),
     supabase.from("item_best_prices").select(BEST_COLUMNS),
     supabase.from("stores").select("id, name"),
   ]);
@@ -118,7 +118,7 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
   if (!z.uuid().safeParse(itemId).success) return null;
   const supabase = await createClient();
   const [item, history, best, stores] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit").eq("id", itemId).maybeSingle(),
+    supabase.from("items").select("id, name, compare_unit, emoji").eq("id", itemId).maybeSingle(),
     supabase
       .from("item_prices")
       .select(PRICE_COLUMNS)
