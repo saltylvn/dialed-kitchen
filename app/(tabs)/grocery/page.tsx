@@ -5,27 +5,42 @@ import { GroceryViews } from "@/features/list/components/GroceryViews";
 import { ShoppingList } from "@/features/list/components/ShoppingList";
 import { StorePicker } from "@/features/list/components/StorePicker";
 import { getListPage } from "@/features/list/queries";
+import { StockList } from "@/features/stock/components/StockList";
+import { listInStock } from "@/features/stock/queries";
 import { requireUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
+export const metadata: Metadata = { title: "Grocery List · Dialed Kitchen" };
 
-// The shared grocery list: add what you need, then check it off in the store. Choosing the
-// store shows each item's last price there next to its best price.
+const part = "font-display text-[28px] leading-tight font-light italic";
+
+// The Grocery List sub-tab: the shared list (add what you need, check it off in the store;
+// choosing the store shows each item's last price there), then what's already In stock at
+// home, so both are on one screen. All reads run in parallel.
 export default async function GroceryPage({ searchParams }: PageProps<"/grocery">) {
   const { store } = await searchParams;
-  const [, page] = await Promise.all([
+  const [, page, inStock] = await Promise.all([
     requireUser(),
     getListPage(typeof store === "string" ? store : undefined),
+    listInStock(),
   ]);
 
   return (
     <TabPage tab="grocery">
       <GroceryViews current="/grocery" />
-      <div className="mt-5 space-y-4">
+      <section aria-labelledby="list-heading" className="mt-5 space-y-4">
+        <h2 id="list-heading" className={part}>
+          To buy
+        </h2>
         <AddToListForm itemNames={page.itemNames} />
         <StorePicker stores={page.stores} current={page.store?.id ?? null} />
         <ShoppingList entries={page.entries} storeName={page.store?.name ?? null} />
-      </div>
+      </section>
+      <section id="in-stock" aria-labelledby="stock-heading" className="mt-10 scroll-mt-4">
+        <h2 id="stock-heading" className={`${part} mb-4`}>
+          In stock
+        </h2>
+        <StockList items={inStock} />
+      </section>
     </TabPage>
   );
 }

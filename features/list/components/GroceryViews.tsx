@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-// The Grocery tab's three views: the shopping list, what's In stock, and the price book.
+// The Grocery tab's two sub-tabs (docs/decisions/0030): the Grocery List (what to buy, and
+// what's already In stock) and the Price Tracker (the price book).
 const VIEWS = [
-  { href: "/grocery", label: "List" },
-  { href: "/grocery/stock", label: "In stock" },
-  { href: "/grocery/prices", label: "Prices" },
+  { href: "/grocery", label: "Grocery List" },
+  { href: "/grocery/prices", label: "Price Tracker" },
 ] as const;
 
 export function GroceryViews({ current }: { current: (typeof VIEWS)[number]["href"] }) {
