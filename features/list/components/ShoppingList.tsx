@@ -4,19 +4,25 @@ import { useOptimistic, useState, useTransition } from "react";
 import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { sortList } from "@/lib/list";
 import { clearCheckedIntoStock, setInStock } from "@/features/stock/actions";
+import type { StoreRow } from "@/features/prices/schema";
 import { removeFromList, setChecked } from "../actions";
 import type { ListEntry } from "../queries";
+import { QuickLogSheet } from "./QuickLogSheet";
 
 type Change = { type: "check"; id: string; checked: boolean } | { type: "remove"; id: string };
 
 // The list you shop from. Taps update the screen instantly (optimistic UI) and save in the
 // background; if a save fails, the screen goes back to the saved state with a message.
+// In a store, each item shows its price here against your other stores, and checking one
+// off opens a quick price log for it (docs/decisions/0032).
 export function ShoppingList({
   entries,
-  storeName,
+  store,
+  stores,
 }: {
   entries: ListEntry[];
-  storeName: string | null;
+  store: StoreRow | null;
+  stores: StoreRow[];
 }) {
   const [optimistic, apply] = useOptimistic(entries, (state, change: Change) =>
     change.type === "remove"
@@ -25,6 +31,18 @@ export function ShoppingList({
   );
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [logging, setLogging] = useState<ListEntry | null>(null); // the quick log's item
+  const [saved, setSaved] = useState<string | null>(null); // what the last quick log said
+
+  function toggle(entry: ListEntry) {
+    const checked = !entry.checked;
+    run({ type: "check", id: entry.id, checked }, () => setChecked(entry.id, checked));
+    // Just put it in the cart, at a store, and it's in the price book: log today's price.
+    if (checked && store && entry.quickLog) {
+      setSaved(null);
+      setLogging(entry);
+    }
+  }
 
   function run(change: Change, save: () => Promise<void>) {
     setError(null);
@@ -55,6 +73,30 @@ export function ShoppingList({
           ⚠️ {error}
         </p>
       )}
+      {saved && (
+        <p
+          role="status"
+          className={`border-border bg-surface mb-3 rounded-xl border p-3 font-medium ${
+            saved.includes("🎉") ? "text-success-text" : ""
+          }`}
+        >
+          {saved}
+        </p>
+      )}
+      {logging?.quickLog && store && (
+        <QuickLogSheet
+          key={logging.id}
+          entry={logging}
+          quickLog={logging.quickLog}
+          store={store}
+          stores={stores}
+          onClose={() => setLogging(null)}
+          onSaved={(message) => {
+            setSaved(message);
+            setLogging(null);
+          }}
+        />
+      )}
       <ul className="border-border bg-surface divide-y divide-[var(--border)] rounded-2xl border">
         {optimistic.map((entry) => (
           <li key={entry.id} className="flex items-center">
@@ -65,11 +107,7 @@ export function ShoppingList({
               // Read out as "Rice, 2 lb, checkbox, not checked", then the prices.
               aria-label={entry.amount ? `${entry.name}, ${entry.amount}` : entry.name}
               aria-describedby={showPrices(entry) ? `prices-${entry.id}` : undefined}
-              onClick={() =>
-                run({ type: "check", id: entry.id, checked: !entry.checked }, () =>
-                  setChecked(entry.id, !entry.checked),
-                )
-              }
+              onClick={() => toggle(entry)}
               className="flex min-h-16 min-w-0 flex-1 items-center gap-3 py-2 pl-4 text-left"
             >
               <span
@@ -91,14 +129,7 @@ export function ShoppingList({
                   )}
                 </span>
                 {showPrices(entry) && (
-                  <span id={`prices-${entry.id}`} className="text-muted block text-[14px]">
-                    {entry.here && storeName && (
-                      <>
-                        Last at {storeName}: {entry.here}.{" "}
-                      </>
-                    )}
-                    {entry.best && <>Best: {entry.best}</>}
-                  </span>
+                  <PriceLine id={`prices-${entry.id}`} entry={entry} store={store} />
                 )}
               </span>
             </button>
@@ -141,5 +172,44 @@ export function ShoppingList({
 }
 
 function showPrices(entry: ListEntry): boolean {
-  return !entry.checked && Boolean(entry.here || entry.best);
+  return !entry.checked && entry.stores.length > 0;
+}
+
+// Under each item: in a store, its price here and whether one of your stores is cheaper;
+// otherwise your stores' prices, cheapest first. Words carry the meaning, never color alone.
+function PriceLine({ id, entry, store }: { id: string; entry: ListEntry; store: StoreRow | null }) {
+  const unit = entry.unitLabel ? ` ${entry.unitLabel}` : "";
+  if (!store) {
+    const priced = entry.stores.filter((s) => s.price !== null);
+    return (
+      <span id={id} className="text-muted block text-[15px]">
+        {priced.map((s) => `${s.storeName} ${s.price}`).join(" · ")}
+        {unit}
+      </span>
+    );
+  }
+  return (
+    <span id={id} className="block text-[15px]">
+      {entry.here ? (
+        <span className="text-muted">
+          Here {entry.here.price}
+          {unit}
+        </span>
+      ) : (
+        <span className="text-muted">No price here yet</span>
+      )}
+      {entry.cheaper && (
+        <span className="font-medium">
+          {" "}
+          · {entry.cheaper.storeName} {entry.cheaper.price}
+          {entry.here
+            ? ` ↓ ${entry.cheaper.percentLess >= 1 ? `${entry.cheaper.percentLess}%` : "a bit"} less`
+            : unit}
+        </span>
+      )}
+      {entry.cheapestHere && (
+        <span className="text-success-text font-medium"> · ✓ Cheapest here</span>
+      )}
+    </span>
+  );
 }
