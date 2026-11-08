@@ -13,6 +13,12 @@ import {
   RECIPE_RESPONSE_SCHEMA,
   type RecipeFromImage,
 } from "@/lib/ai/recipeFromImage";
+import {
+  parseReceiptAnswer,
+  RECEIPT_PROMPT,
+  RECEIPT_RESPONSE_SCHEMA,
+  type Receipt,
+} from "@/lib/ai/receiptFromImage";
 import type { Nutrition } from "@/lib/nutrition";
 
 // The ONLY file that talks to Google (docs/decisions/0016, 0018). The key is read here, on
@@ -47,6 +53,33 @@ export async function readRecipeFromPhotos(
       if (parsed.ok) return { done: parsed };
       // "No recipe here" is a real answer. A garbled one is this model's bad moment.
       if (parsed.reason === "no_recipe") return { done: { ok: false, reason: "no_recipe" } };
+      return { retry: parsed.reason };
+    },
+  });
+}
+
+export type ReadReceiptResult =
+  { ok: true; receipt: Receipt } | { ok: false; reason: Failure | "no_receipt" };
+
+// Reads the lines of a grocery receipt (docs/decisions/0033). Like recipe photos, the answer
+// only fills a review screen; nothing is saved until the person checks it.
+export async function readReceiptFromPhotos(
+  photos: readonly Uint8Array[],
+): Promise<ReadReceiptResult> {
+  return askGemini<ReadReceiptResult>({
+    parts: [
+      ...photos.map((bytes) => ({
+        inlineData: { mimeType: "image/jpeg", data: Buffer.from(bytes).toString("base64") },
+      })),
+      { text: "List what was bought on this receipt." },
+    ],
+    systemInstruction: RECEIPT_PROMPT,
+    schema: RECEIPT_RESPONSE_SCHEMA,
+    maxOutputTokens: 16384,
+    read: (text) => {
+      const parsed = parseReceiptAnswer(text);
+      if (parsed.ok) return { done: parsed };
+      if (parsed.reason === "no_receipt") return { done: { ok: false, reason: "no_receipt" } };
       return { retry: parsed.reason };
     },
   });

@@ -47,6 +47,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
   - Either partner can leave: the shared data stays with the household's creator, and the one who leaves starts fresh. A joining partner's old solo data stays private, never merged.
   - Every data table has `household_id`, with RLS allowing only that household's members.
 - **Groceries:** `stores` is a **fixed list of six, in this order: WinCo, Trader Joe's, Harmons, Smith's, Costco, Walmart** (database-enforced: seeded per household, check constraint, read-only to the app; changing it needs a migration; docs/decisions/0012). `items` (one row per thing you buy: name, one comparison unit: per lb, per fl oz, or each).
+- **Receipts** (docs/decisions/0033): `/grocery/receipt` ("Scan a receipt" on Price Tracker). Gemini reads the lines (`lib/ai/receiptFromImage.ts`, one AI request), `suggestItem` matches each to the price book, the person reviews, `saveReceipt` creates new items and inserts all prices in one insert. Matches are remembered per store in `receipt_aliases` (text in `receiptKey` form). Real-Gemini check: `NETWORK_TESTS=1 npx vitest run lib/server/gemini.network.test.ts`.
 - **Price forms** pick the store with a swipe wheel (`StoreWheel`): Trader Joe's, WinCo, Harmons, Smith's, Walmart (`LOG_STORES`), starting at Trader Joe's or the store you're at (docs/decisions/0032).
 - **Main stores** (docs/decisions/0031): `MAIN_STORES` in `lib/mainStores.ts` (default Trader Joe's, WinCo, Harmons). Each Price Tracker row lists them with the latest price at each, cheapest first (`rankStores`), plus the best price ever when it beats all three.
 - **Prices:** `item_prices` (item, store, price, package quantity + unit, date, sale flag). Every price is kept as history. **Best price** = the lowest unit price ever entered for the item, computed from the history (not stored), shown with store and date; sale prices are labeled; prices older than 90 days are marked "older". Entering a price shows "🎉 New best price!" or "X% more than your best". Unit-price math in `lib/pricing.ts` with tests; an index keeps the best-price lookup fast.
@@ -128,7 +129,7 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 
 - `npm run dev`: start the local dev server
 - `npm run build`: production build
-- `NETWORK_TESTS=1 npx vitest run lib/server/safeFetch.network.test.ts`: real-internet checks of the safe fetcher (not in CI)
+- `NETWORK_TESTS=1 npx vitest run lib/server/safeFetch.network.test.ts`: real-internet checks of the safe fetcher (not in CI); `lib/server/gemini.network.test.ts` likewise reads a test receipt with the real Gemini
 - `npm test`: run unit tests (vitest; `vitest.config.mts` maps the `@/` imports). Browser-only values such as the phone's date come from hooks like `components/useToday` (`useSyncExternalStore`), not `setState` in an effect.
 - `npm run lint`: lint
 - `npm run typecheck`: TypeScript check

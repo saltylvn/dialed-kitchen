@@ -13,10 +13,14 @@ export function isJpeg(bytes: Uint8Array): boolean {
 
 export type PhotoCheck = { ok: true } | { ok: false; error: string };
 
-export function checkPhotos(photos: readonly Uint8Array[]): PhotoCheck {
-  if (photos.length === 0) return { ok: false, error: "Choose a photo of the recipe." };
+// `what` names the thing photographed in the messages: a recipe, or a receipt.
+export function checkPhotos(
+  photos: readonly Uint8Array[],
+  what: "recipe" | "receipt" = "recipe",
+): PhotoCheck {
+  if (photos.length === 0) return { ok: false, error: `Choose a photo of the ${what}.` };
   if (photos.length > MAX_PHOTOS) {
-    return { ok: false, error: `Choose up to ${MAX_PHOTOS} photos of one recipe.` };
+    return { ok: false, error: `Choose up to ${MAX_PHOTOS} photos of one ${what}.` };
   }
   if (photos.some((p) => p.length > MAX_PHOTO_BYTES)) {
     return { ok: false, error: "That photo is too large. Try taking it again." };
