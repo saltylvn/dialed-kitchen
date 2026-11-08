@@ -6,13 +6,12 @@ import { UNITS, unitsFor, type Unit } from "@/lib/units";
 import { logPrice, type LogPriceResult } from "../actions";
 import type { StoreRow } from "../schema";
 import { PriceWheel } from "./PriceWheel";
+import { StoreWheel } from "./StoreWheel";
 
-// Width is set where each field is used: full width on its own row, shared in a row.
 const box = "border-border bg-surface mt-2 min-h-12 rounded-xl border px-3 text-[17px]";
-const field = `${box} w-full`;
 
-// Log a price for one item: store (one of the six), price (swipe wheels), package size,
-// sale, date. After saving, says how it compares to the best price found before it.
+// Log a price for one item: store and price (swipe wheels), package size, sale, date.
+// After saving, says how it compares to the best price found before it.
 export function LogPriceForm({
   itemId,
   compareUnit,
@@ -34,20 +33,13 @@ export function LogPriceForm({
       {result?.ok && <ResultMessage result={result.data} />}
 
       <div>
-        <label htmlFor="price-store" className="font-medium">
+        <p id="store-label" className="font-medium">
           Store
-        </label>
-        {/* A native menu: on iPhone it opens as the swipe wheel. */}
-        <select id="price-store" name="storeId" required defaultValue="" className={field}>
-          <option value="" disabled>
-            Choose a store
-          </option>
-          {stores.map((store) => (
-            <option key={store.id} value={store.id}>
-              {store.name}
-            </option>
-          ))}
-        </select>
+        </p>
+        {/* A swipe wheel like the price: starts at Trader Joe's (docs/decisions/0032). */}
+        <div role="group" aria-labelledby="store-label" className="mt-2">
+          <StoreWheel name="storeId" stores={stores} />
+        </div>
       </div>
 
       <div>
@@ -125,33 +117,33 @@ export function LogPriceForm({
   );
 }
 
-function ResultMessage({
-  result,
-}: {
-  result: NonNullable<Extract<LogPriceResult, { ok: true }>>["data"];
-}) {
-  const { comparison, unitPrice, bestBefore } = result;
-  const text = (() => {
-    switch (comparison.kind) {
-      case "first":
-        return `✓ Saved. Your first price for this item: ${unitPrice}.`;
-      case "new_best":
-        return `🎉 New best price! ${unitPrice}, ${comparison.percentBelow}% below your previous best (${bestBefore}).`;
-      case "matches_best":
-        return `✓ Saved. That ties your best price: ${unitPrice}.`;
-      case "above_best":
-        return `✓ Saved: ${unitPrice}, ${comparison.percentAbove}% more than your best (${bestBefore}).`;
-    }
-  })();
-
+function ResultMessage({ result }: { result: LoggedPrice }) {
+  const text = loggedPriceText(result);
   return (
     <p
       role="status"
       className={`border-border bg-surface rounded-xl border p-3 font-medium ${
-        comparison.kind === "new_best" ? "text-success-text" : ""
+        result.comparison.kind === "new_best" ? "text-success-text" : ""
       }`}
     >
       {text}
     </p>
   );
+}
+
+export type LoggedPrice = NonNullable<Extract<LogPriceResult, { ok: true }>>["data"];
+
+// How a just-saved price compares to the best one before it (also used by the list's quick
+// log, features/list/components/QuickLogSheet).
+export function loggedPriceText({ comparison, unitPrice, bestBefore }: LoggedPrice): string {
+  switch (comparison.kind) {
+    case "first":
+      return `✓ Saved. Your first price for this item: ${unitPrice}.`;
+    case "new_best":
+      return `🎉 New best price! ${unitPrice}, ${comparison.percentBelow}% below your previous best (${bestBefore}).`;
+    case "matches_best":
+      return `✓ Saved. That ties your best price: ${unitPrice}.`;
+    case "above_best":
+      return `✓ Saved: ${unitPrice}, ${comparison.percentAbove}% more than your best (${bestBefore}).`;
+  }
 }
