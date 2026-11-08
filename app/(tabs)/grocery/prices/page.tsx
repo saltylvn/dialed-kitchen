@@ -19,7 +19,14 @@ export default async function PricesPage() {
   return (
     <TabPage tab="grocery">
       <GroceryViews current="/grocery/prices" />
-      <div className="mt-5 flex justify-end">
+      <div className="mt-5 flex justify-end gap-2">
+        {/* Log a whole trip's prices from one photo (docs/decisions/0033). */}
+        <Link
+          href="/grocery/receipt"
+          className="border-border bg-surface flex min-h-12 items-center rounded-xl border px-4 font-medium"
+        >
+          Scan a receipt
+        </Link>
         <Link
           href="/grocery/items/new"
           className="bg-accent text-on-accent flex min-h-12 items-center rounded-xl px-4 font-medium"
@@ -32,7 +39,7 @@ export default async function PricesPage() {
         <div className="mt-4">
           <EmptyState
             heading="Start your price book"
-            body="Add the things you buy, then log prices as you shop. You'll always know the best price you've found, and where."
+            body="Scan a receipt to add a whole trip at once, or add things one by one and log prices as you shop. You'll always know the best price you've found, and where."
           />
         </div>
       ) : (

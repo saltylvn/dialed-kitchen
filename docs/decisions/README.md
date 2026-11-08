@@ -36,3 +36,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0030](0030-grocery-list-and-price-tracker.md)                 | Two Grocery sub-tabs: Grocery List (with In stock) and Price Tracker                  | Accepted |
 | [0031](0031-main-stores-on-price-tracker.md)                   | Your three main stores on every Price Tracker row                                     | Accepted |
 | [0032](0032-shopping-at-a-store.md)                            | Shopping at a store: compare your stores on the list, and log prices as you check off | Accepted |
+| [0033](0033-scan-a-receipt.md)                                 | Scan a receipt to log a whole trip's prices                                           | Accepted |

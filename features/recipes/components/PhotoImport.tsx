@@ -1,15 +1,14 @@
 "use client";
 
 import { startTransition, useActionState, useRef, useState } from "react";
-import { MAX_PHOTOS, scaledSize } from "@/lib/photos";
+import { shrinkPhoto } from "@/components/shrinkPhoto";
+import { MAX_PHOTOS } from "@/lib/photos";
 import { importRecipeFromPhotos, type ImportResult } from "../importActions";
 import type { RecipeDraft } from "../schema";
 
 // Read a recipe from photos (a cookbook or magazine page, a recipe card, a screenshot).
 // Each photo is shrunk on the phone to a JPEG first: quicker to send, cheaper for the AI,
 // and redrawing it drops hidden photo data like GPS location. Photos are never stored.
-
-const TARGET_BYTES = 1_200_000;
 
 export function PhotoImport({ onDraft }: { onDraft: (draft: RecipeDraft) => void }) {
   const input = useRef<HTMLInputElement>(null);
@@ -93,42 +92,4 @@ export function PhotoImport({ onDraft }: { onDraft: (draft: RecipeDraft) => void
       )}
     </div>
   );
-}
-
-// Shrinks a photo to fit 1600 px on its longest side, as a JPEG under ~1.2 MB.
-async function shrinkPhoto(file: File): Promise<Blob> {
-  const url = URL.createObjectURL(file);
-  try {
-    const image = await decode(file, url);
-    const { width, height } = scaledSize(image.width, image.height);
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("No canvas");
-    context.drawImage(image, 0, 0, width, height);
-    if ("close" in image) image.close();
-
-    for (const quality of [0.85, 0.7, 0.55]) {
-      const blob = await new Promise<Blob | null>((done) =>
-        canvas.toBlob(done, "image/jpeg", quality),
-      );
-      if (blob && blob.size <= TARGET_BYTES) return blob;
-    }
-    throw new Error("Photo too large");
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
-// createImageBitmap is fastest; an <img> is the fallback for formats it can't open.
-async function decode(file: File, url: string): Promise<ImageBitmap | HTMLImageElement> {
-  try {
-    return await createImageBitmap(file, { imageOrientation: "from-image" });
-  } catch {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    return img;
-  }
 }
