@@ -39,4 +39,5 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0033](0033-scan-a-receipt.md)                                 | Scan a receipt to log a whole trip's prices                                           | Accepted |
 | [0034](0034-grocery-all-in-one.md)                             | Grocery all in one: Grocery list, Shopping kart, In stock                             | Accepted |
 | [0035](0035-grocery-list-and-in-stock.md)                      | Grocery list and In stock; prices in the price book                                   | Accepted |
+| [0036](0036-tab-order.md)                                      | Tab order: Recipes · Plan · Grocery                                                   | Accepted |
 | [0037](0037-half-gallon-and-fractions.md)                      | "½ gal" and typed fractions for package sizes                                         | Accepted |
