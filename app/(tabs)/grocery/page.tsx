@@ -1,43 +1,44 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import Link from "next/link";
 import { TabPage } from "@/components/ui/TabPage";
 import { AddToListForm } from "@/features/list/components/AddToListForm";
-import { GroceryViews } from "@/features/list/components/GroceryViews";
-import { ShoppingList } from "@/features/list/components/ShoppingList";
-import { StorePicker } from "@/features/list/components/StorePicker";
+import { GroceryLists } from "@/features/list/components/GroceryLists";
 import { getListPage } from "@/features/list/queries";
-import { SHOPPING_STORE_COOKIE } from "@/features/list/schema";
 import { StockList } from "@/features/stock/components/StockList";
 import { listInStock } from "@/features/stock/queries";
 import { requireUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Grocery List · Dialed Kitchen" };
+export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
 
 const part = "font-display text-[28px] leading-tight font-light italic";
+const link =
+  "border-border bg-surface flex min-h-12 flex-1 items-center justify-center rounded-xl border px-3 font-medium";
 
-// The Grocery List sub-tab: the shared list (add what you need, check it off in the store),
-// then what's already In stock at home, so both are on one screen. The store you're at is
-// remembered on this phone (a cookie): each item then shows its price here against your
-// other stores, and checking it off offers to log today's price (docs/decisions/0032).
+// The Grocery tab, all in one (docs/decisions/0034): the Grocery list, the Shopping kart and
+// what's In stock, top to bottom, so what you need, what you've picked up and what you have
+// are together. Every list item shows your stores' last prices to compare as you shop.
+// All reads run in parallel.
 export default async function GroceryPage() {
-  const store = (await cookies()).get(SHOPPING_STORE_COOKIE)?.value;
-  const [, page, inStock] = await Promise.all([
-    requireUser(),
-    getListPage(store), // checked against your stores there
-    listInStock(),
-  ]);
+  const [, page, inStock] = await Promise.all([requireUser(), getListPage(), listInStock()]);
 
   return (
     <TabPage tab="grocery">
-      <GroceryViews current="/grocery" />
-      <section aria-labelledby="list-heading" className="mt-5 space-y-4">
-        <h2 id="list-heading" className={part}>
-          To buy
-        </h2>
+      <div className="space-y-3">
         <AddToListForm itemNames={page.itemNames} />
-        <StorePicker stores={page.stores} current={page.store?.id ?? null} />
-        <ShoppingList entries={page.entries} store={page.store} stores={page.stores} />
-      </section>
+        <div className="flex gap-2">
+          <Link href="/grocery/receipt" className={link}>
+            Scan a receipt
+          </Link>
+          <Link href="/grocery/prices" className={link}>
+            Price book
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <GroceryLists entries={page.entries} stores={page.stores} />
+      </div>
+
       <section id="in-stock" aria-labelledby="stock-heading" className="mt-10 scroll-mt-4">
         <h2 id="stock-heading" className={`${part} mb-4`}>
           In stock

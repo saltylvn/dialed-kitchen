@@ -1,41 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EmptyState, TabPage } from "@/components/ui/TabPage";
-import { GroceryViews } from "@/features/list/components/GroceryViews";
+import { SubPage } from "@/components/ui/SubPage";
+import { EmptyState } from "@/components/ui/TabPage";
 import { PriceBookRow } from "@/features/prices/components/PriceBookRow";
-import { getPricesPage } from "@/features/prices/queries";
+import { listItemsWithBest } from "@/features/prices/queries";
 import { groupByCategory } from "@/lib/foodCategory";
 import { requireUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Price Tracker · Dialed Kitchen" };
+export const metadata: Metadata = { title: "Price book · Dialed Kitchen" };
 
 const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
+const button = "flex min-h-12 flex-1 items-center justify-center rounded-xl px-3 font-medium";
 
-// The price book: everything on the grocery list first, then every other item you buy,
-// each grouped by store section with its best price and where it was found.
-export default async function PricesPage() {
-  const [, { onList, others }] = await Promise.all([requireUser(), getPricesPage()]);
+// The price book: every item you've priced, on the list or not, grouped by store section,
+// each with your stores' last prices (docs/decisions/0034). Opened from the Grocery page.
+export default async function PriceBookPage() {
+  const [, items] = await Promise.all([requireUser(), listItemsWithBest()]);
 
   return (
-    <TabPage tab="grocery">
-      <GroceryViews current="/grocery/prices" />
-      <div className="mt-5 flex justify-end gap-2">
-        {/* Log a whole trip's prices from one photo (docs/decisions/0033). */}
-        <Link
-          href="/grocery/receipt"
-          className="border-border bg-surface flex min-h-12 items-center rounded-xl border px-4 font-medium"
-        >
+    <SubPage backHref="/grocery" backLabel="Grocery" title="Price book">
+      <div className="flex gap-2">
+        <Link href="/grocery/receipt" className={`${button} border-border bg-surface border`}>
           Scan a receipt
         </Link>
-        <Link
-          href="/grocery/items/new"
-          className="bg-accent text-on-accent flex min-h-12 items-center rounded-xl px-4 font-medium"
-        >
+        <Link href="/grocery/items/new" className={`${button} bg-accent text-on-accent`}>
           Add item
         </Link>
       </div>
 
-      {onList.length === 0 && others.length === 0 ? (
+      {items.length === 0 ? (
         <div className="mt-4">
           <EmptyState
             heading="Start your price book"
@@ -43,57 +36,19 @@ export default async function PricesPage() {
           />
         </div>
       ) : (
-        <div className="mt-2 space-y-8">
-          {onList.length > 0 && (
-            <Part title="On your list">
-              {groupByCategory(onList, (r) => r.name).map((group) => (
-                <Section key={group.id} label={group.label}>
-                  {group.things.map((row) => (
-                    <PriceBookRow
-                      key={row.entryId}
-                      name={row.name}
-                      item={row.item}
-                      amount={row.amount}
-                      checked={row.checked}
-                    />
-                  ))}
-                </Section>
-              ))}
-            </Part>
-          )}
-          {others.length > 0 && (
-            <Part title={onList.length > 0 ? "Rest of the price book" : "Price book"}>
-              {groupByCategory(others, (i) => i.name).map((group) => (
-                <Section key={group.id} label={group.label}>
-                  {group.things.map((item) => (
-                    <PriceBookRow key={item.id} name={item.name} item={item} />
-                  ))}
-                </Section>
-              ))}
-            </Part>
-          )}
+        <div className="mt-6 space-y-5">
+          {groupByCategory(items, (i) => i.name).map((group) => (
+            <div key={group.id}>
+              <h2 className={heading}>{group.label}</h2>
+              <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
+                {group.things.map((item) => (
+                  <PriceBookRow key={item.id} item={item} />
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )}
-    </TabPage>
-  );
-}
-
-function Part({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h2 className="font-display text-[28px] leading-tight font-light italic">{title}</h2>
-      <div className="mt-3 space-y-5">{children}</div>
-    </section>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h3 className={heading}>{label}</h3>
-      <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
-        {children}
-      </ul>
-    </div>
+    </SubPage>
   );
 }

@@ -28,7 +28,14 @@ type Props = {
   format?: (value: number) => string;
   rows?: 3 | 5; // visible rows (the middle one is selected)
   showLabel?: boolean;
+  textSize?: "large" | "words"; // "words" for names (stores): smaller, so they fit on one line
 };
+
+// Row text per size, written out in full so Tailwind finds every class.
+const TEXT = {
+  large: { selected: "text-[24px] font-semibold", other: "text-muted text-[18px]" },
+  words: { selected: "text-[18px] font-semibold", other: "text-muted text-[15px]" },
+} as const;
 
 // One row. memo(): moving the wheel redraws only the two rows whose "selected" changed.
 const WheelRow = memo(function WheelRow({
@@ -36,19 +43,21 @@ const WheelRow = memo(function WheelRow({
   text,
   selected,
   onPick,
+  size,
 }: {
   index: number;
   text: string;
   selected: boolean;
   onPick: (index: number) => void;
+  size: keyof typeof TEXT;
 }) {
   return (
     <div
       role="option"
       aria-selected={selected}
       onClick={() => onPick(index)}
-      className={`flex h-11 snap-center snap-always items-center justify-center tabular-nums ${
-        selected ? "text-[24px] font-semibold" : "text-muted text-[18px]"
+      className={`flex h-11 snap-center snap-always items-center justify-center px-2 whitespace-nowrap tabular-nums ${
+        selected ? TEXT[size].selected : TEXT[size].other
       }`}
     >
       {text}
@@ -64,6 +73,7 @@ export function WheelPicker({
   format = String,
   rows = 3,
   showLabel = true,
+  textSize = "large",
 }: Props) {
   const layout = LAYOUT[rows];
   const scroller = useRef<HTMLDivElement>(null);
@@ -150,6 +160,7 @@ export function WheelPicker({
               text={format(option)}
               selected={option === value}
               onPick={goTo}
+              size={textSize}
             />
           ))}
         </div>

@@ -13,7 +13,7 @@ export const maxDuration = 60;
 export default async function ReceiptPage() {
   const [, { items, stores }] = await Promise.all([requireUser(), getReceiptPage()]);
   return (
-    <SubPage backHref="/grocery/prices" backLabel="Price Tracker" title="Scan a receipt">
+    <SubPage backHref="/grocery" backLabel="Grocery" title="Scan a receipt">
       <ReceiptScanner items={items} stores={stores} />
     </SubPage>
   );

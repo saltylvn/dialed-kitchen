@@ -1,11 +1,9 @@
 import "server-only";
 import { z } from "zod";
-import { formatAmount, sortList } from "@/lib/list";
-import { MAIN_STORES, rankStores, type StorePrice } from "@/lib/mainStores";
+import { mainStorePrices } from "@/lib/mainStores";
 import { itemPhotoSrc } from "@/lib/photos";
-import { splitPriceBook } from "@/lib/priceBook";
+import { formatUnitAmount } from "@/lib/pricing";
 import { createClient } from "@/lib/server/supabase";
-import { listRowSchema } from "@/features/list/schema";
 import {
   bestPriceRowSchema,
   itemRowSchema,
@@ -30,7 +28,8 @@ export type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 export type ItemWithBest = ItemRow & {
   best: (BestPriceRow & { storeName: string }) | null;
   photo: string | null; // the photo's address, if the item has one
-  mainStores: StorePrice[]; // the latest price at each main store, cheapest first
+  // WinCo, Trader Joe's, Harmons, always in that order, with the latest price at each.
+  stores: { storeName: string; price: string | null; cheapest: boolean }[];
 };
 
 const latestAtStoreSchema = z.object({
@@ -61,47 +60,6 @@ export async function readItemPhotos(
       .parse(data)
       .map((p) => [p.item_id, itemPhotoSrc(p.item_id, p.updated_at)]),
   );
-}
-
-export type ListPriceRow = {
-  entryId: string;
-  name: string;
-  amount: string; // "2 lb", or "" when no amount was given
-  checked: boolean;
-  item: ItemWithBest | null; // null: not in the price book yet
-};
-
-export type PricesPage = { onList: ListPriceRow[]; others: ItemWithBest[] };
-
-// The Prices view: everything on the grocery list (in list order) with its best price,
-// then the rest of the price book. One round trip of waiting: all reads run in parallel.
-export async function getPricesPage(): Promise<PricesPage> {
-  const supabase = await createClient();
-  const [items, list] = await Promise.all([
-    listItemsWithBest(supabase),
-    supabase
-      .from("grocery_list_items")
-      .select("id, item_id, name, quantity, unit, checked, created_at"),
-  ]);
-  if (list.error) fail("grocery_list_items", list.error);
-
-  const entries = sortList(
-    z
-      .array(listRowSchema)
-      .parse(list.data)
-      .map((row) => ({ ...row, itemId: row.item_id, createdAt: row.created_at })),
-  );
-  const { onList, others } = splitPriceBook(items, entries);
-  return {
-    onList: onList.map(({ entry, item }) => ({
-      entryId: entry.id,
-      name: item?.name ?? entry.name,
-      amount: formatAmount(entry.quantity, entry.unit),
-      checked: entry.checked,
-      item,
-    })),
-    others,
-  };
 }
 
 // Every item with its best price, alphabetically.
@@ -155,16 +113,11 @@ export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWi
         ...item,
         best: b ? { ...b, storeName: storeNames.get(b.store_id) ?? "" } : null,
         photo: photos.get(item.id) ?? null,
-        mainStores: rankStores(
-          MAIN_STORES.map((storeName) => {
-            const p = atStores?.get(storeName);
-            return {
-              storeName,
-              unitPrice: p?.unitPrice ?? null,
-              observedOn: p?.observedOn ?? null,
-            };
-          }),
-        ),
+        stores: mainStorePrices((name) => atStores?.get(name)?.unitPrice ?? null).map((st) => ({
+          storeName: st.storeName,
+          price: st.unitPrice === null ? null : formatUnitAmount(st.unitPrice, item.compare_unit),
+          cheapest: st.cheapest,
+        })),
       };
     });
 }

@@ -11,6 +11,9 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
+  // Real italics for the store prices next to each grocery item (docs/decisions/0034),
+  // instead of the browser slanting the upright letters.
+  style: ["normal", "italic"],
 });
 
 const cormorant = Cormorant_Garamond({

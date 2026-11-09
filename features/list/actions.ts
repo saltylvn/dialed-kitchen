@@ -1,12 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { z } from "zod";
 import { GENERIC_ERROR, type ActionResult } from "@/lib/actionResult";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
-import { addToListSchema, SHOPPING_STORE_COOKIE } from "./schema";
+import { addToListSchema } from "./schema";
 
 // Grocery list actions. The database (RLS, constraints) has the final word.
 
@@ -76,28 +75,4 @@ export async function removeFromList(id: string): Promise<void> {
     throw new Error("Couldn't remove that. Check your connection and try again.");
   }
   revalidatePath("/grocery", "layout");
-}
-
-// ─── The store you're shopping at ─────────────────────────────────────────────
-// Remembered on this phone (a cookie), so the list opens at the same store next time; each
-// partner's phone keeps its own. Only a store id goes in it, and the page checks it against
-// the household's stores before using it.
-
-export async function chooseStore(formData: FormData): Promise<void> {
-  await requireUser();
-  const choice = z.union([z.uuid(), z.literal("")]).safeParse(formData.get("storeId") ?? "");
-  if (!choice.success) return;
-  const cookieStore = await cookies();
-  if (choice.data === "") {
-    cookieStore.delete(SHOPPING_STORE_COOKIE);
-  } else {
-    cookieStore.set(SHOPPING_STORE_COOKIE, choice.data, {
-      httpOnly: true, // only the server reads it
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 180, // half a year: until you pick another store
-    });
-  }
-  revalidatePath("/grocery");
 }

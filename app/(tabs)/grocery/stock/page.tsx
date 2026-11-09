@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// In stock moved onto the Grocery List sub-tab (docs/decisions/0030). This keeps old links
+// In stock is the bottom list of the Grocery page (docs/decisions/0030, 0034). This keeps old links
 // and bookmarks working.
 export default function InStockPage() {
   redirect("/grocery#in-stock");
