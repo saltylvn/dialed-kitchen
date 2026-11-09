@@ -36,6 +36,7 @@ export function StoreWheel({
         onChange={setIndex}
         format={(i) => wheel[i]?.name ?? ""}
         showLabel={false}
+        textSize="words"
       />
     </div>
   );

@@ -52,6 +52,3 @@ export const listRowSchema = z.object({
   created_at: z.string(),
 });
 export type ListRow = z.infer<typeof listRowSchema>;
-
-// The cookie that remembers which store this phone is shopping at (a store id).
-export const SHOPPING_STORE_COOKIE = "shopping_store";

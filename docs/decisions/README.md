@@ -37,3 +37,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0031](0031-main-stores-on-price-tracker.md)                   | Your three main stores on every Price Tracker row                                     | Accepted |
 | [0032](0032-shopping-at-a-store.md)                            | Shopping at a store: compare your stores on the list, and log prices as you check off | Accepted |
 | [0033](0033-scan-a-receipt.md)                                 | Scan a receipt to log a whole trip's prices                                           | Accepted |
+| [0034](0034-grocery-all-in-one.md)                             | Grocery all in one: Grocery list, Shopping kart, In stock                             | Accepted |

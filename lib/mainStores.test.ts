@@ -1,95 +1,32 @@
 import { describe, expect, it } from "vitest";
-import {
-  compareHere,
-  MAIN_STORES,
-  rankStores,
-  storesForLogging,
-  type StorePrice,
-} from "./mainStores";
-
-const at = (storeName: string, unitPrice: number | null): StorePrice => ({
-  storeName,
-  unitPrice,
-  observedOn: unitPrice === null ? null : "2026-11-01",
-});
+import { MAIN_STORES, mainStorePrices, storesForLogging } from "./mainStores";
 
 describe("MAIN_STORES", () => {
-  it("defaults to Trader Joe's, WinCo, Harmons", () => {
-    expect(MAIN_STORES).toEqual(["Trader Joe's", "WinCo", "Harmons"]);
+  it("is WinCo, Trader Joe's, Harmons, in that order", () => {
+    expect(MAIN_STORES).toEqual(["WinCo", "Trader Joe's", "Harmons"]);
   });
 });
 
-describe("rankStores", () => {
-  it("puts the cheapest first", () => {
-    const ranked = rankStores([at("Trader Joe's", 3), at("WinCo", 1), at("Harmons", 2)]);
-    expect(ranked.map((s) => s.storeName)).toEqual(["WinCo", "Harmons", "Trader Joe's"]);
+describe("mainStorePrices", () => {
+  const at = (prices: Record<string, number>) => (name: string) => prices[name] ?? null;
+
+  it("keeps the fixed order and marks the cheapest", () => {
+    const rows = mainStorePrices(at({ "Trader Joe's": 2.5, WinCo: 2, Harmons: 3 }));
+    expect(rows).toEqual([
+      { storeName: "WinCo", unitPrice: 2, cheapest: true },
+      { storeName: "Trader Joe's", unitPrice: 2.5, cheapest: false },
+      { storeName: "Harmons", unitPrice: 3, cheapest: false },
+    ]);
   });
 
-  it("puts stores with no price last, in the household's order", () => {
-    const ranked = rankStores([at("Trader Joe's", null), at("WinCo", null), at("Harmons", 2)]);
-    expect(ranked.map((s) => s.storeName)).toEqual(["Harmons", "Trader Joe's", "WinCo"]);
+  it("marks every store that ties for cheapest", () => {
+    const rows = mainStorePrices(at({ "Trader Joe's": 2, WinCo: 2 }));
+    expect(rows.map((r) => r.cheapest)).toEqual([true, true, false]);
   });
 
-  it("keeps the household's order for equal prices", () => {
-    const ranked = rankStores([at("Trader Joe's", 1), at("WinCo", 1), at("Harmons", 1)]);
-    expect(ranked.map((s) => s.storeName)).toEqual(["Trader Joe's", "WinCo", "Harmons"]);
-  });
-
-  it("doesn't change the list it was given", () => {
-    const prices = [at("Trader Joe's", 3), at("WinCo", 1)];
-    rankStores(prices);
-    expect(prices[0]?.storeName).toBe("Trader Joe's");
-  });
-});
-
-describe("compareHere", () => {
-  const ranked = (...prices: [string, number | null][]) =>
-    rankStores(prices.map(([name, price]) => at(name, price)));
-
-  it("points to a cheaper main store, with how much less", () => {
-    const c = compareHere(
-      ranked(["Trader Joe's", 2.5], ["WinCo", 2], ["Harmons", null]),
-      "Trader Joe's",
-    );
-    expect(c.here?.unitPrice).toBe(2.5);
-    expect(c.cheaper).toMatchObject({ storeName: "WinCo", unitPrice: 2, percentLess: 20 });
-    expect(c.cheapestHere).toBe(false);
-  });
-
-  it("says you're at the cheapest when nothing beats here", () => {
-    const c = compareHere(ranked(["Trader Joe's", 2.5], ["WinCo", 2], ["Harmons", 3]), "WinCo");
-    expect(c.cheaper).toBeNull();
-    expect(c.cheapestHere).toBe(true);
-  });
-
-  it("counts a tie as cheapest here", () => {
-    const c = compareHere(ranked(["Trader Joe's", 2], ["WinCo", 2]), "WinCo");
-    expect(c.cheaper).toBeNull();
-    expect(c.cheapestHere).toBe(true);
-  });
-
-  it("shows the cheapest known store when here has no price yet", () => {
-    const c = compareHere(ranked(["Trader Joe's", null], ["WinCo", 2]), "Trader Joe's");
-    expect(c.here).toBeNull();
-    expect(c.cheaper).toMatchObject({ storeName: "WinCo", percentLess: 0 });
-  });
-
-  it("makes no claims with only one price, or none", () => {
-    expect(compareHere(ranked(["WinCo", 2], ["Harmons", null]), "WinCo")).toMatchObject({
-      cheaper: null,
-      cheapestHere: false,
-    });
-    expect(compareHere(ranked(["WinCo", null]), "WinCo")).toEqual({
-      here: null,
-      cheaper: null,
-      cheapestHere: false,
-    });
-  });
-
-  it("works at a store that isn't one of the main three", () => {
-    const c = compareHere(ranked(["WinCo", 2], ["Harmons", 3]), "Costco");
-    expect(c.here).toBeNull();
-    expect(c.cheaper?.storeName).toBe("WinCo");
+  it("marks nothing with fewer than two prices", () => {
+    expect(mainStorePrices(at({ WinCo: 2 })).some((r) => r.cheapest)).toBe(false);
+    expect(mainStorePrices(at({})).every((r) => r.unitPrice === null && !r.cheapest)).toBe(true);
   });
 });
 
