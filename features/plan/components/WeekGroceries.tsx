@@ -42,17 +42,9 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
       aria-labelledby="week-groceries"
       className="border-border bg-surface mb-4 rounded-2xl border p-4"
     >
-      <div className="flex items-start justify-between gap-2">
-        <h2 id="week-groceries" className="font-medium">
-          This week’s groceries
-        </h2>
-        <Link
-          href={`/plan/prep?week=${week}`}
-          className="-mt-3 -mr-2 flex min-h-12 shrink-0 items-center px-2 font-medium underline underline-offset-2"
-        >
-          Meal prep ›
-        </Link>
-      </div>
+      <h2 id="week-groceries" className="font-medium">
+        This week’s groceries
+      </h2>
       <p className="text-muted text-[15px]">{counts.join(" · ")}</p>
 
       {summary.toBuy > 0 && (
