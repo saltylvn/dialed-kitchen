@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { groupByCategory } from "@/lib/foodCategory";
@@ -12,8 +11,8 @@ const part = "font-display text-[28px] leading-tight font-light italic";
 const sectionHeading = "text-muted text-[12px] tracking-[0.2em] uppercase";
 
 // The Grocery list (docs/decisions/0035), with the add box at its end. Ticking an item means you've got it: it leaves
-// the list and goes In stock (the list below), with an Undo for a mis-tap. Each row has a
-// Price book button for that item's prices, and × to take it off the list. Taps update the
+// the list and goes In stock (the list below), with an Undo for a mis-tap. × takes an item
+// off the list. Prices are in the Price book (the button at the top of the page). Taps update the
 // screen instantly (optimistic UI) and save in the background; a failed save puts the
 // screen back with a message.
 export function GroceryList({
@@ -119,7 +118,7 @@ export function GroceryList({
   );
 }
 
-// One row: checkbox and item on the left, then Price book, then ×.
+// One row: checkbox and item, the best price so far (if any), then × (docs/decisions/0035).
 function Row({
   entry,
   onTick,
@@ -137,6 +136,7 @@ function Row({
         aria-checked={false}
         // Read out as "Rice, 2 lb, checkbox, not checked: tick to move it In stock".
         aria-label={`${entry.amount ? `${entry.name}, ${entry.amount}` : entry.name}: tick to move it In stock`}
+        aria-describedby={entry.best ? `best-${entry.id}` : undefined}
         onClick={onTick}
         className="flex min-h-14 min-w-0 flex-1 items-center gap-2.5 pl-3 text-left"
       >
@@ -153,19 +153,17 @@ function Row({
           </span>
         </span>
       </button>
-      <Link
-        href={
-          entry.itemId
-            ? `/grocery/prices?item=${entry.itemId}#item-${entry.itemId}`
-            : `/grocery/items/new?name=${encodeURIComponent(entry.name)}`
-        }
-        aria-label={
-          entry.itemId ? `${entry.name} in the price book` : `Add ${entry.name} to the price book`
-        }
-        className="border-border flex min-h-12 shrink-0 items-center rounded-lg border px-2.5 text-[15px] font-medium"
-      >
-        Price book
-      </Link>
+      {entry.best && (
+        // The best price found so far, for context while shopping (docs/decisions/0035).
+        <p
+          id={`best-${entry.id}`}
+          className="w-[6.5rem] shrink-0 text-right text-[14px] leading-snug"
+        >
+          <span className="text-muted block text-[12px] tracking-[0.1em] uppercase">Best</span>
+          <span className="block font-medium">{entry.best.price}</span>
+          <span className="text-muted block">{entry.best.store}</span>
+        </p>
+      )}
       <button
         type="button"
         aria-label={`Remove ${entry.name} from the list`}
