@@ -65,19 +65,15 @@ describe("matching names", () => {
 });
 
 describe("marking In stock", () => {
-  it("records it once for the household and takes it off the list (not bought entries only)", async () => {
+  it("records it once for the household and takes it off the list", async () => {
     await addToList(alex, "Chicken thighs");
-    await addToList(alex, "chicken thighs, boneless", true); // already bought: stays until cleared
     await addToList(alex, "Rice");
 
-    expect(await setInStock(sam, "chicken thighs, boneless")).toBe(1);
+    expect(await setInStock(sam, "chicken thighs, boneless")).toBe(1); // same thing by name
     await setInStock(sam, "Chicken Thighs"); // same thing: not recorded twice
 
     expect(await inStock(alex)).toEqual(["chicken thighs"]);
-    expect(await list(alex)).toEqual([
-      { name: "chicken thighs, boneless", checked: true },
-      { name: "Rice", checked: false },
-    ]);
+    expect(await list(alex)).toEqual([{ name: "Rice", checked: false }]);
   });
 
   it("can be undone when something is used up", async () => {

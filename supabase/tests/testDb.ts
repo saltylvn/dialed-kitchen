@@ -32,7 +32,12 @@ const SUPABASE_STAND_IN = `
 export type TestUser = { id: string; email: string };
 
 // `usersBeforeMigrations` simulates people who signed up before the migrations ran.
-export async function createTestDb({ usersBeforeMigrations = [] as TestUser[] } = {}) {
+// `stopBefore` (a migration file name) applies only the migrations before it, so a test can
+// add old-style data and then call `migrateRest()` to check how that migration handles it.
+export async function createTestDb({
+  usersBeforeMigrations = [] as TestUser[],
+  stopBefore = null as string | null,
+} = {}) {
   const pg = new PGlite();
   await pg.exec(SUPABASE_STAND_IN);
   for (const user of usersBeforeMigrations) {
@@ -42,7 +47,9 @@ export async function createTestDb({ usersBeforeMigrations = [] as TestUser[] } 
   const migrations = readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))
     .sort();
-  for (const file of migrations) {
+  const cut = stopBefore ? migrations.indexOf(stopBefore) : migrations.length;
+  if (cut < 0) throw new Error(`No migration named ${stopBefore}`);
+  for (const file of migrations.slice(0, cut)) {
     await pg.exec(readFileSync(new URL(file, MIGRATIONS_DIR), "utf8"));
   }
 
@@ -50,6 +57,13 @@ export async function createTestDb({ usersBeforeMigrations = [] as TestUser[] } 
 
   return {
     pg,
+
+    // Applies the migrations held back by `stopBefore`.
+    async migrateRest() {
+      for (const file of migrations.slice(cut)) {
+        await pg.exec(readFileSync(new URL(file, MIGRATIONS_DIR), "utf8"));
+      }
+    },
 
     // Signs up a user the way Supabase Auth does: a row in auth.users. Google sign-in by
     // default; pass provider "email" for a password account (the demo).
