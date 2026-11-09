@@ -17,8 +17,9 @@ import {
 } from "../actions";
 import type { ReceiptDraft } from "../schema";
 
-// Scan a receipt (docs/decisions/0033): photograph it, let the AI read the lines, then check
-// each one (which item, price, size) before saving them all as prices at that store.
+// Scan a receipt (docs/decisions/0033, 0035): photograph it with the camera (no uploads),
+// let the AI read the lines, then check each one (which item, price, size) before saving
+// them all as prices at that store.
 
 export type PriceBookItem = { id: string; name: string; compareUnit: Unit };
 
@@ -28,6 +29,7 @@ const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
 export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stores: StoreRow[] }) {
   const input = useRef<HTMLInputElement>(null);
+  const [photos, setPhotos] = useState<Blob[]>([]); // taken so far, already shrunk
   const [shrinking, setShrinking] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [draft, setDraft] = useState<ReceiptDraft | null>(null);
@@ -41,26 +43,27 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
   );
   const busy = shrinking || reading;
 
-  async function onChoose(files: FileList | null) {
-    if (!files?.length) return;
+  // Camera only (capture), one photo at a time: a long receipt takes up to MAX_PHOTOS shots,
+  // top to bottom, then one Read for all of them.
+  async function onTake(file: File | undefined) {
+    if (!file) return;
     setLocalError(null);
-    if (files.length > MAX_PHOTOS) {
-      setLocalError(`Choose up to ${MAX_PHOTOS} photos of one receipt.`);
-      return;
-    }
     setShrinking(true);
     try {
-      const form = new FormData();
-      for (const file of Array.from(files)) {
-        form.append("photo", await shrinkPhoto(file, RECEIPT_MAX_SIDE), "receipt.jpg");
-      }
-      startTransition(() => scanAction(form));
+      const shrunk = await shrinkPhoto(file, RECEIPT_MAX_SIDE);
+      setPhotos((taken) => [...taken, shrunk].slice(0, MAX_PHOTOS));
     } catch {
-      setLocalError("Couldn't open that photo. Try another.");
+      setLocalError("Couldn't use that photo. Try taking it again.");
     } finally {
       setShrinking(false);
-      if (input.current) input.current.value = ""; // choosing the same photo again still works
+      if (input.current) input.current.value = ""; // taking another works the same way
     }
+  }
+
+  function read() {
+    const form = new FormData();
+    photos.forEach((photo, i) => form.append("photo", photo, `receipt-${i + 1}.jpg`));
+    startTransition(() => scanAction(form));
   }
 
   if (draft) {
@@ -71,35 +74,71 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
         draft={draft}
         items={items}
         stores={stores}
-        onRestart={() => setDraft(null)}
+        onRestart={() => {
+          setDraft(null);
+          setPhotos([]);
+        }}
       />
     );
   }
 
   const error = localError ?? (scan?.ok === false ? scan.error : null);
+  const cameraButton = (label: string, primary: boolean) => (
+    <label
+      className={`flex min-h-12 items-center justify-center rounded-xl px-4 font-medium ${
+        primary ? "bg-accent text-on-accent" : "border-border bg-surface border"
+      } ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+    >
+      {shrinking ? "Preparing…" : label}
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        capture="environment" // opens the camera; no uploads from the photo library
+        disabled={busy}
+        className="sr-only"
+        onChange={(e) => void onTake(e.target.files?.[0])}
+      />
+    </label>
+  );
+
   return (
     <div className="space-y-4">
       <p className="text-[17px]">
         Take a photo of a grocery receipt. The app reads each line, matches it to your price book,
-        and you check everything before it&apos;s saved. Long receipt? Up to {MAX_PHOTOS} photos,
-        top to bottom.
+        and you check everything before it&apos;s saved.
       </p>
-      <label
-        className={`bg-accent text-on-accent flex min-h-12 items-center justify-center rounded-xl px-4 font-medium ${
-          busy ? "pointer-events-none opacity-60" : "cursor-pointer"
-        }`}
-      >
-        {shrinking ? "Preparing…" : reading ? "Reading the receipt…" : "Take or choose a photo"}
-        <input
-          ref={input}
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={busy}
-          className="sr-only"
-          onChange={(e) => void onChoose(e.target.files)}
-        />
-      </label>
+
+      {photos.length === 0 ? (
+        cameraButton("📷 Take a photo", true)
+      ) : (
+        <>
+          <p role="status" className="font-medium">
+            ✓ {photos.length} {photos.length === 1 ? "photo" : "photos"} taken
+          </p>
+          <button
+            type="button"
+            onClick={read}
+            disabled={busy}
+            className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+          >
+            {reading ? "Reading the receipt…" : "Read the receipt"}
+          </button>
+          {photos.length < MAX_PHOTOS &&
+            !reading &&
+            cameraButton("📷 Long receipt? Take the next part", false)}
+          {!reading && (
+            <button
+              type="button"
+              onClick={() => setPhotos([])}
+              className="text-muted min-h-12 w-full font-medium underline"
+            >
+              Start over
+            </button>
+          )}
+        </>
+      )}
+
       {reading && (
         <p role="status" className="text-muted text-[15px]">
           This can take up to half a minute.
@@ -111,7 +150,7 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
         </p>
       )}
       <p className="text-muted text-[15px]">
-        Uses one of your daily AI requests. The photo is never stored.
+        Uses one of your daily AI requests. The photos are never stored.
       </p>
     </div>
   );

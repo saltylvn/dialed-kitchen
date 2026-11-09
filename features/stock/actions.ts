@@ -46,12 +46,3 @@ export async function addInStock(
   await setInStock(parsed.data, true);
   return { ok: true, data: { name: parsed.data } };
 }
-
-// After shopping: clears the bought (checked) entries and records them In stock.
-export async function clearCheckedIntoStock(): Promise<void> {
-  await requireUser();
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("clear_checked_into_stock");
-  if (error) console.error("clear checked failed:", error.message);
-  refresh();
-}
