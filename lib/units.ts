@@ -67,3 +67,47 @@ export function pricePerUnit(pricePerBaseUnit: number, unit: Unit): number {
 export function unitLabel(quantity: number, unit: Unit): string {
   return quantity > 1 ? UNITS[unit].plural : UNITS[unit].label;
 }
+
+// ─── Package sizes people pick from a menu (docs/decisions/0037) ─────────────
+// Besides the real units, the menus offer a few common package sizes that aren't units of
+// their own: "½ gal" (milk, juice). Picking one is turned into a real unit when saved,
+// 1 × ½ gal = 0.5 gal, so the database and every unit-price calculation stay unchanged.
+export const PACKAGE_SIZES = {
+  half_gal: { label: "½ gal", unit: "gal", factor: 0.5 },
+} as const satisfies Record<string, { label: string; unit: Unit; factor: number }>;
+
+export type PackageSize = keyof typeof PACKAGE_SIZES;
+export type UnitChoice = Unit | PackageSize;
+
+export function isUnitChoice(value: unknown): value is UnitChoice {
+  return isUnit(value) || (typeof value === "string" && Object.hasOwn(PACKAGE_SIZES, value));
+}
+
+// The real unit behind a choice ("half_gal" → "gal").
+export function choiceUnit(choice: UnitChoice): Unit {
+  return isUnit(choice) ? choice : PACKAGE_SIZES[choice].unit;
+}
+
+export function choiceLabel(choice: UnitChoice): string {
+  return isUnit(choice) ? UNITS[choice].label : PACKAGE_SIZES[choice].label;
+}
+
+// What a menu offers for one kind of measure: its units, with "½ gal" right after "gal".
+export function choicesFor(dimension: Dimension): UnitChoice[] {
+  return unitsFor(dimension).flatMap((unit): UnitChoice[] => {
+    const sizes = (Object.keys(PACKAGE_SIZES) as PackageSize[]).filter(
+      (size) => PACKAGE_SIZES[size].unit === unit,
+    );
+    return [unit, ...sizes];
+  });
+}
+
+// An amount in a chosen unit, as an amount in a real unit: (1, "half_gal") → 0.5 gal.
+export function resolveChoice(
+  quantity: number,
+  choice: UnitChoice,
+): { quantity: number; unit: Unit } {
+  if (isUnit(choice)) return { quantity, unit: choice };
+  const size = PACKAGE_SIZES[choice];
+  return { quantity: Math.round(quantity * size.factor * 1000) / 1000, unit: size.unit };
+}

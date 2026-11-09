@@ -1,7 +1,15 @@
 import { z } from "zod";
+import { readAmount } from "@/lib/ingredients";
 import { isSingleEmoji } from "@/lib/foodEmoji";
 import { addDays, isIsoDate, serverToday } from "@/lib/dates";
-import { isUnit, UNITS, type Unit } from "@/lib/units";
+import {
+  isUnit,
+  isUnitChoice,
+  resolveChoice,
+  type Unit,
+  type UnitChoice,
+  UNITS,
+} from "@/lib/units";
 
 // What valid input looks like, and the shape of rows read back from the database.
 // Everything from a form or the database is checked here before the app uses it.
@@ -10,6 +18,13 @@ const unit = z
   .string()
   .refine(isUnit, "Choose a unit")
   .transform((u) => u as Unit);
+
+// A size unit picked from a menu: a real unit, or a package size like "½ gal" that's turned
+// into one with the amount (resolveChoice; docs/decisions/0037).
+export const unitChoice = z
+  .string()
+  .refine(isUnitChoice, "Choose a unit")
+  .transform((u) => u as UnitChoice);
 
 // "$3.49", "3.49", "1,299.00" → 3.49 / 1299. Up to 2 decimal places.
 export function parseMoney(input: unknown): number | null {
@@ -20,11 +35,11 @@ export function parseMoney(input: unknown): number | null {
 }
 
 // "2", "1.5", ".75" → a positive number with up to 3 decimal places.
+// A package size or amount as typed: "2", "1.5", and fractions like "1/2", "1 1/2", "½"
+// (docs/decisions/0037).
 export function parseQuantity(input: unknown): number | null {
   if (typeof input !== "string") return null;
-  const cleaned = input.trim();
-  if (!/^\d+(\.\d{1,3})?$|^\.\d{1,3}$/.test(cleaned)) return null;
-  return Number(cleaned);
+  return readAmount(input);
 }
 
 const name = (max: number, label: string) =>
@@ -40,7 +55,8 @@ export const itemFormSchema = z.object({
   compareUnit: unit,
 });
 
-export const priceFormSchema = z.object({
+// The price form's fields, one by one (the receipt review reuses them per line).
+export const priceFields = z.object({
   itemId: z.uuid(),
   storeId: z.uuid({ message: "Choose a store" }),
   price: z.string().transform((s, ctx) => {
@@ -59,7 +75,7 @@ export const priceFormSchema = z.object({
     }
     return value;
   }),
-  unit,
+  unit: unitChoice,
   onSale: z.literal("on").optional().transform(Boolean),
   // The shopper's local date. Allow a day of slack around the server's date (time zones),
   // but nothing in the future beyond that and nothing absurdly old.
@@ -69,6 +85,12 @@ export const priceFormSchema = z.object({
     .refine((d) => d <= addDays(serverToday(), 1), "That date is in the future")
     .refine((d) => d >= "2000-01-01", "Choose a more recent date"),
 });
+
+// The whole price form, with a package size like "½ gal" turned into a real unit and amount.
+export const priceFormSchema = priceFields.transform(({ quantity, unit, ...rest }) => ({
+  ...rest,
+  ...resolveChoice(quantity, unit),
+}));
 
 // ─── Rows read from the database ──────────────────────────────────────────────
 

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useToday } from "@/components/useToday";
-import { UNITS, unitsFor, type Unit } from "@/lib/units";
+import { choiceLabel, choicesFor, UNITS, type Unit } from "@/lib/units";
 import { logPrice, type LogPriceResult } from "../actions";
 import type { StoreRow } from "../schema";
 import { PriceWheel } from "./PriceWheel";
@@ -71,9 +71,9 @@ export function LogPriceForm({
             defaultValue={compareUnit}
             className={`${box} w-28 shrink-0`}
           >
-            {unitsFor(UNITS[compareUnit].dimension).map((unit) => (
-              <option key={unit} value={unit}>
-                {UNITS[unit].label}
+            {choicesFor(UNITS[compareUnit].dimension).map((choice) => (
+              <option key={choice} value={choice}>
+                {choiceLabel(choice)}
               </option>
             ))}
           </select>

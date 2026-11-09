@@ -6,7 +6,17 @@ import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { shrinkPhoto } from "@/components/shrinkPhoto";
 import { useToday } from "@/components/useToday";
 import { MAX_PHOTOS } from "@/lib/photos";
-import { DIMENSIONS, isUnit, UNITS, unitsFor, type Dimension, type Unit } from "@/lib/units";
+import {
+  choiceLabel,
+  choicesFor,
+  choiceUnit,
+  DIMENSIONS,
+  isUnitChoice,
+  UNITS,
+  type Dimension,
+  type Unit,
+  type UnitChoice,
+} from "@/lib/units";
 import { StoreWheel } from "@/features/prices/components/StoreWheel";
 import type { StoreRow } from "@/features/prices/schema";
 import {
@@ -162,7 +172,7 @@ type Row = {
   newName: string;
   price: string;
   quantity: string;
-  unit: Unit;
+  unit: UnitChoice; // a real unit, or a package size like "½ gal"
   onSale: boolean;
   remembered: boolean;
   checkSize: boolean; // the unit was changed to fit the chosen item: worth a look
@@ -388,15 +398,15 @@ function ReceiptReview({
                       value={row.unit}
                       onChange={(e) => {
                         const unit = e.target.value;
-                        if (isUnit(unit)) update(i, { unit, checkSize: false });
+                        if (isUnitChoice(unit)) update(i, { unit, checkSize: false });
                       }}
                       className={`${box} min-w-0 flex-1 px-2`}
                     >
                       {(dimension ? [dimension] : GROUPS).map((d) => (
                         <optgroup key={d} label={DIMENSIONS[d].label}>
-                          {unitsFor(d).map((u) => (
+                          {choicesFor(d).map((u) => (
                             <option key={u} value={u}>
-                              {UNITS[u].label}
+                              {choiceLabel(u)}
                             </option>
                           ))}
                         </optgroup>
@@ -457,6 +467,6 @@ function ReceiptReview({
 function fitToItem(row: Row, item: PriceBookItem | undefined): Row {
   if (!item) return row;
   const dimension = UNITS[item.compareUnit].dimension;
-  if (UNITS[row.unit].dimension === dimension) return { ...row, checkSize: false };
+  if (UNITS[choiceUnit(row.unit)].dimension === dimension) return { ...row, checkSize: false };
   return { ...row, unit: item.compareUnit, quantity: "1", checkSize: true };
 }

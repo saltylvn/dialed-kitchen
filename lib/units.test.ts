@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { isUnit, pricePerBase, pricePerUnit, sameDimension, UNITS, unitsFor } from "./units";
+import {
+  choiceLabel,
+  choicesFor,
+  choiceUnit,
+  isUnit,
+  isUnitChoice,
+  pricePerBase,
+  pricePerUnit,
+  resolveChoice,
+  sameDimension,
+  UNITS,
+  unitsFor,
+} from "./units";
 
 describe("units", () => {
   it("groups units by dimension", () => {
@@ -52,5 +64,32 @@ describe("unit prices", () => {
     expect(() => pricePerBase(0, 1, "lb")).toThrow(RangeError);
     expect(() => pricePerBase(2, 0, "lb")).toThrow(RangeError);
     expect(() => pricePerBase(Number.NaN, 1, "lb")).toThrow(RangeError);
+  });
+});
+
+describe("package sizes (½ gal)", () => {
+  it("offers ½ gal right after gal, only for volume", () => {
+    const volume = choicesFor("volume");
+    expect(volume.indexOf("half_gal")).toBe(volume.indexOf("gal") + 1);
+    expect(choicesFor("weight")).not.toContain("half_gal");
+  });
+
+  it("turns ½ gal into gallons when saved", () => {
+    expect(resolveChoice(1, "half_gal")).toEqual({ quantity: 0.5, unit: "gal" });
+    expect(resolveChoice(2, "half_gal")).toEqual({ quantity: 1, unit: "gal" });
+    expect(resolveChoice(3, "lb")).toEqual({ quantity: 3, unit: "lb" });
+  });
+
+  it("knows its label, unit and that it's a valid choice", () => {
+    expect(choiceLabel("half_gal")).toBe("½ gal");
+    expect(choiceUnit("half_gal")).toBe("gal");
+    expect(isUnitChoice("half_gal")).toBe(true);
+    expect(isUnitChoice("lb")).toBe(true);
+    expect(isUnitChoice("toString")).toBe(false);
+  });
+
+  it("prices ½ gal for $2.50 the same as a gallon for $5", () => {
+    const half = resolveChoice(1, "half_gal");
+    expect(pricePerBase(2.5, half.quantity, half.unit)).toBeCloseTo(pricePerBase(5, 1, "gal"));
   });
 });

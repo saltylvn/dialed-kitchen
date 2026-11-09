@@ -31,8 +31,17 @@ describe("reading typed numbers", () => {
   it("understands package sizes", () => {
     expect(parseQuantity("1.5")).toBe(1.5);
     expect(parseQuantity(".75")).toBe(0.75);
-    for (const bad of ["", "two", "1.2345", "-1", "1/2"])
+    for (const bad of ["", "two", "1.2345", "-1", "1/0", "1e3", "½½", "1 / 2 cups"])
       expect(parseQuantity(bad), bad).toBeNull();
+  });
+
+  it("understands fractions", () => {
+    expect(parseQuantity("1/2")).toBe(0.5);
+    expect(parseQuantity("1 1/2")).toBe(1.5);
+    expect(parseQuantity("½")).toBe(0.5);
+    expect(parseQuantity("1½")).toBe(1.5);
+    expect(parseQuantity("2 ¼")).toBe(2.25);
+    expect(parseQuantity("1/3")).toBe(0.333);
   });
 });
 
@@ -48,6 +57,15 @@ describe("priceFormSchema", () => {
       observedOn: serverToday(),
     });
     expect(priceFormSchema.parse({ ...valid, onSale: undefined }).onSale).toBe(false);
+  });
+
+  it("turns a ½ gal package into gallons", () => {
+    const parsed = priceFormSchema.parse({ ...valid, quantity: "1", unit: "half_gal" });
+    expect(parsed).toMatchObject({ quantity: 0.5, unit: "gal" });
+    expect(priceFormSchema.parse({ ...valid, quantity: "1/2", unit: "gal" })).toMatchObject({
+      quantity: 0.5,
+      unit: "gal",
+    });
   });
 
   it("rejects bad input with a helpful message", () => {

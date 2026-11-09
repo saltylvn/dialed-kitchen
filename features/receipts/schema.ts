@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { itemFormSchema, priceFormSchema } from "@/features/prices/schema";
+import { itemFormSchema, priceFields } from "@/features/prices/schema";
 import { receiptKey } from "@/lib/receipt";
-import type { Unit } from "@/lib/units";
+import { resolveChoice, type Unit } from "@/lib/units";
 
 // The shape of a reviewed receipt the person saves (docs/decisions/0033). Each line goes to
 // an existing price-book item or makes a new one; price, size, unit and date follow the same
-// rules as the item page's price form (priceFormSchema), so a receipt can't save anything a
+// rules as the item page's price form (priceFields), so a receipt can't save anything a
 // typed price couldn't.
 
 const lineSchema = z
@@ -13,18 +13,20 @@ const lineSchema = z
     receiptText: z.string().max(200).transform(receiptKey), // "" = nothing to remember
     itemId: z.uuid().nullable(),
     newItemName: itemFormSchema.shape.name.nullable(),
-    price: priceFormSchema.shape.price,
-    quantity: priceFormSchema.shape.quantity,
-    unit: priceFormSchema.shape.unit,
+    price: priceFields.shape.price,
+    quantity: priceFields.shape.quantity,
+    unit: priceFields.shape.unit,
     onSale: z.boolean(),
   })
   .refine((l) => (l.itemId === null) !== (l.newItemName === null), {
     message: "Choose an item for each line",
-  });
+  })
+  // A package size like "½ gal" becomes a real unit and amount (docs/decisions/0037).
+  .transform(({ quantity, unit, ...rest }) => ({ ...rest, ...resolveChoice(quantity, unit) }));
 
 export const saveReceiptSchema = z.object({
   storeId: z.uuid({ message: "Choose the store" }),
-  observedOn: priceFormSchema.shape.observedOn,
+  observedOn: priceFields.shape.observedOn,
   lines: z.array(lineSchema).min(1, "Choose at least one line to save").max(100),
 });
 
