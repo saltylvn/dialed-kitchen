@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { readAmount } from "@/lib/ingredients";
-import { isSingleEmoji } from "@/lib/foodEmoji";
 import { addDays, isIsoDate, serverToday } from "@/lib/dates";
 import {
   isUnit,
@@ -98,18 +97,8 @@ export const itemRowSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   compare_unit: unit,
-  emoji: z.string().nullable().default(null), // custom emoji; null = worked out from the name
 });
 
-// Choosing an item's emoji: exactly one emoji, or empty to go back to the automatic one.
-export const itemEmojiFormSchema = z.object({
-  itemId: z.uuid(),
-  emoji: z
-    .string()
-    .transform((s) => s.trim())
-    .refine((s) => s === "" || isSingleEmoji(s), "Choose one emoji from the emoji keyboard")
-    .transform((s) => s || null),
-});
 export type ItemRow = z.infer<typeof itemRowSchema>;
 
 // Stores are a fixed list of six (docs/decisions/0012), shown in sort_order.

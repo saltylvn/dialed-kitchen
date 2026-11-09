@@ -1,6 +1,5 @@
 import "server-only";
 import { z } from "zod";
-import { itemPhotoSrc } from "@/lib/photos";
 import { createClient } from "@/lib/server/supabase";
 import {
   bestPriceRowSchema,
@@ -25,40 +24,19 @@ export type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 export type ItemWithBest = ItemRow & {
   best: (BestPriceRow & { storeName: string }) | null;
-  photo: string | null; // the photo's address, if the item has one
 };
 
 function fail(what: string, error: { message: string }): never {
   throw new Error(`${what} failed: ${error.message}`);
 }
 
-const photoRowSchema = z.object({ item_id: z.uuid(), updated_at: z.string() });
-
-// Which items have a photo, as item id → the photo's address. Reads only the ids and dates,
-// never the photos themselves (the browser fetches each one, and keeps it cached).
-export async function readItemPhotos(
-  supabase: SupabaseClient,
-  itemId?: string,
-): Promise<Map<string, string>> {
-  const query = supabase.from("item_photos").select("item_id, updated_at");
-  const { data, error } = await (itemId ? query.eq("item_id", itemId) : query);
-  if (error) fail("item_photos", error);
-  return new Map(
-    z
-      .array(photoRowSchema)
-      .parse(data)
-      .map((p) => [p.item_id, itemPhotoSrc(p.item_id, p.updated_at)]),
-  );
-}
-
 // Every item with its best price, alphabetically.
 export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWithBest[]> {
   const supabase = client ?? (await createClient());
-  const [items, best, stores, photos] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit, emoji").order("name"),
+  const [items, best, stores] = await Promise.all([
+    supabase.from("items").select("id, name, compare_unit").order("name"),
     supabase.from("item_best_prices").select(BEST_COLUMNS),
     supabase.from("stores").select("id, name"),
-    readItemPhotos(supabase),
   ]);
   if (items.error) fail("items", items.error);
   if (best.error) fail("item_best_prices", best.error);
@@ -85,14 +63,12 @@ export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWi
       return {
         ...item,
         best: b ? { ...b, storeName: storeNames.get(b.store_id) ?? "" } : null,
-        photo: photos.get(item.id) ?? null,
       };
     });
 }
 
 export type ItemPage = {
   item: ItemRow;
-  photo: string | null; // the photo's address, if it has one
   history: (PriceRow & { storeName: string })[];
   stores: StoreRow[];
   bestPriceId: string | null;
@@ -103,8 +79,8 @@ export type ItemPage = {
 export async function getItemPage(itemId: string): Promise<ItemPage | null> {
   if (!z.uuid().safeParse(itemId).success) return null;
   const supabase = await createClient();
-  const [item, history, best, stores, photos] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit, emoji").eq("id", itemId).maybeSingle(),
+  const [item, history, best, stores] = await Promise.all([
+    supabase.from("items").select("id, name, compare_unit").eq("id", itemId).maybeSingle(),
     supabase
       .from("item_prices")
       .select(PRICE_COLUMNS)
@@ -114,7 +90,6 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
       .limit(100),
     supabase.from("item_best_prices").select("price_id").eq("item_id", itemId).maybeSingle(),
     supabase.from("stores").select("id, name").order("sort_order"),
-    readItemPhotos(supabase, itemId),
   ]);
   if (item.error) fail("item", item.error);
   if (history.error) fail("item_prices", history.error);
@@ -126,7 +101,6 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
   const storeNames = new Map(storeList.map((s) => [s.id, s.name]));
   return {
     item: itemRowSchema.parse(item.data),
-    photo: photos.get(itemId) ?? null,
     history: z
       .array(priceRowSchema)
       .parse(history.data)

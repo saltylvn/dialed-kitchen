@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { foodEmoji, isSingleEmoji, singular } from "./foodEmoji";
+import { foodEmoji, singular } from "./foodEmoji";
 
 describe("foodEmoji", () => {
   it("finds the food in everyday names", () => {
@@ -57,15 +57,5 @@ describe("singular", () => {
       "swiss",
       "oat",
     ]);
-  });
-});
-
-describe("isSingleEmoji", () => {
-  it.each(["🧻", "🍗", "👩🏽‍🍳", "🌶️", "🇺🇸", "❤️"])("accepts %s", (text) => {
-    expect(isSingleEmoji(text)).toBe(true);
-  });
-
-  it.each(["", "a", "🧻🧻", "🧻 ", "hi 🧻", "1", "<b>"])("refuses %j", (text) => {
-    expect(isSingleEmoji(text)).toBe(false);
   });
 });

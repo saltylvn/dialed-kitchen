@@ -5,20 +5,17 @@ import { itemIdFor, nameKey } from "@/lib/priceBook";
 import { formatUnitPrice } from "@/lib/pricing";
 import { createClient } from "@/lib/server/supabase";
 import type { Unit } from "@/lib/units";
-import { readItemPhotos } from "@/features/prices/queries";
 import { itemRowSchema, storeRowSchema } from "@/features/prices/schema";
 import { listRowSchema } from "./schema";
 
 // The Grocery page's list in one round trip of waiting: the list, the price book (to link
-// each entry to its item), photos, and each item's best price so far with its store, read
+// each entry to its item) and each item's best price so far with its store, read
 // in parallel. The full prices live in the price book (docs/decisions/0035).
 
 export type ListEntry = {
   id: string;
   itemId: string | null; // the price-book item, for the Price book button
   name: string;
-  emoji: string | null; // the item's custom emoji, if one was chosen
-  photo: string | null; // the item's photo address, if it has one
   amount: string; // "2 lb", or ""
   quantity: number | null; // the raw amount, to put it back on Undo
   unit: Unit | null;
@@ -38,12 +35,11 @@ function fail(what: string, error: { message: string }): never {
 export async function getListPage(): Promise<ListPage> {
   const supabase = await createClient();
 
-  const [list, items, photos, best, stores] = await Promise.all([
+  const [list, items, best, stores] = await Promise.all([
     supabase
       .from("grocery_list_items")
       .select("id, item_id, name, quantity, unit, checked, created_at"),
-    supabase.from("items").select("id, name, compare_unit, emoji").order("name"),
-    readItemPhotos(supabase),
+    supabase.from("items").select("id, name, compare_unit").order("name"),
     // The best price so far per item (computed by the database, decision 0003).
     supabase.from("item_best_prices").select("item_id, store_id, unit_price_base"),
     supabase.from("stores").select("id, name"),
@@ -54,7 +50,6 @@ export async function getListPage(): Promise<ListPage> {
   if (stores.error) fail("stores", stores.error);
 
   const itemList = z.array(itemRowSchema).parse(items.data);
-  const emojis = new Map(itemList.map((i) => [i.id, i.emoji]));
   const units = new Map(itemList.map((i) => [i.id, i.compare_unit]));
   const storeNames = new Map(
     z
@@ -84,8 +79,6 @@ export async function getListPage(): Promise<ListPage> {
         id: row.id,
         itemId,
         name: row.name,
-        emoji: (itemId && emojis.get(itemId)) || null,
-        photo: (itemId && photos.get(itemId)) || null,
         amount: formatAmount(row.quantity, row.unit),
         quantity: row.quantity,
         unit: row.unit,

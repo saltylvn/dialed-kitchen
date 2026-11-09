@@ -146,7 +146,7 @@ function Row({
         />
         {/* The emoji stays beside the name; only the name wraps on a narrow phone. */}
         <span className="flex min-w-0 flex-1 items-start">
-          <FoodEmoji name={entry.name} custom={entry.emoji} photo={entry.photo} />
+          <FoodEmoji name={entry.name} />
           <span className="min-w-0 font-medium break-words">
             {entry.name}
             {entry.amount && <span className="text-muted block font-normal">{entry.amount}</span>}
