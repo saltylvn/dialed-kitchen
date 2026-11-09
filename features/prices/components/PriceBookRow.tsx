@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { formatShortDate, serverToday } from "@/lib/dates";
-import { foodEmoji } from "@/lib/foodEmoji";
 import { formatUnitPrice } from "@/lib/pricing";
 import type { ItemWithBest } from "../queries";
 
 // One row of the price book (docs/decisions/0035): the item on the left (tap it for every
 // store's prices and the history), Log in the middle (log a price at any store), and the
-// best price found so far on the right, with its store and date. An item with no emoji or
-// photo gets a ＋ spot to choose one. A grocery item's Price book button opens
+// best price found so far on the right, with its store and date. A link to
 // ?item=<id>#item-<id>: the page scrolls to the row and outlines it.
 export function PriceBookRow({
   item,
@@ -28,18 +26,8 @@ export function PriceBookRow({
       }`}
     >
       <div className="flex min-h-14 min-w-0 flex-1 items-center gap-2">
-        {!item.photo && !item.emoji && !foodEmoji(item.name) && (
-          // No photo or emoji for this item: a spot to choose one.
-          <Link
-            href={`/grocery/items/${item.id}#emoji`}
-            aria-label={`Choose an emoji or photo for ${item.name}`}
-            className="border-border text-muted flex size-12 shrink-0 items-center justify-center rounded-xl border border-dashed text-xl"
-          >
-            ＋
-          </Link>
-        )}
         <Link href={`/grocery/items/${item.id}`} className="flex min-w-0 items-start font-medium">
-          <FoodEmoji name={item.name} custom={item.emoji} photo={item.photo} />
+          <FoodEmoji name={item.name} />
           <span className="min-w-0 break-words">{item.name}</span>
         </Link>
       </div>

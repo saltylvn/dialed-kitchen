@@ -2,15 +2,16 @@
 
 import { useActionState } from "react";
 import { useToday } from "@/components/useToday";
-import { choiceLabel, choicesFor, UNITS, type Unit } from "@/lib/units";
+import { choiceLabel, choicesFor, DIMENSIONS, UNITS, type Dimension, type Unit } from "@/lib/units";
 import { logPrice, type LogPriceResult } from "../actions";
 import type { StoreRow } from "../schema";
 import { PriceWheel } from "./PriceWheel";
 import { StoreWheel } from "./StoreWheel";
 
 const box = "border-border bg-surface mt-2 min-h-12 rounded-xl border px-3 text-[17px]";
+const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
-// Log a price for one item: store and price (swipe wheels), package size, sale, date.
+// Log a price for one item: store and price (swipe wheels), package size and date.
 // After saving, says how it compares to the best price found before it.
 export function LogPriceForm({
   itemId,
@@ -25,6 +26,7 @@ export function LogPriceForm({
 }) {
   const [result, formAction, pending] = useActionState<LogPriceResult, FormData>(logPrice, null);
   const today = useToday(); // the phone's own date; "" during the server render
+  const itemDimension = UNITS[compareUnit].dimension;
 
   return (
     <form action={formAction} className="space-y-4">
@@ -71,22 +73,24 @@ export function LogPriceForm({
             defaultValue={compareUnit}
             className={`${box} w-28 shrink-0`}
           >
-            {choicesFor(UNITS[compareUnit].dimension).map((choice) => (
-              <option key={choice} value={choice}>
-                {choiceLabel(choice)}
-              </option>
+            {/* Grouped like the item's "Compare prices" menu. Only the item's own kind of
+                measure can be picked: a price per lb can't be compared with one per each. */}
+            {GROUPS.map((dimension) => (
+              <optgroup key={dimension} label={DIMENSIONS[dimension].label}>
+                {choicesFor(dimension).map((choice) => (
+                  <option key={choice} value={choice} disabled={dimension !== itemDimension}>
+                    {choiceLabel(choice)}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
       </fieldset>
 
-      <div className="flex gap-3">
-        <label className="border-border bg-surface flex min-h-12 flex-1 items-center gap-3 rounded-xl border px-3">
-          <input type="checkbox" name="onSale" className="accent-accent size-5" />
-          On sale
-        </label>
-        <div className="flex-1">
-          <label htmlFor="price-date" className="sr-only">
+      <div>
+        <div>
+          <label htmlFor="price-date" className="font-medium">
             Date
           </label>
           <input
@@ -97,7 +101,7 @@ export function LogPriceForm({
             required
             defaultValue={today}
             max={today || undefined}
-            className="border-border bg-surface min-h-12 w-full rounded-xl border px-3 text-[17px]"
+            className="border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]"
           />
         </div>
       </div>
