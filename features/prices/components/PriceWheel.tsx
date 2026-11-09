@@ -25,6 +25,7 @@ export function PriceWheel({ name, initial }: { name: string; initial: number })
           onChange={setDollars}
           format={(d) => `$${d}`}
           showLabel={false}
+          rows={5}
         />
         <span aria-hidden className="text-[24px] font-semibold">
           .
@@ -36,6 +37,7 @@ export function PriceWheel({ name, initial }: { name: string; initial: number })
           onChange={setCents}
           format={(c) => String(c).padStart(2, "0")}
           showLabel={false}
+          rows={5}
         />
       </div>
     </div>

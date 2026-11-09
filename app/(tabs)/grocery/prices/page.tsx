@@ -14,8 +14,12 @@ const button = "flex min-h-12 flex-1 items-center justify-center rounded-xl px-3
 
 // The price book: every item you've priced, on the list or not, grouped by store section,
 // each with your stores' last prices (docs/decisions/0034). Opened from the Grocery page.
-export default async function PriceBookPage() {
-  const [, items] = await Promise.all([requireUser(), listItemsWithBest()]);
+export default async function PriceBookPage({ searchParams }: PageProps<"/grocery/prices">) {
+  const [, { item: highlight }, items] = await Promise.all([
+    requireUser(),
+    searchParams,
+    listItemsWithBest(),
+  ]);
 
   return (
     <SubPage backHref="/grocery" backLabel="Grocery" title="Price book">
@@ -42,7 +46,7 @@ export default async function PriceBookPage() {
               <h2 className={heading}>{group.label}</h2>
               <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
                 {group.things.map((item) => (
-                  <PriceBookRow key={item.id} item={item} />
+                  <PriceBookRow key={item.id} item={item} highlight={item.id === highlight} />
                 ))}
               </ul>
             </div>

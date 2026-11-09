@@ -38,6 +38,8 @@ const TEXT = {
 } as const;
 
 // One row. memo(): moving the wheel redraws only the two rows whose "selected" changed.
+// Rows snap to the middle but don't force a stop at each one, so a quick flick glides past
+// many values (docs/decisions/0035).
 const WheelRow = memo(function WheelRow({
   index,
   text,
@@ -56,7 +58,7 @@ const WheelRow = memo(function WheelRow({
       role="option"
       aria-selected={selected}
       onClick={() => onPick(index)}
-      className={`flex h-11 snap-center snap-always items-center justify-center px-2 whitespace-nowrap tabular-nums ${
+      className={`flex h-11 snap-center items-center justify-center px-2 whitespace-nowrap tabular-nums ${
         selected ? TEXT[size].selected : TEXT[size].other
       }`}
     >

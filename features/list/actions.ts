@@ -52,19 +52,6 @@ export async function addToList(
 
 const idSchema = z.uuid();
 
-// Check or uncheck one entry. Called with the new state, so a double tap can't flip it twice.
-export async function setChecked(id: string, checked: boolean): Promise<void> {
-  await requireUser();
-  if (!idSchema.safeParse(id).success || typeof checked !== "boolean") return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("grocery_list_items").update({ checked }).eq("id", id);
-  if (error) {
-    console.error("set checked failed:", error.message);
-    throw new Error("Couldn't save that. Check your connection and try again.");
-  }
-  revalidatePath("/grocery", "layout");
-}
-
 export async function removeFromList(id: string): Promise<void> {
   await requireUser();
   if (!idSchema.safeParse(id).success) return;

@@ -32,22 +32,24 @@ export function LogPriceForm({
 
       {result?.ok && <ResultMessage result={result.data} />}
 
-      <div>
-        <p id="store-label" className="font-medium">
-          Store
-        </p>
-        {/* A swipe wheel like the price: starts at Trader Joe's (docs/decisions/0032). */}
-        <div role="group" aria-labelledby="store-label" className="mt-2">
-          <StoreWheel name="storeId" stores={stores} />
+      {/* Store and price side by side, as swipe wheels: the store starts at Trader Joe's,
+          the price at the item's last price (docs/decisions/0032, 0035). */}
+      <div className="flex gap-2">
+        <div className="w-[42%] shrink-0">
+          <p id="store-label" className="font-medium">
+            Store
+          </p>
+          <div role="group" aria-labelledby="store-label" className="mt-2">
+            <StoreWheel name="storeId" stores={stores} />
+          </div>
         </div>
-      </div>
-
-      <div>
-        <p id="price-label" className="font-medium">
-          Price
-        </p>
-        <div role="group" aria-labelledby="price-label" className="mt-2">
-          <PriceWheel name="price" initial={initialPrice} />
+        <div className="min-w-0 flex-1">
+          <p id="price-label" className="font-medium">
+            Price
+          </p>
+          <div role="group" aria-labelledby="price-label" className="mt-2">
+            <PriceWheel name="price" initial={initialPrice} />
+          </div>
         </div>
       </div>
 
