@@ -16,7 +16,7 @@
 
 ## What it does
 
-- **Plan:** a Monday-to-Sunday week with four spots a day (Breakfast, Lunch, Snacks, Dinner). Each spot offers only that meal's recipes. Each day shows **Calories** and **Macros** per person. **This week's groceries** adds up every ingredient (scaled to the servings planned), skips what's already in the kitchen, estimates the cost at your best prices, and adds it all to the list in one tap. **Meal prep** shows what to batch-cook and which ingredients to prep once.
+- **Plan:** a Monday-to-Sunday week with four spots a day (Breakfast, Lunch, Snacks, Dinner). Each spot offers only that meal's recipes. Each day shows **Calories** and **Macros** per person. **This week's groceries** adds up every ingredient (scaled to the servings planned), skips what's already in the kitchen, estimates the cost at your best prices, and adds it all to the list in one tap.
 - **Recipes:** grouped by meal, with favorites and "regulars" (recipes you plan often) first. Recipes come from:
   - a **website link**, read from the page's schema.org recipe data, with no AI;
   - **photos** of a cookbook, magazine or recipe card, read by Google Gemini;
@@ -125,7 +125,7 @@ npm run lint && npm run typecheck && npm run build
 - [x] 7b. Calories and macros per day on the plan
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
-- [x] 9. Price trends, cheapest store, meal-prep view, app icon, food emojis
+- [x] 9. Price trends, cheapest store, app icon, food emojis
 
 ## Reporting a vulnerability
 
