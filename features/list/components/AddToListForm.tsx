@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { DIMENSIONS, UNITS, unitsFor, type Dimension } from "@/lib/units";
+import { choiceLabel, choicesFor, DIMENSIONS, type Dimension } from "@/lib/units";
 import { addToList, type AddToListResult } from "../actions";
 
 const box = "border-border bg-surface min-h-12 rounded-xl border px-3 text-[17px]";
@@ -50,9 +50,9 @@ export function AddToListForm({ itemNames }: { itemNames: string[] }) {
           <option value="">—</option>
           {GROUPS.map((dimension) => (
             <optgroup key={dimension} label={DIMENSIONS[dimension].label}>
-              {unitsFor(dimension).map((unit) => (
-                <option key={unit} value={unit}>
-                  {UNITS[unit].label}
+              {choicesFor(dimension).map((choice) => (
+                <option key={choice} value={choice}>
+                  {choiceLabel(choice)}
                 </option>
               ))}
             </optgroup>

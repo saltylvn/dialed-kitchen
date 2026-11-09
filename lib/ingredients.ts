@@ -83,6 +83,22 @@ const UNIT_WORDS: Record<string, Unit> = {
 const AMOUNT =
   /^(\d+(?:\.\d+)?\s+\d+\/\d+|\d+\s*[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+|\d+(?:\.\d+)?|\.\d+|[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])(?:\s*(?:-|–|to)\s*[\d½⅓⅔¼¾⅛⅜⅝⅞./ ]+?(?=\s))?/;
 
+// A whole typed amount as a number: "2", "1.5", "1/2", "1 1/2", "½", "1½". null if it isn't
+// one of those forms (no letters, signs or exponents), so it's safe for form input.
+export function readAmount(text: string): number | null {
+  const t = text.replace(/\s+/g, " ").trim();
+  const forms = [
+    /^\d+(\.\d{1,3})?$/,
+    /^\.\d{1,3}$/,
+    /^\d+\/\d+$/,
+    /^\d+ \d+\/\d+$/,
+    /^(\d+ ?)?[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]$/,
+  ];
+  if (!forms.some((form) => form.test(t))) return null;
+  const value = amountValue(t);
+  return value === null || !Number.isFinite(value) ? null : Math.round(value * 1000) / 1000;
+}
+
 function amountValue(text: string): number | null {
   const t = text.replace(/\s+/g, " ").trim();
   const mixed = /^(\d+) (\d+)\/(\d+)$/.exec(t);
