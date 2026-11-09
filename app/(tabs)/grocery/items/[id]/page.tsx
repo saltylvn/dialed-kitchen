@@ -73,8 +73,8 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
             itemId={item.id}
             compareUnit={item.compare_unit}
             stores={stores}
-            // The wheels start at the latest price (same package, usually a small nudge).
-            initialPrice={history[0]?.price ?? 5}
+            // The wheels start at the latest price for 1 of the default size (1 oz, 1 each…).
+            lastUnitPriceBase={history[0]?.unit_price_base ?? null}
           />
         </section>
 

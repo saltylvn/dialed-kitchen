@@ -2,14 +2,13 @@
 
 import { useActionState } from "react";
 import { useToday } from "@/components/useToday";
-import { choiceLabel, choicesFor, DIMENSIONS, UNITS, type Dimension, type Unit } from "@/lib/units";
+import { UNITS, type Unit } from "@/lib/units";
 import { logPrice, type LogPriceResult } from "../actions";
 import type { StoreRow } from "../schema";
 import { PriceWheel } from "./PriceWheel";
+import { SizeWheels } from "./SizeWheels";
+import { startingPrice } from "@/lib/packageSize";
 import { StoreWheel } from "./StoreWheel";
-
-const box = "border-border bg-surface mt-2 min-h-12 rounded-xl border px-3 text-[17px]";
-const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
 // Log a price for one item: store and price (swipe wheels), package size and date.
 // After saving, says how it compares to the best price found before it.
@@ -17,12 +16,12 @@ export function LogPriceForm({
   itemId,
   compareUnit,
   stores,
-  initialPrice,
+  lastUnitPriceBase,
 }: {
   itemId: string;
   compareUnit: Unit;
   stores: StoreRow[];
-  initialPrice: number; // where the price wheels start: the item's latest price
+  lastUnitPriceBase: number | null; // the newest price per gram, ml or item, if any
 }) {
   const [result, formAction, pending] = useActionState<LogPriceResult, FormData>(logPrice, null);
   const today = useToday(); // the phone's own date; "" during the server render
@@ -50,41 +49,16 @@ export function LogPriceForm({
             Price
           </p>
           <div role="group" aria-labelledby="price-label" className="mt-2">
-            <PriceWheel name="price" initial={initialPrice} />
+            <PriceWheel name="price" initial={startingPrice(lastUnitPriceBase, itemDimension)} />
           </div>
         </div>
       </div>
 
       <fieldset>
         <legend className="font-medium">Package size</legend>
-        <div className="flex gap-3">
-          <input
-            name="quantity"
-            inputMode="decimal"
-            required
-            autoComplete="off"
-            aria-label="Package size amount"
-            placeholder="3"
-            className={`${box} min-w-0 flex-1`}
-          />
-          <select
-            name="unit"
-            aria-label="Package size unit"
-            defaultValue={compareUnit}
-            className={`${box} w-28 shrink-0`}
-          >
-            {/* Grouped like the item's "Compare prices" menu. Only the item's own kind of
-                measure can be picked: a price per lb can't be compared with one per each. */}
-            {GROUPS.map((dimension) => (
-              <optgroup key={dimension} label={DIMENSIONS[dimension].label}>
-                {choicesFor(dimension).map((choice) => (
-                  <option key={choice} value={choice} disabled={dimension !== itemDimension}>
-                    {choiceLabel(choice)}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+        {/* Swipe wheels: amount (starts at 1), fraction and unit (starts at ounces). */}
+        <div className="mt-2">
+          <SizeWheels dimension={itemDimension} />
         </div>
       </fieldset>
 
