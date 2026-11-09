@@ -89,15 +89,14 @@ describe("the shared list", () => {
     ).rejects.toThrow(/permission denied/);
   });
 
-  it("keeps a price-book item on the list only once while it's still to buy", async () => {
+  it("keeps a price-book item on the list only once, ticked or not (decision 0038)", async () => {
     const rice = await addItem(alex, "Rice");
     const first = await addToList(alex, "Rice", rice.id);
-    await expect(addToList(sam, "Rice", rice.id)).rejects.toThrow(/one_open_per_item/);
-    // Once checked off, it can go on the list again next time.
+    await expect(addToList(sam, "Rice", rice.id)).rejects.toThrow(/duplicate key/);
     await db.as(alex, "update public.grocery_list_items set checked = true where id = $1", [
       first.id,
     ]);
-    await expect(addToList(sam, "Rice", rice.id)).resolves.toBeDefined();
+    await expect(addToList(sam, "Rice", rice.id)).rejects.toThrow(/duplicate key/);
   });
 
   it("keeps an entry as plain text if its price-book item is deleted", async () => {
