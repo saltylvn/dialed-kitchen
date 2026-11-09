@@ -1,8 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { mainStorePrices } from "@/lib/mainStores";
 import { itemPhotoSrc } from "@/lib/photos";
-import { formatUnitAmount } from "@/lib/pricing";
 import { createClient } from "@/lib/server/supabase";
 import {
   bestPriceRowSchema,
@@ -28,16 +26,7 @@ export type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 export type ItemWithBest = ItemRow & {
   best: (BestPriceRow & { storeName: string }) | null;
   photo: string | null; // the photo's address, if the item has one
-  // WinCo, Trader Joe's, Harmons, always in that order, with the latest price at each.
-  stores: { storeName: string; price: string | null; cheapest: boolean }[];
 };
-
-const latestAtStoreSchema = z.object({
-  item_id: z.uuid(),
-  store_id: z.uuid(),
-  observed_on: z.string(),
-  unit_price_base: z.coerce.number(),
-});
 
 function fail(what: string, error: { message: string }): never {
   throw new Error(`${what} failed: ${error.message}`);
@@ -65,17 +54,12 @@ export async function readItemPhotos(
 // Every item with its best price, alphabetically.
 export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWithBest[]> {
   const supabase = client ?? (await createClient());
-  const [items, best, stores, photos, latest] = await Promise.all([
+  const [items, best, stores, photos] = await Promise.all([
     supabase.from("items").select("id, name, compare_unit, emoji").order("name"),
     supabase.from("item_best_prices").select(BEST_COLUMNS),
     supabase.from("stores").select("id, name"),
     readItemPhotos(supabase),
-    // At most one row per item and store (six stores), so it stays small.
-    supabase
-      .from("item_latest_store_prices")
-      .select("item_id, store_id, observed_on, unit_price_base"),
   ]);
-  if (latest.error) fail("item_latest_store_prices", latest.error);
   if (items.error) fail("items", items.error);
   if (best.error) fail("item_best_prices", best.error);
   if (stores.error) fail("stores", stores.error);
@@ -92,32 +76,16 @@ export async function listItemsWithBest(client?: SupabaseClient): Promise<ItemWi
       .parse(best.data)
       .map((b) => [b.item_id, b]),
   );
-  // item → store name → its latest price there
-  const latestByItem = new Map<string, Map<string, { unitPrice: number; observedOn: string }>>();
-  for (const row of z.array(latestAtStoreSchema).parse(latest.data)) {
-    const byStore = latestByItem.get(row.item_id) ?? new Map();
-    byStore.set(storeNames.get(row.store_id) ?? "", {
-      unitPrice: row.unit_price_base,
-      observedOn: row.observed_on,
-    });
-    latestByItem.set(row.item_id, byStore);
-  }
 
   return z
     .array(itemRowSchema)
     .parse(items.data)
     .map((item) => {
       const b = bestByItem.get(item.id);
-      const atStores = latestByItem.get(item.id);
       return {
         ...item,
         best: b ? { ...b, storeName: storeNames.get(b.store_id) ?? "" } : null,
         photo: photos.get(item.id) ?? null,
-        stores: mainStorePrices((name) => atStores?.get(name)?.unitPrice ?? null).map((st) => ({
-          storeName: st.storeName,
-          price: st.unitPrice === null ? null : formatUnitAmount(st.unitPrice, item.compare_unit),
-          cheapest: st.cheapest,
-        })),
       };
     });
 }
@@ -165,5 +133,50 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
       .map((p) => ({ ...p, storeName: storeNames.get(p.store_id) ?? "" })),
     stores: storeList,
     bestPriceId: best.data ? z.uuid().parse(best.data.price_id) : null,
+  };
+}
+
+// The Log a price page: every item with its last price (where the wheels start) and the
+// stores, read in parallel.
+export async function getLogPricePage(): Promise<{
+  items: {
+    id: string;
+    name: string;
+    compareUnit: ItemRow["compare_unit"];
+    lastPrice: number | null;
+  }[];
+  stores: StoreRow[];
+}> {
+  const supabase = await createClient();
+  const [items, latest, stores] = await Promise.all([
+    supabase.from("items").select("id, name, compare_unit").order("name"),
+    // At most one row per item and store; the newest per item is picked below.
+    supabase.from("item_latest_store_prices").select("item_id, price, observed_on"),
+    supabase.from("stores").select("id, name").order("sort_order"),
+  ]);
+  if (items.error) fail("items", items.error);
+  if (latest.error) fail("item_latest_store_prices", latest.error);
+  if (stores.error) fail("stores", stores.error);
+
+  const newest = new Map<string, { price: number; observedOn: string }>();
+  for (const row of z
+    .array(z.object({ item_id: z.uuid(), price: z.coerce.number(), observed_on: z.string() }))
+    .parse(latest.data)) {
+    const seen = newest.get(row.item_id);
+    if (!seen || row.observed_on > seen.observedOn) {
+      newest.set(row.item_id, { price: row.price, observedOn: row.observed_on });
+    }
+  }
+  return {
+    items: z
+      .array(itemRowSchema)
+      .parse(items.data)
+      .map((i) => ({
+        id: i.id,
+        name: i.name,
+        compareUnit: i.compare_unit,
+        lastPrice: newest.get(i.id)?.price ?? null,
+      })),
+    stores: z.array(storeRowSchema).parse(stores.data),
   };
 }
