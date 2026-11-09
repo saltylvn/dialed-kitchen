@@ -110,14 +110,14 @@ export async function getItemPage(itemId: string): Promise<ItemPage | null> {
   };
 }
 
-// The Log a price page: every item with its last price (where the wheels start) and the
+// The Log a price page: every item with its newest price per unit (where the wheels start) and the
 // stores, read in parallel.
 export async function getLogPricePage(): Promise<{
   items: {
     id: string;
     name: string;
     compareUnit: ItemRow["compare_unit"];
-    lastPrice: number | null;
+    lastUnitPriceBase: number | null; // the newest price, per gram, ml or item
   }[];
   stores: StoreRow[];
 }> {
@@ -125,20 +125,26 @@ export async function getLogPricePage(): Promise<{
   const [items, latest, stores] = await Promise.all([
     supabase.from("items").select("id, name, compare_unit").order("name"),
     // At most one row per item and store; the newest per item is picked below.
-    supabase.from("item_latest_store_prices").select("item_id, price, observed_on"),
+    supabase.from("item_latest_store_prices").select("item_id, unit_price_base, observed_on"),
     supabase.from("stores").select("id, name").order("sort_order"),
   ]);
   if (items.error) fail("items", items.error);
   if (latest.error) fail("item_latest_store_prices", latest.error);
   if (stores.error) fail("stores", stores.error);
 
-  const newest = new Map<string, { price: number; observedOn: string }>();
+  const newest = new Map<string, { unitPriceBase: number; observedOn: string }>();
   for (const row of z
-    .array(z.object({ item_id: z.uuid(), price: z.coerce.number(), observed_on: z.string() }))
+    .array(
+      z.object({
+        item_id: z.uuid(),
+        unit_price_base: z.coerce.number(),
+        observed_on: z.string(),
+      }),
+    )
     .parse(latest.data)) {
     const seen = newest.get(row.item_id);
     if (!seen || row.observed_on > seen.observedOn) {
-      newest.set(row.item_id, { price: row.price, observedOn: row.observed_on });
+      newest.set(row.item_id, { unitPriceBase: row.unit_price_base, observedOn: row.observed_on });
     }
   }
   return {
@@ -149,7 +155,7 @@ export async function getLogPricePage(): Promise<{
         id: i.id,
         name: i.name,
         compareUnit: i.compare_unit,
-        lastPrice: newest.get(i.id)?.price ?? null,
+        lastUnitPriceBase: newest.get(i.id)?.unitPriceBase ?? null,
       })),
     stores: z.array(storeRowSchema).parse(stores.data),
   };

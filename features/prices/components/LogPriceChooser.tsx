@@ -10,7 +10,7 @@ export type LoggableItem = {
   id: string;
   name: string;
   compareUnit: Unit;
-  lastPrice: number | null;
+  lastUnitPriceBase: number | null;
 };
 
 const box = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
@@ -64,7 +64,7 @@ export function LogPriceChooser({
           itemId={item.id}
           compareUnit={item.compareUnit}
           stores={stores}
-          initialPrice={item.lastPrice ?? 5}
+          lastUnitPriceBase={item.lastUnitPriceBase}
         />
       )}
     </div>
