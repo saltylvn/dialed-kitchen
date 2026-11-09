@@ -42,3 +42,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0036](0036-tab-order.md)                                      | Tab order: Recipes · Plan · Grocery                                                   | Accepted |
 | [0037](0037-half-gallon-and-fractions.md)                      | "½ gal" and typed fractions for package sizes                                         | Accepted |
 | [0038](0038-one-list-entry-per-name.md)                        | One grocery list entry per name                                                       | Accepted |
+| [0039](0039-simpler-items-and-price-form.md)                   | Simpler items and price form: no custom photos or emojis, no "On sale" box            | Accepted |

@@ -173,7 +173,7 @@ type Row = {
   price: string;
   quantity: string;
   unit: UnitChoice; // a real unit, or a package size like "½ gal"
-  onSale: boolean;
+  onSale: boolean; // from the receipt (a sale or discount line); no checkbox to change it
   remembered: boolean;
   checkSize: boolean; // the unit was changed to fit the chosen item: worth a look
 };
@@ -419,15 +419,6 @@ function ReceiptReview({
                       {DIMENSIONS[dimension ?? "count"].label.toLowerCase()}: check the size.
                     </p>
                   )}
-                  <label className="flex min-h-12 items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={row.onSale}
-                      onChange={(e) => update(i, { onSale: e.target.checked })}
-                      className="accent-accent size-5"
-                    />
-                    On sale
-                  </label>
                 </>
               )}
             </li>

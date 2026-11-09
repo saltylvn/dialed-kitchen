@@ -28,7 +28,7 @@
 
 - **Partner sharing:** a married couple shares everything through an invite-only household (at most two people), enforced by the database.
 - **Personal by design:** sign-up is capped at 25 accounts, enforced by Postgres ([0025](docs/decisions/0025-account-limit.md)).
-- Food emojis next to every item and ingredient (🍗 🍚 🥚), worked out from the name, or chosen from the emoji keyboard, or a photo of the item, for items the name doesn't cover.
+- Food emojis next to every item and ingredient (🍗 🍚 🥚), worked out from the name.
 
 ## How it was built: AI-assisted engineering
 
