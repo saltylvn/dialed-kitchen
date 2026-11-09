@@ -12,7 +12,8 @@ export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
 
 const part = "font-display text-[28px] leading-tight font-light italic";
 
-const button = "flex min-h-12 items-center justify-center rounded-xl px-4 font-medium";
+// The same button style as Add item on the Price book page.
+const button = "flex min-h-12 items-center justify-center rounded-xl px-3 font-medium";
 
 // The Grocery tab (docs/decisions/0035): the price buttons (Price book in the accent color,
 // Log a price and Scan a receipt side by side below it), then the Grocery list (with its add
