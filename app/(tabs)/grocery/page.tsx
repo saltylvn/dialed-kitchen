@@ -12,14 +12,10 @@ export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
 
 const part = "font-display text-[28px] leading-tight font-light italic";
 
-// The three ways into prices, as rows (docs/decisions/0035).
-const PRICE_LINKS = [
-  { href: "/grocery/prices", label: "Price book", hint: "Every item's best price and store" },
-  { href: "/grocery/receipt", label: "Scan a receipt", hint: "Log a whole trip with the camera" },
-  { href: "/grocery/log", label: "Log a price", hint: "One item at any store" },
-] as const;
+const button = "flex min-h-12 items-center justify-center rounded-xl px-4 font-medium";
 
-// The Grocery tab (docs/decisions/0035): the price rows, then the Grocery list (with its add
+// The Grocery tab (docs/decisions/0035): the price buttons (Price book in the accent color,
+// Log a price and Scan a receipt side by side below it), then the Grocery list (with its add
 // box at the end), then what's In stock. Ticking an item on the list moves it In stock, so
 // what you need and what you have are together. Prices live in the Price book, one tap from
 // each item. All reads run in parallel.
@@ -28,22 +24,21 @@ export default async function GroceryPage() {
 
   return (
     <TabPage tab="grocery">
-      <nav aria-label="Prices">
-        <ul className="border-border bg-surface divide-y divide-[var(--border)] rounded-2xl border">
-          {PRICE_LINKS.map(({ href, label, hint }) => (
-            <li key={href}>
-              <Link href={href} className="flex min-h-14 items-center gap-3 px-4 py-2">
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium">{label}</span>
-                  <span className="text-muted block text-[15px]">{hint}</span>
-                </span>
-                <span aria-hidden className="text-muted text-xl">
-                  ›
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <nav aria-label="Prices" className="space-y-2">
+        <Link href="/grocery/prices" className={`${button} bg-accent text-on-accent w-full`}>
+          Price book
+        </Link>
+        <div className="flex gap-2">
+          <Link href="/grocery/log" className={`${button} border-border bg-surface flex-1 border`}>
+            Log a price
+          </Link>
+          <Link
+            href="/grocery/receipt"
+            className={`${button} border-border bg-surface flex-1 border`}
+          >
+            Scan a receipt
+          </Link>
+        </div>
       </nav>
 
       <div className="mt-8">
