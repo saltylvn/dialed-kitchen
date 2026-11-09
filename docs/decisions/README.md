@@ -41,3 +41,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0035](0035-grocery-list-and-in-stock.md)                      | Grocery list and In stock; prices in the price book                                   | Accepted |
 | [0036](0036-tab-order.md)                                      | Tab order: Recipes · Plan · Grocery                                                   | Accepted |
 | [0037](0037-half-gallon-and-fractions.md)                      | "½ gal" and typed fractions for package sizes                                         | Accepted |
+| [0038](0038-one-list-entry-per-name.md)                        | One grocery list entry per name                                                       | Accepted |
