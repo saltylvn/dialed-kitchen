@@ -47,23 +47,16 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
       </h2>
       <p className="text-muted text-[15px]">{counts.join(" · ")}</p>
 
-      {summary.toBuy > 0 && (
+      {/* The estimated cost, once at least one of these has a price (otherwise nothing). */}
+      {summary.toBuy > 0 && summary.cost !== null && (
         <p className="mt-2">
-          {summary.cost === null ? (
-            <span className="text-muted">
-              No prices yet for these. Add prices on the Grocery tab to see a cost.
-            </span>
-          ) : (
-            <>
-              Estimated cost{" "}
-              <span className="font-medium tabular-nums">{formatMoney(summary.cost)}</span>
-              <span className="text-muted block text-[14px]">
-                At your best prices
-                {summary.priced < summary.toBuy &&
-                  ` · ${summary.toBuy - summary.priced} of ${summary.toBuy} not priced yet`}
-              </span>
-            </>
-          )}
+          Estimated cost{" "}
+          <span className="font-medium tabular-nums">{formatMoney(summary.cost)}</span>
+          <span className="text-muted block text-[14px]">
+            At your best prices
+            {summary.priced < summary.toBuy &&
+              ` · ${summary.toBuy - summary.priced} of ${summary.toBuy} not priced yet`}
+          </span>
         </p>
       )}
 
@@ -77,7 +70,11 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
           {pending ? "Adding…" : `Add ${summary.toAdd} to grocery list`}
         </button>
       ) : (
-        !message && <p className="mt-2 font-medium">✓ Everything is In stock or on your list.</p>
+        !message && (
+          <p className="text-success-text mt-2 font-medium">
+            ✓ Everything is In stock or on your list.
+          </p>
+        )
       )}
 
       {message && (
