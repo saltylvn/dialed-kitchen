@@ -45,3 +45,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0039](0039-simpler-items-and-price-form.md)                   | Simpler items and price form: no custom photos or emojis, no "On sale" box            | Accepted |
 | [0040](0040-package-size-wheels.md)                            | Package size as swipe wheels, starting at 1 ounce                                     | Accepted |
 | [0041](0041-remove-meal-prep-page.md)                          | Remove the separate meal-prep page                                                    | Accepted |
+| [0042](0042-orange-slice-app-icon.md)                          | An orange slice for the app icon                                                      | Accepted |
