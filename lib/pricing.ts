@@ -42,17 +42,18 @@ export function formatMoney(amount: number): string {
   return dollars.format(amount);
 }
 
-// "$1.30/lb", "$0.03/fl oz", "$0.30 each". Unit prices under a dollar keep a third
-// decimal place when it matters ($0.034/fl oz), so cheap items still compare clearly.
+// "$1.30/lb", "$0.03/fl oz", "$0.30 each". Unit prices by weight or volume under a dollar
+// keep a third decimal place when it matters ($0.034/fl oz), so cheap items still compare
+// clearly. A price per item is always whole cents ($1.00 each, not $0.998).
 export function formatUnitPrice(pricePerBaseUnit: number, unit: Unit): string {
   const amount = formatUnitAmount(pricePerBaseUnit, unit);
   return unit === "each" ? `${amount} each` : `${amount}/${UNITS[unit].label}`;
 }
 
-// Just the amount, for where the unit is shown once nearby: "$1.30", "$0.998".
+// Just the amount, for where the unit is shown once nearby: "$1.30", "$0.034".
 export function formatUnitAmount(pricePerBaseUnit: number, unit: Unit): string {
   const value = pricePerUnit(pricePerBaseUnit, unit);
-  return value < 1 && Math.round(value * 1000) % 10 !== 0
+  return unit !== "each" && value < 1 && Math.round(value * 1000) % 10 !== 0
     ? `$${value.toFixed(3)}`
     : formatMoney(value);
 }

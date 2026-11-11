@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SubPage } from "@/components/ui/SubPage";
 import { EmptyState } from "@/components/ui/TabPage";
 import { PriceBookRow } from "@/features/prices/components/PriceBookRow";
-import { listItemsWithBest } from "@/features/prices/queries";
+import { listItemsWithStorePrices } from "@/features/prices/queries";
 import { groupByCategory } from "@/lib/foodCategory";
 import { requireUser } from "@/lib/server/auth";
 
@@ -13,12 +13,13 @@ const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
 const button = "flex min-h-12 flex-1 items-center justify-center rounded-xl px-3 font-medium";
 
 // The price book: every item you've priced, on the list or not, grouped by store section,
-// each with your stores' last prices (docs/decisions/0034). Opened from the Grocery page.
+// each comparing your stores' latest prices, cheapest marked (docs/decisions/0034, 0044).
+// Opened from the Grocery page.
 export default async function PriceBookPage({ searchParams }: PageProps<"/grocery/prices">) {
   const [, { item: highlight }, items] = await Promise.all([
     requireUser(),
     searchParams,
-    listItemsWithBest(),
+    listItemsWithStorePrices(),
   ]);
 
   return (
