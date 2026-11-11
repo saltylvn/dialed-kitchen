@@ -41,7 +41,6 @@ export function StorePrices({
             <span className={`min-w-0 flex-1 ${r.latest ? "" : "text-muted"}`}>
               {r.storeName}
               {r.cheapest && <Tag>✓ Cheapest</Tag>}
-              {r.latest?.on_sale && <Tag>Sale</Tag>}
             </span>
             {r.latest ? (
               <span className="text-right">
@@ -111,23 +110,13 @@ export function PriceTrend({
           strokeLinecap="round"
         />
         {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r="3.5"
-            className={p.observation.on_sale ? "fill-surface stroke-accent" : "fill-accent"}
-            strokeWidth="2"
-          />
+          <circle key={i} cx={p.x} cy={p.y} r="3.5" className="fill-accent" />
         ))}
       </svg>
       <p className="text-muted mt-1 flex justify-between text-[14px] tabular-nums">
         <span>Low {formatUnitPrice(low, compareUnit)}</span>
         <span>High {formatUnitPrice(high, compareUnit)}</span>
       </p>
-      {history.some((p) => p.on_sale) && (
-        <p className="text-muted text-[14px]">Hollow dots are sale prices.</p>
-      )}
     </section>
   );
 }

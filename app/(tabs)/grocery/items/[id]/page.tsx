@@ -49,7 +49,6 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
                 compareUnit={item.compare_unit}
                 storeName={best.storeName}
                 observedOn={best.observed_on}
-                onSale={best.on_sale}
               />
             ) : (
               <span className="text-muted">No prices yet. Log one below.</span>
@@ -92,7 +91,6 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
                         {formatUnitPrice(p.unit_price_base, item.compare_unit)}
                       </span>
                       {p.id === bestPriceId && <Tag>✓ Best</Tag>}
-                      {p.on_sale && <Tag>Sale</Tag>}
                     </p>
                     <p className="text-muted text-[15px]">
                       {formatMoney(p.price)} for {formatPackage(p.package_quantity, p.package_unit)}{" "}

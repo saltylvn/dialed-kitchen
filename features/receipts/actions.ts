@@ -172,7 +172,6 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
       price: line.price,
       package_quantity: line.quantity,
       package_unit: line.unit,
-      on_sale: line.onSale,
       observed_on: observedOn,
     });
     if (line.receiptText) learned.set(line.receiptText, item.id); // the last match of a text wins

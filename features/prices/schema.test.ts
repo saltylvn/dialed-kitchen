@@ -9,7 +9,6 @@ const valid = {
   price: "$3.49",
   quantity: "2",
   unit: "lb",
-  onSale: "on",
   observedOn: serverToday(),
 };
 
@@ -47,10 +46,8 @@ describe("priceFormSchema", () => {
       price: 3.49,
       quantity: 2,
       unit: "lb",
-      onSale: true,
       observedOn: serverToday(),
     });
-    expect(priceFormSchema.parse({ ...valid, onSale: undefined }).onSale).toBe(false);
   });
 
   it("turns a ½ gal package into gallons", () => {

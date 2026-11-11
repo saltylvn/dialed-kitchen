@@ -15,7 +15,7 @@ import {
 // Independent reads run in parallel, so each screen costs one round trip of waiting.
 
 const PRICE_COLUMNS =
-  "id, item_id, store_id, price, package_quantity, package_unit, on_sale, observed_on, unit_price_base";
+  "id, item_id, store_id, price, package_quantity, package_unit, observed_on, unit_price_base";
 
 export type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -36,7 +36,7 @@ export async function listItemsWithStorePrices(): Promise<ItemWithStorePrices[]>
     supabase.from("items").select("id, name, compare_unit").order("name"),
     supabase
       .from("item_latest_store_prices")
-      .select("item_id, store_id, unit_price_base, observed_on, on_sale"),
+      .select("item_id, store_id, unit_price_base, observed_on"),
     supabase.from("stores").select("id, name").order("sort_order"),
   ]);
   if (items.error) fail("items", items.error);
@@ -67,7 +67,6 @@ const latestStorePriceSchema = z.object({
   store_id: z.uuid(),
   unit_price_base: z.coerce.number(),
   observed_on: z.string(),
-  on_sale: z.boolean(),
 });
 
 export type ItemPage = {

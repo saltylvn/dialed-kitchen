@@ -2,19 +2,17 @@ import { formatShortDate, serverToday } from "@/lib/dates";
 import { formatUnitPrice, isOlder } from "@/lib/pricing";
 import type { Unit } from "@/lib/units";
 
-// "$1.30/lb · Aldi · Oct 3", with Sale and Older tags spelled out (never color alone).
+// "$1.30/lb · Aldi · Oct 3", with an Older tag spelled out (never color alone).
 export function BestPriceLine({
   unitPriceBase,
   compareUnit,
   storeName,
   observedOn,
-  onSale,
 }: {
   unitPriceBase: number;
   compareUnit: Unit;
   storeName: string;
   observedOn: string;
-  onSale: boolean;
 }) {
   const today = serverToday();
   const older = isOlder(observedOn, today);
@@ -25,7 +23,6 @@ export function BestPriceLine({
         {" "}
         · {storeName} · {formatShortDate(observedOn, Number(today.slice(0, 4)))}
       </span>
-      {onSale && <Tag>Sale</Tag>}
       {older && <Tag>Older</Tag>}
     </span>
   );

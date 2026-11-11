@@ -67,7 +67,6 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
     price: formData.get("price"),
     quantity: formData.get("quantity"),
     unit: formData.get("unit"),
-    onSale: formData.get("onSale") ?? undefined,
     observedOn: formData.get("observedOn"),
   });
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
@@ -96,7 +95,6 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
     price: input.price,
     package_quantity: input.quantity,
     package_unit: input.unit,
-    on_sale: input.onSale,
     observed_on: input.observedOn,
   });
   if (error) {

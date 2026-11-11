@@ -8,7 +8,6 @@ const line = (over: Record<string, unknown> = {}) => ({
   count: 1,
   size: 1.32,
   sizeUnit: "lb",
-  onSale: false,
   ...over,
 });
 
@@ -35,7 +34,6 @@ describe("parseReceiptAnswer", () => {
             price: 1.31,
             quantity: 1.32,
             unit: "lb",
-            onSale: false,
           },
         ],
       },
@@ -100,9 +98,9 @@ describe("parseReceiptAnswer", () => {
     expect(parsed.ok && parsed.receipt.date).toBeNull();
   });
 
-  it("keeps sale lines marked", () => {
+  it("doesn't track sales: an onSale flag in the reply is ignored", () => {
     const parsed = parseReceiptAnswer(answer({ lines: [line({ onSale: true })] }));
-    expect(parsed.ok && parsed.receipt.lines[0]?.onSale).toBe(true);
+    expect(parsed.ok && parsed.receipt.lines[0]).not.toHaveProperty("onSale");
   });
 
   it("says when there's no receipt", () => {

@@ -16,7 +16,6 @@ const lineSchema = z
     price: priceFields.shape.price,
     quantity: priceFields.shape.quantity,
     unit: priceFields.shape.unit,
-    onSale: z.boolean(),
   })
   .refine((l) => (l.itemId === null) !== (l.newItemName === null), {
     message: "Choose an item for each line",
@@ -39,7 +38,6 @@ export type ReceiptDraftLine = {
   price: number;
   quantity: number;
   unit: Unit;
-  onSale: boolean;
   suggestedItemId: string | null;
   remembered: boolean; // matched from an earlier receipt at this store
 };

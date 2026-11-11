@@ -48,3 +48,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0042](0042-orange-slice-app-icon.md)                          | An orange slice for the app icon                                                      | Accepted |
 | [0043](0043-invite-only-sign-up.md)                            | Invite-only sign-up: a waitlist, admin approval and invite codes                      | Accepted |
 | [0044](0044-price-book-compares-stores.md)                     | The price book compares stores                                                        | Accepted |
+| [0046](0046-no-sale-tracking.md)                               | Sales aren't tracked                                                                  | Accepted |
