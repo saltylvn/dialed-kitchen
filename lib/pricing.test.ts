@@ -71,6 +71,11 @@ describe("formatting", () => {
 describe("formatUnitAmount", () => {
   it("is the unit price without its unit", () => {
     expect(formatUnitAmount(pricePerBase(6.49, 5, "lb"), "lb")).toBe("$1.30");
-    expect(formatUnitAmount(pricePerBase(5.99, 6, "each"), "each")).toBe("$0.998");
+    expect(formatUnitAmount(pricePerBase(4.39, 128, "fl_oz"), "fl_oz")).toBe("$0.034");
+  });
+
+  it("shows a price per item in whole cents", () => {
+    expect(formatUnitAmount(pricePerBase(5.99, 6, "each"), "each")).toBe("$1.00");
+    expect(formatUnitPrice(pricePerBase(2.99, 12, "each"), "each")).toBe("$0.25 each");
   });
 });
