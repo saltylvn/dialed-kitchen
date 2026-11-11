@@ -1,20 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Dialed Kitchen app icon: an orange slice on cream (docs/decisions/0042). An original
-       drawing, built as a mark: a clay-orange rind, a cream pith ring, eight rounded segments
-       in a lighter tint of the same orange, turned slightly for movement, and a green leaf with
-       a fine vein. Solid background, no transparency: iPhones add their own rounded corners.
-       Colors: accent #d97757, a tint #e9a185, bg #faf9f5, success #788c5d. -->
-  <rect width="100" height="100" fill="#faf9f5"/>
-  <circle cx="49" cy="53" r="33" fill="#d97757"/>
-  <circle cx="49" cy="53" r="28.8" fill="#faf9f5"/>
-  <path d="M51.91 49.31L59.31 29.68A25.5 25.5 0 0 1 70.42 39.17L52.95 50.45Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M53.67 52.44L72.78 43.8A25.5 25.5 0 0 1 73.93 58.37L53.59 53.99Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M52.69 55.91L72.32 63.31A25.5 25.5 0 0 1 62.83 74.42L51.55 56.95Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M49.56 57.67L58.2 76.78A25.5 25.5 0 0 1 43.63 77.93L48.01 57.59Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M46.09 56.69L38.69 76.32A25.5 25.5 0 0 1 27.58 66.83L45.05 55.55Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M44.33 53.56L25.22 62.2A25.5 25.5 0 0 1 24.07 47.63L44.41 52.01Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M45.31 50.09L25.68 42.69A25.5 25.5 0 0 1 35.17 31.58L46.45 49.05Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M48.44 48.33L39.8 29.22A25.5 25.5 0 0 1 54.37 28.07L49.99 48.41Z" fill="#e9a185" stroke="#e9a185" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M60.5 23Q75.48 20.95 79.08 6.27Q64.1 8.32 60.5 23Z" fill="#788c5d" stroke="#faf9f5" stroke-width="1.8" stroke-linejoin="round" paint-order="stroke"/>
-  <path d="M63.29 20.49L74.43 10.45" stroke="#faf9f5" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>
+  <!-- Dialed Kitchen app icon: a paper grocery bag (docs/decisions/0045). A flat, two-color
+       mark like the wordmark: clay orange (accent #d97757) on a white background, nothing
+       else. A flat paper strap handle, a serrated top edge like a real paper bag, and a fold
+       line shown in the background color. Solid background, no transparency: iPhones add
+       their own rounded corners. -->
+  <rect width="100" height="100" fill="#ffffff"/>
+  <path d="M38 41V28Q38 21 45 21H55Q62 21 62 28V41" fill="none" stroke="#d97757" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M29 37L32.5 35.2L36 37L39.5 35.2L43 37L46.5 35.2L50 37L53.5 35.2L57 37L60.5 35.2L64 37L67.5 35.2L71 37V86H29Z" fill="#d97757"/>
+  <path d="M29 45H71" stroke="#ffffff" stroke-width="2"/>
 </svg>
