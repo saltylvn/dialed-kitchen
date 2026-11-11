@@ -8,7 +8,7 @@ Each price book row showed one number, the best price ever, squeezed into a narr
 
 ## Decision
 
-- **Each row compares stores:** the item and its unit ("· per lb", "· each") on top, Log on the right, and below them, a chip for every store where it has a price: "Costco $2.29", "WinCo $2.49"… cheapest first. The chips wrap onto a second line when needed.
+- **Each row compares stores:** on the left, the item, its unit and a "Log price" link; on the right, a small chip for every store where it has a price ("✓ Costco $2.29", "WinCo $2.49"…), stacked cheapest first. Keeping the prices small and to the right leaves the name on one line.
 - **Latest price per store, not best ever.** It's what a store charges now; the best ever may have been a one-off sale. It reuses the item page's `pricesByStore` (decision 0020) and the existing `item_latest_store_prices` view: three reads in parallel, no new database objects.
 - **The cheapest is marked** with ✓, an orange outline and darker text, plus "Cheapest:" for screen readers, so it's never shown by color alone. Ties within half a percent are all marked. Sale and older (90+ days) prices say so in words.
 - **A price per item is whole cents** everywhere ($1.00 each, not $0.998). Prices by weight or volume keep a third decimal under a dollar ($0.034/fl oz), where it matters.
