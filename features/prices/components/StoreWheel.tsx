@@ -6,7 +6,7 @@ import { storesForLogging } from "@/lib/mainStores";
 import type { StoreRow } from "../schema";
 
 // The store for a price, as a swipe wheel like the price itself: Trader Joe's, WinCo,
-// Harmons, Smith's, Walmart (lib/mainStores LOG_STORES), starting at the store you're
+// Harmons, Smith's, Costco, Walmart (lib/mainStores LOG_STORES), starting at the store you're
 // shopping at, or Trader Joe's. The form gets the store's id.
 export function StoreWheel({
   name,

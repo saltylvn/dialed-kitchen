@@ -3,6 +3,7 @@ import Link from "next/link";
 import { signOut } from "@/features/auth/actions";
 import { PartnerCard } from "@/features/partner/components/PartnerCard";
 import { getMyHousehold } from "@/features/partner/queries";
+import { isAdmin } from "@/features/access/queries";
 import { isDemoEmail } from "@/lib/demo";
 import { requireUser } from "@/lib/server/auth";
 import { tabFromParam } from "@/lib/tabs";
@@ -10,10 +11,11 @@ import { tabFromParam } from "@/lib/tabs";
 export const metadata: Metadata = { title: "Settings · Dialed Kitchen" };
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
-  const [user, household, { from }] = await Promise.all([
+  const [user, household, { from }, admin] = await Promise.all([
     requireUser(),
     getMyHousehold(),
     searchParams,
+    isAdmin(),
   ]);
   const backTo = tabFromParam(from); // the tab Settings was opened from
 
@@ -40,6 +42,15 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           </section>
         ) : (
           <PartnerCard household={household} />
+        )}
+
+        {admin && (
+          <Link
+            href="/admin"
+            className="border-border bg-surface flex min-h-12 items-center justify-between rounded-2xl border p-4 font-medium"
+          >
+            Waitlist and invite codes <span aria-hidden>›</span>
+          </Link>
         )}
 
         <section

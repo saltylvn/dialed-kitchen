@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Wordmark } from "@/components/ui/Wordmark";
+import { InviteCodeForm } from "@/features/access/components/InviteCodeForm";
 import { signInAsDemo } from "@/features/auth/actions";
 import { demoPassword } from "@/lib/server/demo";
 
@@ -30,6 +32,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Dialed Kitchen is a personal project and isn&apos;t taking new accounts. Existing
             accounts can still sign in.
           </p>
+        ) : error === "invite" ? (
+          <p role="alert" className="mb-4 text-center font-medium">
+            New accounts are by invitation. Enter your invite code below first, or join the
+            waitlist.
+          </p>
         ) : (
           error && (
             <p role="alert" className="mb-4 text-center font-medium">
@@ -58,6 +65,21 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </p>
         </form>
       )}
+
+      {/* New accounts are invite-only (docs/decisions/0043): enter the code from the admin
+          first, then Continue with Google; or ask for one. */}
+      <div className="border-border mt-8 w-full border-t pt-6">
+        <InviteCodeForm />
+        <p className="mt-4 text-center">
+          New here?{" "}
+          <Link
+            href="/waitlist"
+            className="inline-flex min-h-12 items-center font-medium underline"
+          >
+            Join the waitlist
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }
