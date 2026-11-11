@@ -8,7 +8,7 @@ import { HOME_TAB } from "../tabs";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 // Pages anyone can open while signed out.
-const PUBLIC_PATHS = ["/login", "/auth/google", "/auth/callback"];
+const PUBLIC_PATHS = ["/login", "/waitlist", "/auth/google", "/auth/callback"];
 const HOME = HOME_TAB.href;
 
 // Called by proxy.ts on every page request:

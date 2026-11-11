@@ -55,6 +55,14 @@ export async function createTestDb({
 
   let userCount = usersBeforeMigrations.length;
 
+  // Whether the invite-only sign-up migration has been applied yet (tests can stop before it).
+  const inviteGateExists = async () =>
+    (
+      await pg.query<{ ok: boolean }>(
+        "select to_regclass('public.signup_invites') is not null as ok",
+      )
+    ).rows[0]!.ok;
+
   return {
     pg,
 
@@ -66,10 +74,23 @@ export async function createTestDb({
     },
 
     // Signs up a user the way Supabase Auth does: a row in auth.users. Google sign-in by
-    // default; pass provider "email" for a password account (the demo).
-    async createUser(email: string, provider = "google"): Promise<TestUser> {
+    // default; pass provider "email" for a password account (the demo). Sign-up is
+    // invite-only (decision 0043), so by default this first gives the email a redeemed
+    // invite code, as if the admin approved them; pass `invited: false` to try without one.
+    async createUser(
+      email: string,
+      provider = "google",
+      { invited = true } = {},
+    ): Promise<TestUser> {
       userCount += 1;
       const id = `00000000-0000-4000-8000-${String(userCount).padStart(12, "0")}`;
+      if (invited && (await inviteGateExists())) {
+        await pg.query(
+          `insert into public.signup_invites (email, code_hash, redeemed_at)
+           values (lower($1), $2, now())`,
+          [email, fakeTokenHash(1_000_000 + userCount)],
+        );
+      }
       await pg.query("insert into auth.users (id, email, raw_app_meta_data) values ($1, $2, $3)", [
         id,
         email,
