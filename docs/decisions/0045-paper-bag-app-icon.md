@@ -1,6 +1,6 @@
 # 0045. A paper grocery bag for the app icon
 
-**Status:** Accepted · 2026-11-10 · Replaces 0042 (the orange slice)
+**Status:** Replaced by 0047 · 2026-11-10 · Replaces 0042 (the orange slice)
 
 ## Context
 
