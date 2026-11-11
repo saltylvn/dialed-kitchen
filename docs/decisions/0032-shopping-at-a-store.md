@@ -29,7 +29,7 @@ The "Shopping at" menu also listed six stores and forgot the choice between visi
   - The **date** is today.
   - So an unchanged price is one tap: **Save**. **Skip** closes it and the item stays checked.
   - It saves through the same `logPrice` action as the item page, so validation, RLS and the "🎉 New best price!" message are the same. The message appears above the list.
-- **The store in every price form is a swipe wheel**, like the price (`StoreWheel`): Trader Joe's, WinCo, Harmons, Smith's, Walmart (`LOG_STORES`).
+- **The store in every price form is a swipe wheel**, like the price (`StoreWheel`): Trader Joe's, WinCo, Harmons, Smith's, Walmart (`LOG_STORES`). _Update 2026-11-10: Costco added before Walmart, so all six stores are on the wheel._
   - It starts at Trader Joe's, or at the store you're shopping at.
   - A store you're at that isn't on the wheel (Costco) is added at the end.
 
