@@ -7,7 +7,6 @@ export type Observation = {
   store_id: string;
   unit_price_base: number;
   observed_on: string; // YYYY-MM-DD
-  on_sale: boolean;
 };
 
 export type StorePrice = {
@@ -19,7 +18,7 @@ export type StorePrice = {
 
 // Each store's most recent price, cheapest first; stores never priced come last, in their
 // usual order. "Now" means the latest price per store, not the best ever: the best ever
-// may have been a one-off sale.
+// may have been a one-off low price.
 export function pricesByStore(
   history: readonly Observation[],
   stores: readonly { id: string; name: string }[],

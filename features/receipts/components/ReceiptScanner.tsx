@@ -173,7 +173,6 @@ type Row = {
   price: string;
   quantity: string;
   unit: UnitChoice; // a real unit, or a package size like "½ gal"
-  onSale: boolean; // from the receipt (a sale or discount line); no checkbox to change it
   remembered: boolean;
   checkSize: boolean; // the unit was changed to fit the chosen item: worth a look
 };
@@ -201,7 +200,6 @@ function ReceiptReview({
           price: line.price.toFixed(2),
           quantity: String(line.quantity),
           unit: line.unit,
-          onSale: line.onSale,
           remembered: line.remembered,
           checkSize: false,
         },
@@ -238,7 +236,6 @@ function ReceiptReview({
             price: r.price,
             quantity: r.quantity,
             unit: r.unit,
-            onSale: r.onSale,
           })),
         }),
       );

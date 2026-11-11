@@ -7,14 +7,14 @@ const STORES = [
   { id: "costco", name: "Costco" },
 ];
 
-const p = (store_id: string, unit_price_base: number, observed_on: string, on_sale = false) =>
-  ({ store_id, unit_price_base, observed_on, on_sale }) satisfies Observation;
+const p = (store_id: string, unit_price_base: number, observed_on: string) =>
+  ({ store_id, unit_price_base, observed_on }) satisfies Observation;
 
 describe("pricesByStore", () => {
   it("uses each store's latest price, cheapest first, never-priced stores last", () => {
     const rows = pricesByStore(
       [
-        p("winco", 0.01, "2026-01-01", true), // an old sale…
+        p("winco", 0.01, "2026-01-01"), // an old price…
         p("winco", 0.03, "2026-10-01"), // …WinCo's price now
         p("costco", 0.02, "2026-09-15"),
       ],

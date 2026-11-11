@@ -16,8 +16,8 @@ export type LoggableItem = {
 const box = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
 
 // Log a price for any item (docs/decisions/0035): pick the item (a native menu, so iPhone
-// shows its swipe wheel), then the usual price form: store and price wheels, package size,
-// sale, date. A new pick starts a fresh form at that item's last price.
+// shows its swipe wheel), then the usual price form: store and price wheels, package size
+// and date. A new pick starts a fresh form at that item's last price.
 export function LogPriceChooser({
   items,
   stores,

@@ -75,7 +75,6 @@ export const priceFields = z.object({
     return value;
   }),
   unit: unitChoice,
-  onSale: z.literal("on").optional().transform(Boolean),
   // The shopper's local date. Allow a day of slack around the server's date (time zones),
   // but nothing in the future beyond that and nothing absurdly old.
   observedOn: z
@@ -112,7 +111,6 @@ export const priceRowSchema = z.object({
   price: z.coerce.number(),
   package_quantity: z.coerce.number(),
   package_unit: unit,
-  on_sale: z.boolean(),
   observed_on: z.string(),
   unit_price_base: z.coerce.number(),
 });

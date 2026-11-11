@@ -8,7 +8,7 @@ import type { ItemWithStorePrices } from "../queries";
 // One row of the price book, comparing stores (docs/decisions/0044): on the left the item
 // (tap it for the full history and chart), its unit and Log price; on the right, each
 // store's latest price as a small chip, cheapest first. The cheapest is marked with ✓, an orange outline
-// and the word "cheapest" for screen readers (never color alone); Sale and Older are spelled
+// and the word "cheapest" for screen readers (never color alone); Older prices are spelled
 // out. A link to ?item=<id>#item-<id> scrolls to the row and outlines it.
 export function PriceBookRow({
   item,
@@ -75,7 +75,6 @@ export function PriceBookRow({
                 <span className={s.cheapest ? "font-medium" : "text-text"}>
                   {formatUnitAmount(s.latest.unit_price_base, item.compare_unit)}
                 </span>
-                {s.latest.on_sale && <span className="text-muted"> · sale</span>}
                 {isOlder(s.latest.observed_on, today) && (
                   <span className="text-muted"> · older</span>
                 )}
