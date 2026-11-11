@@ -3,14 +3,14 @@ import { describe, expect, it } from "vitest";
 import { HOME_TAB, TABS, tabFromParam } from "./tabs";
 
 describe("TABS", () => {
-  it("is Recipes, Plan, Grocery: Plan in the middle", () => {
-    expect(TABS.map((t) => t.label)).toEqual(["Recipes", "Plan", "Grocery"]);
+  it("is Plan, Grocery, Recipes: Grocery in the middle", () => {
+    expect(TABS.map((t) => t.label)).toEqual(["Plan", "Grocery", "Recipes"]);
   });
 });
 
 describe("HOME_TAB", () => {
-  it("is Plan, where the app opens", () => {
-    expect(HOME_TAB.href).toBe("/plan");
+  it("is Grocery, where the app opens", () => {
+    expect(HOME_TAB.href).toBe("/grocery");
   });
 
   it("matches the home-screen start_url", () => {

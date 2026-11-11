@@ -1,6 +1,6 @@
 # 0036. Tab order: Recipes · Plan · Grocery
 
-**Status:** Accepted · 2026-11-09 · Changes the original order (Plan · Recipes · Grocery)
+**Status:** Replaced by 0048 · 2026-11-09 · Changes the original order (Plan · Recipes · Grocery)
 
 ## Context
 

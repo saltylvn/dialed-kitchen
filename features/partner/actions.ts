@@ -13,7 +13,6 @@ import {
 } from "@/lib/invites";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/supabase";
-import { HOME_TAB } from "@/lib/tabs";
 import { inviteFormSchema, PARTNER_ERRORS } from "./schema";
 
 // Partner actions. Each one checks sign-in and input here; the database functions check
@@ -87,5 +86,6 @@ export async function acceptInvite(
     return { ok: false, error: userMessage(error, PARTNER_ERRORS) };
   }
   revalidatePath("/", "layout");
-  redirect(`${HOME_TAB.href}?joined=1`);
+  // The partner welcome lives on Plan, so a new partner lands there, not on the home tab.
+  redirect("/plan?joined=1");
 }
