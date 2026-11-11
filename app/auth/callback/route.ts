@@ -23,11 +23,13 @@ export async function GET(request: NextRequest) {
     console.error("Sign-in callback failed:", error.message);
   }
 
-  // Supabase sends an error instead of a code when it couldn't create a new account. If the
-  // 25-account limit is why (docs/decisions/0025), say so instead of "try again".
+  // Supabase sends an error instead of a code when it couldn't create a new account: the
+  // 25-account limit (docs/decisions/0025), or no redeemed invite code for this email
+  // (docs/decisions/0043). Say which, instead of "try again".
   const description = request.nextUrl.searchParams.get("error_description") ?? "";
-  if (!code && /saving new user/i.test(description) && !(await acceptingNewAccounts())) {
-    return NextResponse.redirect(new URL("/login?error=full", request.url));
+  if (!code && /saving new user/i.test(description)) {
+    const reason = (await acceptingNewAccounts()) ? "invite" : "full";
+    return NextResponse.redirect(new URL(`/login?error=${reason}`, request.url));
   }
   return NextResponse.redirect(new URL("/login?error=signin", request.url));
 }

@@ -28,6 +28,7 @@
 
 - **Partner sharing:** a married couple shares everything through an invite-only household (at most two people), enforced by the database.
 - **Personal by design:** sign-up is capped at 25 accounts, enforced by Postgres ([0025](docs/decisions/0025-account-limit.md)).
+- **Invite-only:** people join a waitlist; the admin approves them and sends a single-use, email-bound invite code (stored only as a hash). Postgres refuses any new account without a redeemed code; "Try the demo" stays open to everyone ([0043](docs/decisions/0043-invite-only-sign-up.md)).
 - Food emojis next to every item and ingredient (🍗 🍚 🥚), worked out from the name.
 
 ## How it was built: AI-assisted engineering
@@ -60,6 +61,7 @@ Inside the product, AI is used where it earns its place, with guard rails: **Goo
 
 ```
 households ──< household_members                        household_invites (hashed, single-use, 7 days)
+waitlist ──< signup_invites (hashed codes, email-bound, single-use, 7 days)   private.admins
     │
     ├──< stores (fixed six) ──< item_prices >── items ──< grocery_list_items
     ├──< pantry_items (In stock)                  │
