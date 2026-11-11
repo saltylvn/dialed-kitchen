@@ -1,6 +1,6 @@
 # 0042. An orange slice for the app icon
 
-**Status:** Accepted · 2026-11-09 · Replaces the fork icon
+**Status:** Replaced by 0045 · 2026-11-09 · Replaces the fork icon
 
 ## Context
 
