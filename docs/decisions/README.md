@@ -39,7 +39,7 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0033](0033-scan-a-receipt.md)                                 | Scan a receipt to log a whole trip's prices                                           | Accepted         |
 | [0034](0034-grocery-all-in-one.md)                             | Grocery all in one: Grocery list, Shopping kart, In stock                             | Accepted         |
 | [0035](0035-grocery-list-and-in-stock.md)                      | Grocery list and In stock; prices in the price book                                   | Accepted         |
-| [0036](0036-tab-order.md)                                      | Tab order: Recipes · Plan · Grocery                                                   | Accepted         |
+| [0036](0036-tab-order.md)                                      | Tab order: Recipes · Plan · Grocery                                                   | Replaced by 0048 |
 | [0037](0037-half-gallon-and-fractions.md)                      | "½ gal" and typed fractions for package sizes                                         | Accepted         |
 | [0038](0038-one-list-entry-per-name.md)                        | One grocery list entry per name                                                       | Accepted         |
 | [0039](0039-simpler-items-and-price-form.md)                   | Simpler items and price form: no custom photos or emojis, no "On sale" box            | Accepted         |
@@ -51,3 +51,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0045](0045-paper-bag-app-icon.md)                             | A paper grocery bag for the app icon                                                  | Replaced by 0047 |
 | [0046](0046-no-sale-tracking.md)                               | Sales aren't tracked                                                                  | Accepted         |
 | [0047](0047-minimal-cart-app-icon.md)                          | A minimal shopping cart for the app icon                                              | Accepted         |
+| [0048](0048-grocery-tab-in-the-middle.md)                      | Tab order: Plan · Grocery · Recipes, opening on Grocery                               | Accepted         |

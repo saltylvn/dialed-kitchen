@@ -15,7 +15,7 @@ const part = "font-display text-[28px] leading-tight font-light italic";
 // The same button style as Add item on the Price book page.
 const button = "flex min-h-12 items-center justify-center rounded-xl px-3 font-medium";
 
-// The Grocery tab (docs/decisions/0035): the price buttons (Price book in the accent color,
+// The Grocery tab (docs/decisions/0035): the price buttons (a large Price book button in the accent color,
 // Log a price and Scan a receipt side by side below it), then the Grocery list (with its add
 // box at the end), then what's In stock. Ticking an item on the list moves it In stock, so
 // what you need and what you have are together. Prices live in the Price book, one tap from
@@ -26,7 +26,11 @@ export default async function GroceryPage() {
   return (
     <TabPage tab="grocery">
       <nav aria-label="Prices" className="space-y-2">
-        <Link href="/grocery/prices" className={`${button} bg-accent text-on-accent w-full`}>
+        {/* The main button: bigger than the two below it, so the Price book is the focus. */}
+        <Link
+          href="/grocery/prices"
+          className="bg-accent text-on-accent flex min-h-20 w-full items-center justify-center rounded-2xl px-3 text-[22px] font-medium tracking-wide"
+        >
           Price book
         </Link>
         <div className="flex gap-2">

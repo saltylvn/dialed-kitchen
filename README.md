@@ -115,7 +115,7 @@ npm run lint && npm run typecheck && npm run build
 ## Roadmap
 
 - [x] 0. Project setup, design tokens, CI, first deploy
-- [x] 1. Google sign-in and app layout (Recipes · Plan · Grocery tabs, opening on Plan)
+- [x] 1. Google sign-in and app layout (Plan · Grocery · Recipes tabs, opening on Grocery)
 - [x] 1b. Partner sharing: invite-only, for a married couple
 - [x] 2. Stores, items, prices: unit price, best price, history
 - [x] 3. Grocery list and shopping mode
