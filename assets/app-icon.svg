@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Dialed Kitchen app icon: a paper grocery bag (docs/decisions/0045). A flat, two-color
-       mark like the wordmark: clay orange (accent #d97757) on a white background, nothing
-       else. A flat paper strap handle, a serrated top edge like a real paper bag, and a fold
-       line shown in the background color. Solid background, no transparency: iPhones add
-       their own rounded corners. -->
+  <!-- Dialed Kitchen app icon: a minimal shopping cart (docs/decisions/0047). Two colors
+       only, clay orange (accent #d97757) on white, like the wordmark. The handle, basket and
+       base are one continuous line with rounded ends and joins, and the wheels are two dots.
+       Optically centered. Solid background, no transparency: iPhones add their own rounded
+       corners. -->
   <rect width="100" height="100" fill="#ffffff"/>
-  <path d="M38 41V28Q38 21 45 21H55Q62 21 62 28V41" fill="none" stroke="#d97757" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M29 37L32.5 35.2L36 37L39.5 35.2L43 37L46.5 35.2L50 37L53.5 35.2L57 37L60.5 35.2L64 37L67.5 35.2L71 37V86H29Z" fill="#d97757"/>
-  <path d="M29 45H71" stroke="#ffffff" stroke-width="2"/>
+  <path d="M21.5 27H28.5L36.5 59H72.5L78.5 37H31.5" fill="none" stroke="#d97757" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="40.5" cy="69" r="4.2" fill="#d97757"/>
+  <circle cx="68.5" cy="69" r="4.2" fill="#d97757"/>
 </svg>
