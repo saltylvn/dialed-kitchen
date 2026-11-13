@@ -17,7 +17,7 @@
     "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
-    "@google/genai": "^2.32.0",
+    "@google/genai": "^3.0.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "next": "16.4.4",
