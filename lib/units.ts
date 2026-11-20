@@ -3,7 +3,7 @@
 // item. Prices are compared in base units, so a 2 lb bag and a 5 lb bag compare fairly.
 //
 // The same table exists in SQL (private.unit_to_base in the pricing migration); a test in
-// supabase/tests checks the two agree. Units of different dimensions never convert
+// db/tests checks the two agree. Units of different dimensions never convert
 // (no guessing that a "cup" of flour weighs something).
 
 export type Dimension = "weight" | "volume" | "count";

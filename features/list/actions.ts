@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { GENERIC_ERROR, type ActionResult } from "@/lib/actionResult";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { addToListSchema } from "./schema";
 
 // Grocery list actions. The database (RLS, constraints) has the final word.
@@ -30,11 +30,11 @@ export async function addToList(
   const { name, quantity, unit } = parsed.data;
   if (unit && quantity === null) return { ok: false, error: "Add an amount for that unit" };
 
-  const supabase = await createClient();
-  const { data: items } = await supabase.from("items").select("id, name");
+  const db = await createClient();
+  const { data: items } = await db.from("items").select("id, name");
   const match = items?.find((i) => i.name.toLowerCase() === name.toLowerCase());
 
-  const { error } = await supabase.from("grocery_list_items").insert({
+  const { error } = await db.from("grocery_list_items").insert({
     name: match?.name ?? name,
     item_id: match?.id ?? null,
     quantity,
@@ -55,8 +55,8 @@ const idSchema = z.uuid();
 export async function removeFromList(id: string): Promise<void> {
   await requireUser();
   if (!idSchema.safeParse(id).success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("grocery_list_items").delete().eq("id", id);
+  const db = await createClient();
+  const { error } = await db.from("grocery_list_items").delete().eq("id", id);
   if (error) {
     console.error("remove from list failed:", error.message);
     throw new Error("Couldn't remove that. Check your connection and try again.");

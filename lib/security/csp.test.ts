@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildCsp, createNonce } from "./csp";
 
-const SUPABASE = "https://abcd1234.supabase.co";
+const AUTH = "https://ep-test-1234.neonauth.us-east-1.aws.neon.tech/neondb/auth";
 
 // Splits "a x y; b z" into { a: ["x", "y"], b: ["z"] } so tests can check one directive.
 function parse(csp: string): Map<string, string[]> {
@@ -14,7 +14,7 @@ function parse(csp: string): Map<string, string[]> {
 }
 
 describe("buildCsp in production", () => {
-  const csp = parse(buildCsp({ nonce: "abc123", isDev: false, supabaseUrl: SUPABASE }));
+  const csp = parse(buildCsp({ nonce: "abc123", isDev: false, authUrl: AUTH }));
 
   it("only runs scripts carrying this request's nonce", () => {
     expect(csp.get("script-src")).toEqual(["'self'", "'nonce-abc123'", "'strict-dynamic'"]);
@@ -32,15 +32,15 @@ describe("buildCsp in production", () => {
     expect(csp.get("base-uri")).toEqual(["'self'"]);
   });
 
-  it("lets forms reach only us and the sign-in chain (Supabase, then Google)", () => {
+  it("lets forms reach only us and the sign-in chain (Neon Auth, then Google)", () => {
     expect(csp.get("form-action")).toEqual([
       "'self'",
-      "https://abcd1234.supabase.co",
+      "https://ep-test-1234.neonauth.us-east-1.aws.neon.tech",
       "https://accounts.google.com",
     ]);
   });
 
-  it("keeps the browser talking only to our own server (Supabase is called server-side)", () => {
+  it("keeps the browser talking only to our own server (Neon is called server-side)", () => {
     expect(csp.get("connect-src")).toEqual(["'self'"]);
   });
 
@@ -51,7 +51,7 @@ describe("buildCsp in production", () => {
 
 describe("buildCsp in development", () => {
   it("adds only what the dev tools need", () => {
-    const csp = parse(buildCsp({ nonce: "abc123", isDev: true, supabaseUrl: SUPABASE }));
+    const csp = parse(buildCsp({ nonce: "abc123", isDev: true, authUrl: AUTH }));
     expect(csp.get("script-src")).toContain("'unsafe-eval'");
     expect(csp.get("style-src")).toContain("'unsafe-inline'");
   });

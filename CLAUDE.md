@@ -11,7 +11,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 - **Branch + pull request for every change** (never commit straight to `main`), with a PR description: what changed, why, how it was tested. CI must pass before merging.
 - **CI** (`.github/workflows/ci.yml`) runs a production-dependency security audit, format check, lint, type check, tests and a production build on every push and PR. Keep it green.
 - **Decision records** in `docs/decisions/` (numbered, short: context, decision, alternatives, consequences) for every significant design choice; add a row to `docs/decisions/README.md`. Write them in plain language the owner can explain in an interview.
-- **Database changes as versioned migration files** in the repo (Supabase CLI), never only clicked in the dashboard.
+- **Database changes as versioned migration files** in the repo (`db/migrations/`, applied by `npm run db:migrate`), never only clicked in the dashboard.
 - Keep `README.md` current (features, architecture, data model, security, roadmap checkboxes) as milestones land.
 - Tests for business logic and security-sensitive code (pricing, units, list building, URL fetching).
 - The owner must be able to explain every part, so keep explaining changes as they're made.
@@ -36,9 +36,9 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 
 ## Planned features and data model
 
-- **"Try the demo"** (docs/decisions/0026): one shared password account (`demo@dialed-kitchen.vercel.app`, password only in `DEMO_PASSWORD` env) with sample data reset daily on sign-in (`refresh_demo_if_stale`); only Google can create other accounts; the demo can't invite and gets 10 AI requests a day. Supabase refuses UPDATE/DELETE without WHERE: `supabase/tests/safeUpdates.test.ts` checks every function.
-- **At most 25 accounts** (personal and portfolio app, not a public service): a Postgres trigger on `auth.users` refuses the 26th; the sign-in page explains it (docs/decisions/0025). Raising it needs a migration.
-- **Invite-only sign-up** (docs/decisions/0043): anyone can join the waitlist (`/waitlist`, `join_waitlist`); only the admin (Google account saltylvn@gmail.com, "tylerpclark", in `private.admins`) sees it at `/admin` (linked from Settings, "not found" for others) and approves, which makes a 16-character code (`lib/signupCodes.ts`) shown once; only its SHA-256 hash is stored in `signup_invites`, tied to the email, single-use, 7 days. Accounts + open codes never exceed 25. The person enters the code on the sign-in page ("Have an invite code?", `redeem_signup_invite`), then continues with Google; the `auth.users` trigger refuses any new account without a redeemed code ("Invite required" → `/login?error=invite`), except the admin and the demo. Partners need a code too. Test users get an invite automatically (`createUser(..., { invited: false })` to test without).
+- **"Try the demo"** (docs/decisions/0026): one shared password account (`demo@dialed-kitchen.vercel.app`, password only in `DEMO_PASSWORD` env) with sample data reset daily on sign-in (`refresh_demo_if_stale`); only Google can create other accounts; the demo can't invite and gets 10 AI requests a day. Every UPDATE/DELETE in a function keeps a WHERE (a guard carried over from Supabase): `db/tests/safeUpdates.test.ts` checks every function.
+- **At most 25 accounts** (personal and portfolio app, not a public service): the sign-up gate (`private.check_signup`, asked by Neon Auth's webhook before any account is created; docs/decisions/0049) refuses the 26th; the sign-in page explains it (docs/decisions/0025). Raising it needs a migration.
+- **Invite-only sign-up** (docs/decisions/0043): anyone can join the waitlist (`/waitlist`, `join_waitlist`); only the admin (Google account saltylvn@gmail.com, "tylerpclark", in `private.admins`) sees it at `/admin` (linked from Settings, "not found" for others) and approves, which makes a 16-character code (`lib/signupCodes.ts`) shown once; only its SHA-256 hash is stored in `signup_invites`, tied to the email, single-use, 7 days. Accounts + open codes never exceed 25. The person enters the code on the sign-in page ("Have an invite code?", `redeem_signup_invite`), then continues with Google; the sign-up gate refuses any new account without a redeemed code ("Invite required" → `/login?error=invite`), except the admin and the demo. Partners need a code too. Test users get an invite automatically (`createUser(..., { invited: false })` to test without).
 - **Partner sharing (married couples only; the only kind of sharing):** all data belongs to a `household`, not a user. Every new user gets a household of one. A spouse joins **only by invitation**:
   - The invite is tied to the spouse's email and only works when they sign in with that email.
   - Invite links are single-use, expire after 7 days, and are stored only as a hash.
@@ -58,11 +58,11 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 
 ## Stack
 
-Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres, Google sign-in, private storage), Google Gemini free tier (server-side only), Vercel Hobby. All free tier.
+Next.js 16 (App Router) + TypeScript, Tailwind CSS v4, Neon (Postgres, the Data API for queries, Neon Auth for Google sign-in; docs/decisions/0049), Google Gemini free tier (server-side only), Vercel Hobby. All free tier.
 
 ## Security
 
-- Row-level security on every Supabase table; every row belongs to one household and only that household's members can read or change it.
+- Row-level security on every table; every row belongs to one household and only that household's members can read or change it.
 - Validate every form and server-action input (zod) before it touches the database.
 - Secret keys only in `.env.local` (git-ignored) and Vercel; never in browser code.
 - AI is called only from the server, its JSON reply validated before use, with a daily per-user limit.
@@ -83,8 +83,8 @@ features/<feature>/  one folder per feature (prices, lists, recipes, meal-plan):
   schema.ts          zod schemas: the shape of valid input
 components/ui/       shared, generic UI pieces (Button, Card, Sheet)
 lib/                 pure logic with no I/O (pricing, units, dates, contrast), unit tested
-lib/server/          server-only infrastructure: Supabase clients, env validation
-supabase/migrations/ versioned SQL: tables, indexes, RLS policies
+lib/server/          server-only infrastructure: the database client, Neon Auth, env validation
+db/migrations/       versioned SQL: tables, indexes, RLS policies
 docs/decisions/      decision records
 ```
 
@@ -92,14 +92,14 @@ Every request flows through the same layers; each one checks something:
 
 1. **UI** (`components`, server components by default; `"use client"` only for interactivity) never talks to the database directly.
 2. **Server action / page** parses input with the feature's zod schema (reject, don't fix up) and confirms the signed-in user.
-3. **Data access layer** (`queries.ts`, `actions.ts`) is server-only, uses the request's Supabase client (the user's session, so RLS applies; never the service key for user data) and returns only the fields the UI needs.
+3. **Data access layer** (`queries.ts`, `actions.ts`) is server-only, uses the request's database client (`lib/server/db.ts`: Neon's Data API with the user's own token, so RLS applies; never the owner connection for user data) and returns only the fields the UI needs.
 4. **Postgres RLS** is the final guard: every table has `household_id` and policies so only that household's members (the couple) can touch its rows, even if app code has a bug.
 
 Rules:
 
 - Validate at every trust boundary: form input, URL params, AI replies, fetched web pages. Types are not validation.
 - Server actions return a typed result (`{ ok: true, data } | { ok: false, error }`) with a user-friendly message; log details on the server, never send stack traces or database errors to the browser.
-- Secrets are read only in `lib/server/env.ts` (validated at startup with zod); browser code only sees `NEXT_PUBLIC_*` values that are safe to be public.
+- Secrets are read only in `lib/server/env.ts` (validated with zod); nothing is `NEXT_PUBLIC_`: the browser never talks to Neon directly.
 - Database: migrations are append-only (never edit one that has been applied); foreign keys with explicit `on delete`; `check` constraints for invariants (price > 0, quantity > 0); money as `numeric(10,2)`, never floating point in the database.
 - Accessibility: semantic HTML (real `<button>`, `<label>` for every input), visible focus, 48px+ targets.
 - **Choosing one of several values uses a swipe wheel** (the owner's preference): a native `<select>` (iPhone shows its wheel) for named options like stores and meals, `components/ui/WheelPicker` for numbers like the price (dollars and cents wheels). The wheel only changes its value from the person's own scrolling.
@@ -135,7 +135,8 @@ Targets: every tap responds instantly (under 100 ms visual feedback); pages usab
 - `npm run typecheck`: TypeScript check
 - `npm run format` / `npm run format:check`: Prettier
 - CI runs: audit, format check, lint, typecheck, tests, build. Run the same locally before pushing.
-- **Database changes:** add a new file in `supabase/migrations/` (`YYYYMMDDHHMMSS_name.sql`; never edit one already applied), cover it in `supabase/tests/` (real Postgres via PGlite: `createTestDb()`, `db.as(user, sql)` runs with RLS as that user), then apply it: Claude runs `npx supabase db push --dry-run`, shows the owner exactly which migrations will apply, and runs `npx supabase db push --yes` once the owner agrees (the CLI is logged in and linked on this Mac). Never paste CLI commands into Supabase's SQL Editor; it only runs SQL. **Always run Supabase CLI commands from this project folder** (`cd ~/engineering-projects/dialed-kitchen` first): run elsewhere, the CLI links that folder instead and pushes nothing. The project is linked to `zitsdiffnbzyhleorcmg`; `npx supabase migration list` shows what's applied.
+- **Database changes:** add a new file in `db/migrations/` (`YYYYMMDDHHMMSS_name.sql`; never edit one already applied), cover it in `db/tests/` (real Postgres via PGlite: `createTestDb()`, `db.as(user, sql)` runs with RLS as that user; `createUser` signs someone up the way Neon Auth and the webhook do), then apply it: Claude runs `npm run db:status`, shows the owner exactly which migrations will apply, and runs `npm run db:migrate` once the owner agrees, then `neon data-api refresh-schema` so the Data API sees the change. The Neon CLI is logged in and this folder is linked (`.neon`, git-ignored) to project `dialed-kitchen` (`red-hill-13900366`), branch `main`. Neon manages the `neon_auth` schema: read and reference its tables, never add triggers to them or alter them.
+- **Sign-up path** (docs/decisions/0049): Neon Auth calls `app/webhooks/neon-auth` before (`user.before_create`) and after (`user.created`) creating an account; the route checks Neon's signature (`lib/security/webhookSignature.ts`), then asks `private.check_signup` / `private.finish_signup` as the `signup_gate` database role (`lib/server/signupGate.ts`; password via `npm run db:gate-password`). If the webhook is unreachable, sign-ups are refused.
 
 ## Roadmap
 

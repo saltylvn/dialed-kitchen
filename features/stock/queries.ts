@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 
 // What's In stock in the household's kitchen (server-only, RLS-scoped, validated).
 
@@ -8,8 +8,8 @@ const stockRowSchema = z.object({ id: z.uuid(), name: z.string(), key: z.string(
 export type StockRow = z.infer<typeof stockRowSchema>;
 
 export async function listInStock(): Promise<StockRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("pantry_items").select("id, name, key").order("key");
+  const db = await createClient();
+  const { data, error } = await db.from("pantry_items").select("id, name, key").order("key");
   if (error) throw new Error(`pantry_items failed: ${error.message}`);
   return z.array(stockRowSchema).parse(data);
 }

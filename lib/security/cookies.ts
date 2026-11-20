@@ -1,7 +1,7 @@
-// Hardens the login cookies Supabase sets. By default they're readable by page JavaScript,
-// because some apps sign in from the browser. This app only talks to Supabase on the server
-// (docs/decisions/0007), so nothing in the browser needs them: HttpOnly keeps any injected
-// script from stealing the session.
+// Hardens cookies this app sets itself (the "return to" cookie that remembers an invite
+// link across sign-in). Nothing in the browser needs to read them: HttpOnly keeps any
+// injected script from reading them. The login cookies are set by Neon Auth's SDK, which
+// already makes them HttpOnly, Secure and SameSite=Lax (docs/decisions/0007, 0049).
 
 export type CookieOptions = {
   httpOnly?: boolean;

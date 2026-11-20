@@ -12,7 +12,7 @@ import {
   isWellFormedInviteToken,
 } from "@/lib/invites";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { inviteFormSchema, PARTNER_ERRORS } from "./schema";
 
 // Partner actions. Each one checks sign-in and input here; the database functions check
@@ -29,8 +29,8 @@ export async function createInvite(_prev: InviteResult, formData: FormData): Pro
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the email" };
 
   const token = createInviteToken();
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("create_household_invite", {
+  const db = await createClient();
+  const { error } = await db.rpc("create_household_invite", {
     invited_email: parsed.data.email,
     token_hash: hashInviteToken(token),
   });
@@ -53,16 +53,16 @@ export async function cancelInvite(formData: FormData): Promise<void> {
   await requireUser();
   const inviteId = z.uuid().safeParse(formData.get("inviteId"));
   if (!inviteId.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("revoke_household_invite", { invite_id: inviteId.data });
+  const db = await createClient();
+  const { error } = await db.rpc("revoke_household_invite", { invite_id: inviteId.data });
   if (error) console.error("revoke_household_invite failed:", error.message);
   revalidatePath("/settings");
 }
 
 export async function endPartnership(): Promise<void> {
   await requireUser();
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("end_partnership");
+  const db = await createClient();
+  const { error } = await db.rpc("end_partnership");
   if (error) console.error("end_partnership failed:", error.message);
   revalidatePath("/", "layout");
   redirect("/settings");
@@ -77,8 +77,8 @@ export async function acceptInvite(
   if (!isWellFormedInviteToken(token))
     return { ok: false, error: "This invite is no longer valid" };
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("accept_household_invite", {
+  const db = await createClient();
+  const { error } = await db.rpc("accept_household_invite", {
     token_hash: hashInviteToken(token),
   });
   if (error) {

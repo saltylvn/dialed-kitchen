@@ -6,7 +6,7 @@ import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
 import { compareToBest, formatUnitPrice, type Comparison } from "@/lib/pricing";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { pricePerBase, UNITS } from "@/lib/units";
 import { itemFormSchema, itemRowSchema, PRICE_ERRORS, priceFormSchema } from "./schema";
 
@@ -32,8 +32,8 @@ export async function createItem(
   });
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("items")
     .insert({
       name: parsed.data.name,
@@ -72,24 +72,20 @@ export async function logPrice(_prev: LogPriceResult, formData: FormData): Promi
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   const input = parsed.data;
 
-  const supabase = await createClient();
+  const db = await createClient();
 
   // The item (for its display unit) and the best earlier price, in parallel. The store needs
   // no lookup: the database only accepts one of your household's six stores.
   const [item, best] = await Promise.all([
-    supabase.from("items").select("compare_unit").eq("id", input.itemId).maybeSingle(),
-    supabase
-      .from("item_best_prices")
-      .select("unit_price_base")
-      .eq("item_id", input.itemId)
-      .maybeSingle(),
+    db.from("items").select("compare_unit").eq("id", input.itemId).maybeSingle(),
+    db.from("item_best_prices").select("unit_price_base").eq("item_id", input.itemId).maybeSingle(),
   ]);
   if (item.error || !item.data || best.error) {
     console.error("log price lookup failed:", item.error?.message ?? best.error?.message);
     return { ok: false, error: GENERIC_ERROR };
   }
 
-  const { error } = await supabase.from("item_prices").insert({
+  const { error } = await db.from("item_prices").insert({
     item_id: input.itemId,
     store_id: input.storeId,
     price: input.price,
@@ -123,8 +119,8 @@ export async function deletePrice(formData: FormData): Promise<void> {
     itemId: formData.get("itemId"),
   });
   if (!ids.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("item_prices").delete().eq("id", ids.data.priceId);
+  const db = await createClient();
+  const { error } = await db.from("item_prices").delete().eq("id", ids.data.priceId);
   if (error) console.error("delete price failed:", error.message);
   revalidatePath("/grocery", "layout"); // the list and the price book both show prices
 }
@@ -133,8 +129,8 @@ export async function deleteItem(formData: FormData): Promise<void> {
   await requireUser();
   const itemId = z.uuid().safeParse(formData.get("itemId"));
   if (!itemId.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("items").delete().eq("id", itemId.data);
+  const db = await createClient();
+  const { error } = await db.from("items").delete().eq("id", itemId.data);
   if (error) console.error("delete item failed:", error.message);
   revalidatePath("/grocery", "layout"); // the list and the price book both show prices
   redirect("/grocery/prices");
