@@ -20,7 +20,7 @@
     "db:gate-password": "node scripts/gate-password.mjs"
   },
   "dependencies": {
-    "@google/genai": "^2.32.0",
+    "@google/genai": "^3.6.0",
     "@neon/auth": "^0.8.2",
     "@neon/postgrest-js": "^0.3.0",
     "@neondatabase/serverless": "^1.2.1",
