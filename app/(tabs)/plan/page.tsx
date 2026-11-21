@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TabPage } from "@/components/ui/TabPage";
+import { TodayCard, type PlannedMeal } from "@/features/food-log/components/TodayCard";
+import { getMyGoal, getMyWeekLog } from "@/features/food-log/queries";
 import { getMyHousehold } from "@/features/partner/queries";
 import { PlanWeek } from "@/features/plan/components/PlanWeek";
 import { GoToThisWeek, ThisWeekLink } from "@/features/plan/components/WeekLinks";
@@ -18,13 +20,32 @@ export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { joined, week: weekParam } = await searchParams;
   const week = weekFromParam(weekParam);
-  const [, household, entries, recipes, shopping] = await Promise.all([
+  const [, household, entries, recipes, shopping, myLog, goal] = await Promise.all([
     requireUser(),
     getMyHousehold(),
     week ? getWeekPlan(week) : [],
     week ? getRecipeChoices() : [],
     week ? getWeekShopping(week) : [],
+    week ? getMyWeekLog(week) : [],
+    getMyGoal(),
   ]);
+  // The week's planned meals with each recipe's title and numbers, for the Today card.
+  const recipeById = new Map(recipes.map((r) => [r.id, r]));
+  const planned: PlannedMeal[] = entries.flatMap((e) => {
+    const r = recipeById.get(e.recipe_id);
+    return r
+      ? [
+          {
+            id: e.id,
+            date: e.plan_date,
+            meal: e.meal,
+            title: r.title,
+            calories: r.nutrition.calories,
+            protein: r.nutrition.protein,
+          },
+        ]
+      : [];
+  });
   const partner = household.members.find((m) => !m.is_me);
 
   return (
@@ -61,6 +82,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
               <ThisWeekLink week={week} />
             </span>
           </nav>
+          <TodayCard days={weekDays(week)} planned={planned} logs={myLog} goal={goal} />
           {shopping.length > 0 && (
             <WeekGroceries
               key={`groceries-${week}`}
