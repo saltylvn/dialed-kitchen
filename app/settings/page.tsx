@@ -73,7 +73,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
           <form action={signOut} className="mt-3">
             <button
               type="submit"
-              className="border-border min-h-12 w-full rounded-lg border font-medium"
+              className="border-border min-h-12 w-full rounded-full border font-medium"
             >
               Sign out
             </button>

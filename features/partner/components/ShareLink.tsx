@@ -40,7 +40,7 @@ export function ShareLink({ link, email }: { link: string; email: string }) {
           <button
             type="button"
             onClick={share}
-            className="bg-primary text-on-primary min-h-12 flex-1 rounded-lg font-medium"
+            className="bg-primary text-on-primary min-h-12 flex-1 rounded-full font-medium"
           >
             Share
           </button>
@@ -48,7 +48,7 @@ export function ShareLink({ link, email }: { link: string; email: string }) {
         <button
           type="button"
           onClick={copy}
-          className="border-border bg-surface min-h-12 flex-1 rounded-lg border font-medium"
+          className="border-border bg-surface min-h-12 flex-1 rounded-full border font-medium"
         >
           {copied ? "✓ Copied" : "Copy link"}
         </button>

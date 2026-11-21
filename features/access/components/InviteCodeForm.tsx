@@ -40,7 +40,7 @@ export function InviteCodeForm() {
         <button
           type="submit"
           disabled={pending}
-          className="border-border bg-surface min-h-12 shrink-0 rounded-lg border px-4 font-medium disabled:opacity-60"
+          className="border-border bg-surface min-h-12 shrink-0 rounded-full border px-4 font-medium disabled:opacity-60"
         >
           {pending ? "Checking…" : "Use code"}
         </button>

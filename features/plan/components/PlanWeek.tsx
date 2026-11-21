@@ -407,14 +407,14 @@ function AddMeal({
         <div className="mt-2 flex gap-2">
           <Link
             href="/recipes/new"
-            className="bg-primary text-on-primary flex min-h-12 flex-1 items-center justify-center rounded-lg px-4 font-medium"
+            className="bg-primary text-on-primary flex min-h-12 flex-1 items-center justify-center rounded-full px-4 font-medium"
           >
             Add recipe
           </Link>
           <button
             type="button"
             onClick={onCancel}
-            className="border-border min-h-12 rounded-lg border px-4 font-medium"
+            className="border-border min-h-12 rounded-full border px-4 font-medium"
           >
             Cancel
           </button>
@@ -504,14 +504,14 @@ function AddMeal({
       <div className="flex gap-2">
         <button
           type="submit"
-          className="bg-primary text-on-primary min-h-12 flex-1 rounded-lg px-4 font-medium"
+          className="bg-primary text-on-primary min-h-12 flex-1 rounded-full px-4 font-medium"
         >
           Add
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="border-border min-h-12 rounded-lg border px-4 font-medium"
+          className="border-border min-h-12 rounded-full border px-4 font-medium"
         >
           Cancel
         </button>

@@ -62,7 +62,7 @@ export default async function AdminPage() {
                       <input type="hidden" name="id" value={e.id} />
                       <button
                         type="submit"
-                        className="border-border min-h-12 rounded-lg border px-4 font-medium"
+                        className="border-border min-h-12 rounded-full border px-4 font-medium"
                       >
                         Decline
                       </button>
@@ -73,7 +73,7 @@ export default async function AdminPage() {
                     <button
                       type="submit"
                       aria-label={`Remove ${e.name}`}
-                      className="border-border min-h-12 rounded-lg border px-4 font-medium"
+                      className="border-border min-h-12 rounded-full border px-4 font-medium"
                     >
                       Remove
                     </button>

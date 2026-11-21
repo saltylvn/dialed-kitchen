@@ -10,7 +10,7 @@ import { requireUser } from "@/lib/server/auth";
 export const metadata: Metadata = { title: "Price book · Dialed Kitchen" };
 
 const heading = "label";
-const button = "flex min-h-12 flex-1 items-center justify-center rounded-lg px-3 font-medium";
+const button = "flex min-h-12 flex-1 items-center justify-center rounded-full px-3 font-medium";
 
 // The price book: every item you've priced, on the list or not, grouped by store section,
 // each comparing your stores' latest prices, cheapest marked (docs/decisions/0034, 0044).

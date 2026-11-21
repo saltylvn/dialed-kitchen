@@ -128,7 +128,7 @@ Every household table carries `household_id` with row-level security, and compos
 ## Design
 
 - **Built for daylight, one-handed, in a store:** always light mode, every text color at 4.5:1 contrast or better (checked by [`lib/contrast.test.ts`](lib/contrast.test.ts)), the most-used tab in the middle, and big targets.
-- **A clean, monochrome look**: near-black type on white, hairline borders, Inter for everything readable, DM Mono for small labels, and one clay-orange accent kept for the best price ([0050](docs/decisions/0050-monochrome-redesign.md)).
+- **A clean, bright look**: near-black type on white, hairline borders, violet pill buttons, green for the best price, Inter for everything readable and DM Mono for small labels ([0050](docs/decisions/0050-monochrome-redesign.md), [0055](docs/decisions/0055-violet-and-green.md); guide in [docs/brand.md](docs/brand.md)).
 - **Choosing by swipe wheel:** stores, prices, package sizes, meals and servings are picked on iPhone-style wheels, never typed.
 - **App icon:** a minimal one-line shopping cart in the accent color ([0047](docs/decisions/0047-minimal-cart-app-icon.md)).
 

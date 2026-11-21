@@ -125,7 +125,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
             <input type="hidden" name="itemId" value={item.id} />
             <button
               type="submit"
-              className="border-border min-h-12 w-full rounded-lg border font-medium"
+              className="border-border min-h-12 w-full rounded-full border font-medium"
             >
               Delete {item.name}
             </button>

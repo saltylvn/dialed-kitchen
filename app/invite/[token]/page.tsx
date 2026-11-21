@@ -55,7 +55,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
           </p>
           <Link
             href={HOME_TAB.href}
-            className="border-border mt-auto flex min-h-12 w-full items-center justify-center rounded-lg border font-medium"
+            className="border-border mt-auto flex min-h-12 w-full items-center justify-center rounded-full border font-medium"
           >
             Go to your kitchen
           </Link>

@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Dialed Kitchen app icon: a minimal shopping cart (docs/decisions/0047). Two colors
-       only, clay orange (accent #d97757) on white, like the wordmark. The handle, basket and
-       base are one continuous line with rounded ends and joins, and the wheels are two dots.
-       Optically centered. Solid background, no transparency: iPhones add their own rounded
-       corners. -->
+  <!-- Dialed Kitchen app icon: a minimal shopping cart (docs/decisions/0047, 0055). Brand
+       colors only on white: the violet action color (#5c5cff) for the cart and one wheel, the
+       best-price green (#00a960) for the other. The handle, basket and base are one continuous
+       line with rounded ends and joins. Optically centered. Solid background, no transparency:
+       iPhones add their own rounded corners. -->
   <rect width="100" height="100" fill="#ffffff"/>
-  <path d="M21.5 27H28.5L36.5 59H72.5L78.5 37H31.5" fill="none" stroke="#d97757" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="40.5" cy="69" r="4.2" fill="#d97757"/>
-  <circle cx="68.5" cy="69" r="4.2" fill="#d97757"/>
+  <path d="M21.5 27H28.5L36.5 59H72.5L78.5 37H31.5" fill="none" stroke="#5c5cff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="40.5" cy="69" r="4.2" fill="#5c5cff"/>
+  <circle cx="68.5" cy="69" r="4.2" fill="#00a960"/>
 </svg>
