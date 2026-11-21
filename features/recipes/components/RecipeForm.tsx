@@ -96,7 +96,7 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
                 defaultChecked={recipe?.meals?.includes(m.id)}
                 className="peer sr-only"
               />
-              <span className="border-border bg-surface peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary peer-focus-visible:outline-primary flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-1 text-[15px] font-medium peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>.tick]:inline">
+              <span className="border-border bg-surface peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary peer-focus-visible:outline-primary flex min-h-12 cursor-pointer items-center justify-center rounded-full border px-1 text-[15px] font-medium peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>.tick]:inline">
                 <span aria-hidden className="tick mr-1 hidden">
                   ✓
                 </span>
@@ -182,7 +182,7 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
       <button
         type="submit"
         disabled={pending}
-        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-full font-medium disabled:opacity-60"
       >
         {pending ? "Saving…" : recipe?.id ? "Save changes" : "Save recipe"}
       </button>
@@ -270,7 +270,7 @@ function NutritionFields({
         type="button"
         onClick={estimate}
         disabled={estimating}
-        className="border-border mt-3 min-h-12 w-full rounded-lg border px-4 font-medium disabled:opacity-60"
+        className="border-border mt-3 min-h-12 w-full rounded-full border px-4 font-medium disabled:opacity-60"
       >
         {estimating ? "Estimating…" : "Estimate with AI"}
       </button>

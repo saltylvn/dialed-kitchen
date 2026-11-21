@@ -58,3 +58,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0052](0052-smarter-shopping.md)                               | Smarter shopping: today's cheapest price, a By store list, restock from receipts      | Accepted               |
 | [0053](0053-faster-planning.md)                                | Faster planning: repeat a week, leftovers, plan from what's In stock, a weekly budget | Accepted               |
 | [0054](0054-plan-from-today.md)                                | Plan shows today and the next six days                                                | Accepted               |
+| [0055](0055-violet-and-green.md)                               | Violet for actions, green for best price, pill buttons                                | Accepted               |

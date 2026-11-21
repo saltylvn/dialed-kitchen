@@ -95,7 +95,7 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
   const error = localError ?? (scan?.ok === false ? scan.error : null);
   const cameraButton = (label: string, primary: boolean) => (
     <label
-      className={`flex min-h-12 items-center justify-center rounded-lg px-4 font-medium ${
+      className={`flex min-h-12 items-center justify-center rounded-full px-4 font-medium ${
         primary ? "bg-primary text-on-primary" : "border-border bg-surface border"
       } ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
     >
@@ -130,7 +130,7 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
             type="button"
             onClick={read}
             disabled={busy}
-            className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
+            className="bg-primary text-on-primary min-h-12 w-full rounded-full font-medium disabled:opacity-60"
           >
             {reading ? "Reading the receipt…" : "Read the receipt"}
           </button>
@@ -257,14 +257,14 @@ function ReceiptReview({
         </p>
         <Link
           href="/grocery/prices"
-          className="bg-primary text-on-primary flex min-h-12 items-center justify-center rounded-lg font-medium"
+          className="bg-primary text-on-primary flex min-h-12 items-center justify-center rounded-full font-medium"
         >
           See Price Tracker
         </Link>
         <button
           type="button"
           onClick={onRestart}
-          className="border-border min-h-12 w-full rounded-lg border font-medium"
+          className="border-border min-h-12 w-full rounded-full border font-medium"
         >
           Scan another receipt
         </button>
@@ -437,14 +437,14 @@ function ReceiptReview({
         <button
           type="button"
           onClick={onRestart}
-          className="border-border min-h-12 flex-1 rounded-lg border font-medium"
+          className="border-border min-h-12 flex-1 rounded-full border font-medium"
         >
           Start over
         </button>
         <button
           type="submit"
           disabled={saving || kept.length === 0 || !today}
-          className="bg-primary text-on-primary min-h-12 flex-[2] rounded-lg font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 flex-[2] rounded-full font-medium disabled:opacity-60"
         >
           {saving ? "Saving…" : `Save ${kept.length} ${kept.length === 1 ? "price" : "prices"}`}
         </button>

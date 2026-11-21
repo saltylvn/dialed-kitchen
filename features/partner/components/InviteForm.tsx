@@ -36,7 +36,7 @@ export function InviteForm({ defaultEmail = "" }: { defaultEmail?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-full font-medium disabled:opacity-60"
       >
         {pending ? "Creating link…" : "Create invite link"}
       </button>

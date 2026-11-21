@@ -38,7 +38,7 @@ export function PartnerCard({ household }: { household: Household }) {
             <form action={endPartnership} className="mt-3">
               <button
                 type="submit"
-                className="border-border min-h-12 w-full rounded-lg border font-medium"
+                className="border-border min-h-12 w-full rounded-full border font-medium"
               >
                 End partnership
               </button>
@@ -59,7 +59,7 @@ export function PartnerCard({ household }: { household: Household }) {
             <input type="hidden" name="inviteId" value={invite.id} />
             <button
               type="submit"
-              className="border-border min-h-12 w-full rounded-lg border font-medium"
+              className="border-border min-h-12 w-full rounded-full border font-medium"
             >
               Cancel invite
             </button>

@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         )}
         <button
           type="submit"
-          className="bg-primary text-on-primary min-h-12 w-full rounded-lg text-[17px] font-medium tracking-wide"
+          className="bg-primary text-on-primary min-h-12 w-full rounded-full text-[17px] font-medium tracking-wide"
         >
           Continue with Google
         </button>
@@ -61,7 +61,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <form action={signInAsDemo} className="mt-3 w-full">
           <button
             type="submit"
-            className="border-border bg-surface min-h-12 w-full rounded-lg border text-[17px] font-medium"
+            className="border-border bg-surface min-h-12 w-full rounded-full border text-[17px] font-medium"
           >
             Try the demo
           </button>

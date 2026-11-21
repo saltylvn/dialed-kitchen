@@ -77,7 +77,7 @@ export function WaitlistForm() {
       <button
         type="submit"
         disabled={pending}
-        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-full font-medium disabled:opacity-60"
       >
         {pending ? "Sending…" : "Join the waitlist"}
       </button>

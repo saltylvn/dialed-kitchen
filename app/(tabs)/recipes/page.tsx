@@ -18,7 +18,7 @@ export default async function RecipesPage({ searchParams }: PageProps<"/recipes"
       <div className="mb-5 flex justify-end">
         <Link
           href="/recipes/new"
-          className="bg-primary text-on-primary flex min-h-12 items-center rounded-lg px-4 font-medium"
+          className="bg-primary text-on-primary flex min-h-12 items-center rounded-full px-4 font-medium"
         >
           Add recipe
         </Link>

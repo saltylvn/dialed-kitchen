@@ -56,7 +56,7 @@ export function PhotoImport({ onDraft }: { onDraft: (draft: RecipeDraft) => void
         one recipe.
       </p>
       <label
-        className={`bg-primary text-on-primary mt-2 flex min-h-12 items-center justify-center rounded-lg px-4 font-medium ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+        className={`bg-primary text-on-primary mt-2 flex min-h-12 items-center justify-center rounded-full px-4 font-medium ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
       >
         {shrinking
           ? "Preparing photos…"

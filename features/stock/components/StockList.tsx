@@ -44,7 +44,7 @@ export function StockList({ items }: { items: StockRow[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-primary text-on-primary min-h-12 shrink-0 rounded-lg px-5 font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 shrink-0 rounded-full px-5 font-medium disabled:opacity-60"
         >
           Add
         </button>

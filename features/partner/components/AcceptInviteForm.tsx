@@ -21,7 +21,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="bg-primary text-on-primary min-h-12 w-full rounded-lg text-[17px] font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-full text-[17px] font-medium disabled:opacity-60"
       >
         {pending ? "Joining…" : "Join kitchen"}
       </button>

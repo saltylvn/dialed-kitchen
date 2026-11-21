@@ -16,7 +16,7 @@ export function TodayLink({ start }: { start: string }) {
   return (
     <Link
       href={`/plan?start=${today}`}
-      className="border-border flex min-h-12 items-center rounded-lg border px-3 font-medium"
+      className="border-border flex min-h-12 items-center rounded-full border px-3 font-medium"
     >
       Today
     </Link>

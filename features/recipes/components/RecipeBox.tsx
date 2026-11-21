@@ -331,13 +331,13 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
           type="button"
           onClick={addToList}
           disabled={adding || needed === 0}
-          className="bg-primary text-on-primary min-h-12 flex-1 rounded-lg font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 flex-1 rounded-full font-medium disabled:opacity-60"
         >
           {adding ? "Adding…" : needed === 0 ? "All In stock" : `Add ${needed} needed to list`}
         </button>
         <Link
           href={`/recipes/${recipe.id}/edit`}
-          className="border-border flex min-h-12 items-center rounded-lg border px-5 font-medium"
+          className="border-border flex min-h-12 items-center rounded-full border px-5 font-medium"
         >
           Edit
         </Link>
@@ -419,7 +419,7 @@ function QuickSort({ recipe }: { recipe: RecipeView }) {
           type="button"
           onClick={save}
           disabled={saving}
-          className="border-border mt-2 min-h-12 w-full rounded-lg border px-3 font-medium disabled:opacity-60"
+          className="border-border mt-2 min-h-12 w-full rounded-full border px-3 font-medium disabled:opacity-60"
         >
           {saving
             ? "Saving…"

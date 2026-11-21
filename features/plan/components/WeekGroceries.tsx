@@ -88,7 +88,7 @@ export function WeekGroceries({
           type="button"
           onClick={add}
           disabled={pending}
-          className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-lg px-4 font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-full px-4 font-medium disabled:opacity-60"
         >
           {pending ? "Adding…" : `Add ${summary.toAdd} to grocery list`}
         </button>
