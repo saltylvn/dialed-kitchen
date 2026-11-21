@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/db";
 import { HOME_TAB } from "@/lib/tabs";
 
+const RETRY_PARAM = "retry";
+
 // Every sign-in ends here: Google (through Neon Auth) sends the browser back to this
 // address, and the demo sign-in redirects to it. By the time this runs, proxy.ts
 // has already traded the one-time code in the address for login cookies, so all that is
@@ -21,8 +23,14 @@ export async function GET(request: NextRequest) {
     const db = await createClient();
     const { error } = await db.rpc("finish_my_signup");
     if (error) {
-      console.error("finish_my_signup failed:", error.message);
-      return NextResponse.redirect(new URL("/login?error=signin", request.url));
+      // Right after Google sends the browser back, the login cookies are only on the
+      // response, so this request's database token is still the signed-out one. One
+      // fresh request carries the cookies; try exactly once more, then give up.
+      const retried = request.nextUrl.searchParams.has(RETRY_PARAM);
+      console.error(`finish_my_signup failed${retried ? " again" : ""}:`, error.message);
+      return NextResponse.redirect(
+        new URL(retried ? "/login?error=signin" : `/auth/callback?${RETRY_PARAM}=1`, request.url),
+      );
     }
     // The shared demo's sample data resets once a day, on sign-in (docs/decisions/0026).
     // For everyone else this does nothing.
