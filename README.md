@@ -40,6 +40,7 @@
 
 - A Monday-to-Sunday week with four spots a day: Breakfast, Lunch, Snacks, Dinner. Each spot offers that meal's recipes, picked by swipe wheel.
 - **Calories** and **Macros** per person for each day.
+- **Calorie counting:** a **Today** card logs what you actually ate in one tap (**✓ Ate it** remembers your usual portion; **Ate the plan** logs the whole day), with **Quick add** for anything else, against a daily calorie and protein goal. Each person's log and goal are private, even from their partner.
 - **This week's groceries:** every ingredient summed across the week and scaled to the servings planned, skipping what's In stock or already listed, with an estimated cost at your best prices. One tap adds it all to the list.
 
 **Recipes**
@@ -88,10 +89,10 @@ households ──< household_members             household_invites (partner, has
     │                                             │  └──< receipt_aliases (per store)
     ├──< pantry_items (In stock)                  │
     └──< recipes ──< recipe_ingredients ──────────┘
-            └──< meal_plan_entries
+            └──< meal_plan_entries ──< food_log (per person, private)
 
 waitlist ──< signup_invites (hashed codes, email-bound, single-use, 7 days)     private.admins
-ai_requests (per-person daily AI limit)
+ai_requests (per-person daily AI limit)     nutrition_goals (per person, private)
 ```
 
 Every household table carries `household_id` with row-level security, and composite foreign keys (`(id, household_id)`) stop rows from pointing at another household's data. Unit price and best price are **computed from history**, never stored, so they can't go stale. The week's shopping list and its cost come from **one SQL function**, so the Plan card and the list always agree.
@@ -158,6 +159,7 @@ npm run lint && npm run typecheck && npm run build
 - [x] 6. Recipe import from a photo
 - [x] 7. Weekly meal planner
 - [x] 7b. Calories and macros per day on the plan
+- [x] 7c. Calorie counting: a private food log per person, logged from the plan, with daily goals
 - [x] 8. Meal plan → grocery list with estimated cost
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
 - [x] 9. Price trends, cheapest store, app icon, food emojis
