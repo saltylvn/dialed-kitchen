@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { InviteCodeForm } from "@/features/access/components/InviteCodeForm";
-import { signInAsDemo } from "@/features/auth/actions";
 import { getCurrentUser } from "@/lib/server/auth";
 import { demoPassword } from "@/lib/server/demo";
 import { HOME_TAB } from "@/lib/tabs";
@@ -58,7 +57,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       </form>
 
       {demoPassword() && (
-        <form action={signInAsDemo} className="mt-3 w-full">
+        <form action="/auth/demo" method="post" className="mt-3 w-full">
           <button
             type="submit"
             className="border-border bg-surface min-h-12 w-full rounded-full border text-[17px] font-medium"
