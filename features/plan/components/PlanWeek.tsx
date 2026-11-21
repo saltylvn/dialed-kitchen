@@ -15,7 +15,7 @@ import { addToPlan, planLeftovers, removeFromPlan } from "../actions";
 import type { RecipeChoice } from "../queries";
 import type { PlanEntryRow } from "../schema";
 
-// One week of meals, Monday to Sunday. Every day has four spots, always in this order:
+// Seven days of meals, today first (docs/decisions/0054). Every day has four spots, always in this order:
 // Breakfast, Lunch, Snacks, Dinner. Tapping an empty spot opens a small form with swipe wheels for
 // the recipe and servings (the iPhone shows a native <select> as a wheel). Adding and
 // removing show at once and roll back on failure.
@@ -520,7 +520,7 @@ function AddMeal({
   );
 }
 
-// Leftovers of a meal on a later day this week: the day, the meal and how many servings,
+// Leftovers of a meal on a later day of the seven shown: the day, the meal and how many servings,
 // each a native wheel on the iPhone. The same recipe is planned again, marked as leftovers.
 function LeftoversForm({
   title,

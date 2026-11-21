@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
-import { weekFromParam } from "@/lib/plan";
+import { startFromParam } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/db";
 import { addToPlanSchema, budgetSchema, leftoversSchema, type AddToPlanInput } from "./schema";
@@ -53,15 +53,15 @@ export async function removeFromPlan(id: string): Promise<ActionResult> {
   return { ok: true, data: undefined };
 }
 
-// Adds everything the week needs that isn't In stock or already on the list (one database
-// step, add_week_to_list).
-export async function addWeekToList(monday: string): Promise<ActionResult<{ added: number }>> {
+// Adds everything the seven days starting `start` need that isn't In stock or already on the
+// list (one database step, add_week_to_list).
+export async function addWeekToList(start: string): Promise<ActionResult<{ added: number }>> {
   await requireUser();
-  if (typeof monday !== "string" || weekFromParam(monday) !== monday) {
+  if (startFromParam(start) !== start) {
     return { ok: false, error: GENERIC_ERROR };
   }
   const db = await createClient();
-  const { data, error } = await db.rpc("add_week_to_list", { week_start: monday });
+  const { data, error } = await db.rpc("add_week_to_list", { week_start: start });
   if (error) {
     console.error("add week to list failed:", error.message);
     return { ok: false, error: "Couldn't add to the list. Check your connection and try again." };
@@ -71,14 +71,15 @@ export async function addWeekToList(monday: string): Promise<ActionResult<{ adde
   return { ok: true, data: { added: z.number().int().parse(data) } };
 }
 
-// Repeat a week: copy every meal planned in `fromWeek` into `toWeek` (both Mondays), skipping
-// what's already there (copy_plan_week, decision 0053).
+// Repeat a week: copy every meal planned in the seven days from `fromWeek` into the seven
+// days from `toWeek` (a whole number of weeks apart, so each lands on the same weekday),
+// skipping what's already there (copy_plan_week, decisions 0053 and 0054).
 export async function copyPlanWeek(
   fromWeek: string,
   toWeek: string,
 ): Promise<ActionResult<{ added: number }>> {
   await requireUser();
-  if (weekFromParam(fromWeek) !== fromWeek || weekFromParam(toWeek) !== toWeek) {
+  if (startFromParam(fromWeek) !== fromWeek || startFromParam(toWeek) !== toWeek) {
     return { ok: false, error: GENERIC_ERROR };
   }
   const db = await createClient();
