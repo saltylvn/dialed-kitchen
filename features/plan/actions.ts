@@ -3,9 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
+import { serverToday } from "@/lib/dates";
 import { startFromParam } from "@/lib/plan";
+import { DAILY_AI_LIMIT, takeAiRequest } from "@/lib/server/aiLimit";
 import { requireUser } from "@/lib/server/auth";
 import { createClient } from "@/lib/server/db";
+import { estimatePrices } from "@/lib/server/gemini";
+import { MAX_ESTIMATES } from "@/lib/ai/priceEstimate";
+import { weekCost } from "@/lib/weekCost";
+import { getPriceEstimates, getWeekShopping } from "./queries";
 import { addToPlanSchema, budgetSchema, leftoversSchema, type AddToPlanInput } from "./schema";
 
 // Meal plan actions. The database (RLS, constraints) has the final word.
@@ -133,4 +139,58 @@ export async function setWeeklyBudget(amount: number | null): Promise<ActionResu
   revalidatePath("/plan");
   revalidatePath("/settings");
   return { ok: true, data: undefined };
+}
+
+// "Estimate missing prices" (decision 0057): one AI request prices every ingredient the
+// seven days from `start` still need that has no price-book price and no fresh estimate.
+// The estimates are saved for the household and always shown as "~ estimate".
+export async function estimateMissingPrices(
+  start: string,
+): Promise<ActionResult<{ estimated: number }>> {
+  await requireUser();
+  if (startFromParam(start) !== start) return { ok: false, error: GENERIC_ERROR };
+
+  const [rows, saved] = await Promise.all([getWeekShopping(start), getPriceEstimates()]);
+  const needed = weekCost(rows, saved).toEstimate.slice(0, MAX_ESTIMATES);
+  if (needed.length === 0) return { ok: true, data: { estimated: 0 } };
+
+  const allowance = await takeAiRequest(); // one of the day's AI requests, counted by the database
+  if (allowance === "error") return { ok: false, error: GENERIC_ERROR };
+  if (allowance === "limit") {
+    return {
+      ok: false,
+      error: `You've used all ${DAILY_AI_LIMIT} AI requests for the last day. Try again tomorrow.`,
+    };
+  }
+
+  const result = await estimatePrices(needed);
+  if (!result.ok) {
+    return {
+      ok: false,
+      error:
+        result.reason === "not_configured"
+          ? "AI estimates aren't set up yet."
+          : "Couldn't get estimates right now. Try again in a minute.",
+    };
+  }
+  if (result.estimates.length === 0) return { ok: true, data: { estimated: 0 } };
+
+  const db = await createClient();
+  const { error } = await db.from("price_estimates").upsert(
+    result.estimates.map((e) => ({
+      key: e.key,
+      dimension: e.dimension,
+      unit_price_base: e.unitPriceBase,
+      model: result.model.slice(0, 80),
+      estimated_on: serverToday(),
+    })),
+    { onConflict: "household_id,key,dimension" },
+  );
+  if (error) {
+    console.error("save price estimates failed:", error.message);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+  revalidatePath("/plan");
+  revalidatePath("/grocery");
+  return { ok: true, data: { estimated: result.estimates.length } };
 }

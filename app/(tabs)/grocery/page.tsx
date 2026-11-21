@@ -4,9 +4,15 @@ import { TabPage } from "@/components/ui/TabPage";
 import { AddToListForm } from "@/features/list/components/AddToListForm";
 import { GroceryList } from "@/features/list/components/GroceryList";
 import { getListPage } from "@/features/list/queries";
+import { WeekGroceries } from "@/features/plan/components/WeekGroceries";
+import { getPriceEstimates, getWeeklyBudget, getWeekShopping } from "@/features/plan/queries";
 import { StockList } from "@/features/stock/components/StockList";
 import { listInStock } from "@/features/stock/queries";
+import { serverToday } from "@/lib/dates";
+import { startFromParam } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
+import { weekCost } from "@/lib/weekCost";
+import { summarizeWeek } from "@/lib/weekShopping";
 
 export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
 
@@ -20,11 +26,33 @@ const tool = "btn btn-secondary flex-1 px-2 text-[15px]";
 // (Price book, Log a price, Scan a receipt); then the Grocery list with its add box at the
 // top; then what's In stock. Ticking an item on the list moves it In stock, so what you
 // need and what you have are together. All reads run in parallel.
-export default async function GroceryPage() {
-  const [, page, inStock] = await Promise.all([requireUser(), getListPage(), listInStock()]);
+// At the very top, the meal plan's next seven days: estimated cost against the weekly
+// budget (docs/decisions/0057). ?start= is today from the phone (the tab link adds it); the
+// server's date stands in when it's missing.
+export default async function GroceryPage({ searchParams }: PageProps<"/grocery">) {
+  const start = startFromParam((await searchParams).start) ?? serverToday();
+  const [, page, inStock, shopping, estimates, budget] = await Promise.all([
+    requireUser(),
+    getListPage(),
+    listInStock(),
+    getWeekShopping(start),
+    getPriceEstimates(),
+    getWeeklyBudget(),
+  ]);
 
   return (
     <TabPage tab="grocery">
+      {shopping.length > 0 && (
+        <WeekGroceries
+          key={`week-${start}`}
+          week={start}
+          summary={summarizeWeek(shopping)}
+          cost={weekCost(shopping, estimates)}
+          budget={budget}
+          title="Meal plan · next 7 days"
+          planLink
+        />
+      )}
       <nav aria-label="Prices" className="flex gap-2">
         <Link href="/grocery/prices" className={tool}>
           Price book

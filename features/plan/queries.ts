@@ -3,6 +3,7 @@ import { z } from "zod";
 import { addDays, serverToday } from "@/lib/dates";
 import type { Nutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
+import type { PriceEstimate } from "@/lib/weekCost";
 import type { ShoppingRow } from "@/lib/weekShopping";
 import { createClient } from "@/lib/server/db";
 import { matchKey } from "@/lib/ingredients";
@@ -145,4 +146,27 @@ export async function getWeeklyBudget(): Promise<number | null> {
   if (error) fail("households", error);
   if (!data) return null;
   return z.object({ weekly_budget: z.coerce.number().nullable() }).parse(data).weekly_budget;
+}
+
+// How long an AI price estimate is trusted before it's asked for again (decision 0057).
+export const ESTIMATE_MAX_AGE_DAYS = 90;
+
+const estimateRowSchema = z.object({
+  key: z.string(),
+  dimension: z.enum(["weight", "volume", "count"]),
+  unit_price_base: z.coerce.number().positive(),
+});
+
+// The household's AI price estimates still fresh enough to use (decision 0057).
+export async function getPriceEstimates(): Promise<PriceEstimate[]> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from("price_estimates")
+    .select("key, dimension, unit_price_base")
+    .gte("estimated_on", addDays(serverToday(), -ESTIMATE_MAX_AGE_DAYS));
+  if (error) fail("price_estimates", error);
+  return z
+    .array(estimateRowSchema)
+    .parse(data)
+    .map((r) => ({ key: r.key, dimension: r.dimension, unitPriceBase: r.unit_price_base }));
 }

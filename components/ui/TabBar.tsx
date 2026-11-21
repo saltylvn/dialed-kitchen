@@ -18,10 +18,10 @@ const ICONS: Record<TabId, () => React.JSX.Element> = {
 
 export function TabBar() {
   const pathname = usePathname();
-  // Plan opens on today by the phone's own date, in one trip (no redirect).
+  // Plan and Grocery's meal-plan card start on today by the phone's own date (no redirect).
   const today = useToday();
   const linkFor = (id: TabId, href: string) =>
-    id === "plan" && today ? `${href}?start=${today}` : href;
+    (id === "plan" || id === "grocery") && today ? `${href}?start=${today}` : href;
 
   return (
     <nav

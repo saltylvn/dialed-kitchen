@@ -2,6 +2,12 @@ import "server-only";
 import { ApiError, GoogleGenAI, ThinkingLevel, type Part } from "@google/genai";
 import { classifyGeminiError, isTimeoutError, MODEL_CHAIN } from "@/lib/ai/modelChain";
 import {
+  parsePriceAnswer,
+  PRICE_PROMPT,
+  PRICE_RESPONSE_SCHEMA,
+  pricePrompt,
+} from "@/lib/ai/priceEstimate";
+import {
   NUTRITION_PROMPT,
   NUTRITION_RESPONSE_SCHEMA,
   nutritionPrompt,
@@ -20,6 +26,7 @@ import {
   type Receipt,
 } from "@/lib/ai/receiptFromImage";
 import type { Nutrition } from "@/lib/nutrition";
+import type { NeedsEstimate, PriceEstimate } from "@/lib/weekCost";
 
 // The ONLY file that talks to Google (docs/decisions/0016, 0018). The key is read here, on
 // the server, and never reaches the browser. Swapping AI providers means changing this file.
@@ -109,6 +116,28 @@ export async function estimateNutrition(recipe: {
   });
 }
 
+export type EstimatePricesResult =
+  { ok: true; estimates: PriceEstimate[]; model: string } | { ok: false; reason: Failure };
+
+// Typical shelf prices for planned ingredients the price book doesn't have yet
+// (docs/decisions/0057). One request for the whole list; the answer is saved as "~ estimate".
+export async function estimatePrices(
+  items: readonly NeedsEstimate[],
+): Promise<EstimatePricesResult> {
+  return askGemini<EstimatePricesResult>({
+    parts: [{ text: pricePrompt(items) }],
+    systemInstruction: PRICE_PROMPT,
+    schema: PRICE_RESPONSE_SCHEMA,
+    maxOutputTokens: 4096,
+    read: (text, model) => {
+      const parsed = parsePriceAnswer(text, items);
+      return parsed.ok
+        ? { done: { ok: true, estimates: parsed.estimates, model } }
+        : { retry: parsed.reason };
+    },
+  });
+}
+
 // Google's free models are sometimes overloaded, slow or retired, so try each in turn and
 // use the first good answer. `read` checks one model's reply: a final answer, or "try the
 // next model" (with the reason, for the log).
@@ -117,7 +146,7 @@ async function askGemini<T extends { ok: boolean }>(options: {
   systemInstruction: string;
   schema: object;
   maxOutputTokens: number;
-  read: (text: string) => { done: T } | { retry: string };
+  read: (text: string, model: string) => { done: T } | { retry: string };
 }): Promise<T | { ok: false; reason: Failure }> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return { ok: false, reason: "not_configured" };
@@ -144,7 +173,7 @@ async function askGemini<T extends { ok: boolean }>(options: {
           abortSignal: AbortSignal.timeout(Math.min(PER_MODEL_TIMEOUT_MS, remaining)),
         },
       });
-      const outcome = options.read(response.text ?? "");
+      const outcome = options.read(response.text ?? "", model);
       if ("done" in outcome) return outcome.done;
       console.error(`Gemini ${model} gave an unusable answer: ${outcome.retry}`);
       last = { ok: false, reason: "failed" };
