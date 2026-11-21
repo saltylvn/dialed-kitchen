@@ -55,3 +55,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0049](0049-move-to-neon.md)                                   | Move the database and sign-in from Supabase to Neon                                   | Accepted               |
 | [0050](0050-monochrome-redesign.md)                            | A monochrome redesign: near-black on white, Inter, one accent                         | Accepted               |
 | [0051](0051-calorie-counting.md)                               | Calorie counting: a private food log, logged from the plan                            | Accepted               |
+| [0052](0052-smarter-shopping.md)                               | Smarter shopping: today's cheapest price, a By store list, restock from receipts      | Accepted               |
