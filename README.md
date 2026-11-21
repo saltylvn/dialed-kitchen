@@ -32,16 +32,16 @@
 **Grocery** (where the app opens)
 
 - **Price book:** every item, with each store's latest price shown as a chip, cheapest first and marked ✓. Prices are compared **per unit**, so a 5 lb bag and a 2 lb bag compare fairly. Each item also has its best price ever, full history and a trend chart.
-- **Scan a receipt:** take up to three photos of a receipt. AI reads each line and matches it to your price book (remembering each store's abbreviations), and you review everything before one tap saves a whole trip's prices.
+- **Scan a receipt:** take up to three photos of a receipt. AI reads each line and matches it to your price book (remembering each store's abbreviations), and you review everything before one tap saves a whole trip's prices. Everything on the receipt then goes In stock and comes off the grocery list.
 - **Log a price** with swipe wheels for the store, price and package size, and see "🎉 New best price!" or how far above your best it is.
-- **Grocery list** grouped by store section, with the best price beside each item. Tick something and it moves **In stock**, the kitchen inventory, with Undo.
+- **Grocery list** grouped by store section, with where each item is cheapest now (each store's latest price). Switch to **By store** to split the list by the store to buy each thing at, with an estimated subtotal per store. Tick something and it moves **In stock**, the kitchen inventory, with Undo.
 
 **Plan**
 
 - A Monday-to-Sunday week with four spots a day: Breakfast, Lunch, Snacks, Dinner. Each spot offers that meal's recipes, picked by swipe wheel.
 - **Calories** and **Macros** per person for each day.
 - **Calorie counting:** a **Today** card logs what you actually ate in one tap (**✓ Ate it** remembers your usual portion; **Ate the plan** logs the whole day), with **Quick add** for anything else, against a daily calorie and protein goal. Each person's log and goal are private, even from their partner.
-- **This week's groceries:** every ingredient summed across the week and scaled to the servings planned, skipping what's In stock or already listed, with an estimated cost at your best prices. One tap adds it all to the list.
+- **This week's groceries:** every ingredient summed across the week and scaled to the servings planned, skipping what's In stock or already listed, with an estimated cost at today's cheapest prices. One tap adds it all to the list.
 
 **Recipes**
 
@@ -164,6 +164,7 @@ npm run lint && npm run typecheck && npm run build
 - [x] 8b. Recipes sorted by meal (the Plan picker offers only that meal)
 - [x] 9. Price trends, cheapest store, app icon, food emojis
 - [x] 10. Receipt scanning, the store-comparison price book, invite-only sign-up with a waitlist
+- [x] 11. Redesign: monochrome look, calorie counting, smarter shopping (cheapest now, By store, receipts restock)
 
 ## Reporting a vulnerability
 

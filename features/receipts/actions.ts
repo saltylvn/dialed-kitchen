@@ -97,10 +97,15 @@ export async function scanReceipt(
   };
 }
 
-export type SaveReceiptResult = ActionResult<{ saved: number; created: number }> | null;
+export type SaveReceiptResult = ActionResult<{
+  saved: number;
+  created: number;
+  restocked: number; // grocery list entries ticked off (now In stock)
+}> | null;
 
 // Saves a reviewed receipt: new items first (or existing ones with the same name), then every
-// price in one insert (all or nothing), then the receipt texts to recognize next time.
+// price in one insert (all or nothing), then the receipt texts to recognize next time, then
+// what was bought goes In stock and off the grocery list (restock, docs/decisions/0052).
 // RLS and the database's checks apply to all of it, as for any typed price.
 export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptResult> {
   await requireUser();
@@ -193,6 +198,17 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
     if (error) console.error("receipt aliases save failed:", error.message);
   }
 
+  // You bought it, so you have it: In stock, and off the list, in one step. The prices are
+  // already saved, so a failure here is logged and reported as nothing restocked.
+  const bought = [
+    ...new Set(prices.map((p) => byId.get(p.item_id)?.name).filter((n) => n !== undefined)),
+  ];
+  let restocked = 0;
+  const { data: restockData, error: restockError } = await db.rpc("restock", { names: bought });
+  if (restockError) console.error("receipt restock failed:", restockError.message);
+  else restocked = z.number().int().parse(restockData);
+
   revalidatePath("/grocery", "layout");
-  return { ok: true, data: { saved: prices.length, created } };
+  revalidatePath("/plan");
+  return { ok: true, data: { saved: prices.length, created, restocked } };
 }

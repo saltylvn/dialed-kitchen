@@ -249,7 +249,11 @@ function ReceiptReview({
           ✓ Saved {result.data.saved} {result.data.saved === 1 ? "price" : "prices"}
           {result.data.created > 0 &&
             `, with ${result.data.created} new ${result.data.created === 1 ? "item" : "items"} in your price book`}
-          . Next time, this store&apos;s receipt lines are recognized.
+          .{" "}
+          {result.data.restocked > 0 &&
+            `${result.data.restocked} ${result.data.restocked === 1 ? "thing" : "things"} came off your grocery list. `}
+          Everything you bought is now In stock, and next time this store&apos;s receipt lines are
+          recognized.
         </p>
         <Link
           href="/grocery/prices"

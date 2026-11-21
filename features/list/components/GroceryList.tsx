@@ -3,6 +3,8 @@
 import { useOptimistic, useState, useTransition } from "react";
 import { FoodEmoji } from "@/components/ui/FoodEmoji";
 import { groupByCategory } from "@/lib/foodCategory";
+import { formatMoney } from "@/lib/pricing";
+import { groupByStore } from "@/lib/shopTrip";
 import { setInStock } from "@/features/stock/actions";
 import { addToList, removeFromList } from "../actions";
 import type { ListEntry } from "../queries";
@@ -17,11 +19,16 @@ const sectionHeading = "label";
 // screen back with a message.
 export function GroceryList({
   entries,
+  storeOrder,
   children,
 }: {
   entries: ListEntry[];
+  storeOrder: string[];
   children?: React.ReactNode; // the add box, shown above the list
 }) {
+  // Section: grouped like the store's aisles. Store: grouped by where each thing is cheapest
+  // now, with an estimated subtotal per store, for a trip to several stores (decision 0052).
+  const [view, setView] = useState<"section" | "store">("section");
   const [optimistic, remove] = useOptimistic(entries, (state, id: string) =>
     state.filter((e) => e.id !== id),
   );
@@ -67,9 +74,35 @@ export function GroceryList({
 
   return (
     <section aria-labelledby="list-heading">
-      <h2 id="list-heading" className={part}>
-        Grocery list
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="list-heading" className={part}>
+          Grocery list
+        </h2>
+        <div
+          role="group"
+          aria-label="Group the list by"
+          className="border-border flex rounded-lg border p-0.5"
+        >
+          {(
+            [
+              ["section", "Section"],
+              ["store", "Store"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={view === id}
+              onClick={() => setView(id)}
+              className={`min-h-11 rounded-md px-3 text-[15px] font-medium ${
+                view === id ? "bg-primary text-on-primary" : "text-muted"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="mt-3">{children}</div>
       {error && (
         <p role="alert" className="mt-3 font-medium">
@@ -97,9 +130,20 @@ export function GroceryList({
         </p>
       ) : (
         <div className="mt-3 space-y-5">
-          {groupByCategory(optimistic, (e) => e.name).map((group) => (
+          {(view === "store"
+            ? groupByStore(optimistic, storeOrder).map((g) => ({
+                id: g.storeId ?? "anywhere",
+                label: g.label,
+                note: storeNote(g.entries.length, g.subtotal, g.unpriced),
+                things: g.entries,
+              }))
+            : groupByCategory(optimistic, (e) => e.name).map((g) => ({ ...g, note: null }))
+          ).map((group) => (
             <div key={group.id}>
-              <h3 className={sectionHeading}>{group.label}</h3>
+              <h3 className={sectionHeading}>
+                {group.label}
+                {group.note && <span className="tracking-normal normal-case"> · {group.note}</span>}
+              </h3>
               <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-xl border">
                 {group.things.map((entry) => (
                   <Row
@@ -118,7 +162,15 @@ export function GroceryList({
   );
 }
 
-// One row: checkbox and item, the best price so far (if any), then × (docs/decisions/0035).
+// "3 items · ~$12.40", plus how many have no estimate ("2 not priced").
+function storeNote(count: number, subtotal: number, unpriced: number): string {
+  const items = `${count} ${count === 1 ? "item" : "items"}`;
+  const cost = subtotal > 0 ? ` · ~${formatMoney(subtotal)}` : "";
+  const missing = unpriced > 0 && unpriced < count ? ` (${unpriced} not priced)` : "";
+  return items + cost + missing;
+}
+
+// One row: checkbox and item, where it's cheapest now (if priced), then × (docs/decisions/0035, 0052).
 function Row({
   entry,
   onTick,
@@ -159,9 +211,12 @@ function Row({
           id={`best-${entry.id}`}
           className="w-[6.5rem] shrink-0 text-right text-[14px] leading-snug"
         >
-          <span className="label block">Best</span>
+          <span className="label block">Cheapest</span>
           <span className="block font-medium">{entry.best.price}</span>
-          <span className="text-muted block">{entry.best.store}</span>
+          <span className="text-muted block">
+            {entry.best.store}
+            {entry.best.older && " · older"}
+          </span>
         </p>
       )}
       <button

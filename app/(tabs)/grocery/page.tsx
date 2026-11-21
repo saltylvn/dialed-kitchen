@@ -38,7 +38,7 @@ export default async function GroceryPage() {
       </nav>
 
       <div className="mt-8">
-        <GroceryList entries={page.entries}>
+        <GroceryList entries={page.entries} storeOrder={page.storeOrder}>
           <AddToListForm itemNames={page.itemNames} />
         </GroceryList>
       </div>
