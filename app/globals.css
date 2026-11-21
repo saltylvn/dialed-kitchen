@@ -105,6 +105,11 @@
   padding-top: calc(env(safe-area-inset-top) + 1.25rem);
 }
 
+/* No double-tap zoom on iPhone, and no 300ms tap delay (docs/decisions/0056). */
+html {
+  touch-action: manipulation;
+}
+
 body {
   background: var(--bg);
   color: var(--text);

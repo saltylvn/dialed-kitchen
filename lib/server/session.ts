@@ -8,8 +8,10 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 // Pages (and the one webhook) anyone can reach while signed out.
 const PUBLIC_PATHS = [
   "/login",
+  "/iphone",
   "/waitlist",
   "/auth/google",
+  "/auth/demo",
   "/auth/callback",
   "/webhooks/neon-auth",
 ];

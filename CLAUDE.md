@@ -18,6 +18,7 @@ This repo showcases the owner's software engineering skills for future jobs, so 
 
 ## Design (light mode only, built for daylight)
 
+- **iPhone only** (docs/decisions/0056): `proxy.ts` shows other devices `/iphone` (`lib/device.ts`, user agent), except the demo (a `dk_demo` cookie, shown phone-width). On in production, off in `next dev` (`DEVICE_GATE=on` to try it). No zooming: viewport `maximum-scale=1`, `touch-action: manipulation`, `components/NoPinchZoom`. Sign-in forms (`/auth/google`, `/auth/demo`) are plain form posts, never server actions.
 - **Always light mode**, even when the phone is set to dark (`color-scheme: light` in `app/globals.css`, `viewport.colorScheme` in `app/layout.tsx`). No dark-mode styles; colors are still named tokens so one could be added later.
 - **Colors: violet for actions, green for best price** (docs/decisions/0050, 0055; full guide in `docs/brand.md`), as tokens in `app/globals.css`, used through Tailwind names (`bg-primary`, `text-muted`…), never raw hex codes in components:
   - `--bg` / `--surface` #ffffff (page and cards; cards are set apart by a hairline, not a shade), `--surface-2` #f5f5f5 (quiet fills), `--border` #e6e6e6, `--border-strong` #d4d4d4 (inputs), `--text` #1d1d1d, `--muted` #666666

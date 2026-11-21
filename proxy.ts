@@ -1,4 +1,5 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { DEMO_DEVICE_COOKIE, deviceRoute } from "./lib/device";
 import { buildCsp, createNonce } from "./lib/security/csp";
 import { getNeonEnv } from "./lib/server/env";
 import { updateSession } from "./lib/server/session";
@@ -7,13 +8,34 @@ import { updateSession } from "./lib/server/session";
 //  1. Content Security Policy with a one-time nonce. Next.js reads the nonce from the
 //     request's CSP header and adds it to its own scripts, so they run and anything
 //     injected without it doesn't (docs/decisions/0006).
-//  2. Login session refresh and the signed-in check (lib/server/session.ts).
+//  2. iPhone only: other devices see /iphone instead, except the demo (lib/device.ts,
+//     docs/decisions/0056). Off in `next dev`, so the app can be tried in any browser.
+//  3. Login session refresh and the signed-in check (lib/server/session.ts).
+const DEVICE_GATE = process.env.NODE_ENV === "production" || process.env.DEVICE_GATE === "on";
+
 export async function proxy(request: NextRequest) {
   const csp = buildCsp({
     nonce: createNonce(),
     isDev: process.env.NODE_ENV === "development",
     authUrl: getNeonEnv().authUrl,
   });
+
+  if (
+    DEVICE_GATE &&
+    deviceRoute({
+      path: request.nextUrl.pathname,
+      userAgent: request.headers.get("user-agent"),
+      demo: request.cookies.get(DEMO_DEVICE_COOKIE)?.value === "1",
+    }) === "iphone-page"
+  ) {
+    // Same address, the iPhone page's content: no redirect loop, no session work.
+    request.headers.set("Content-Security-Policy", csp);
+    const response = NextResponse.rewrite(new URL("/iphone", request.url), {
+      request: { headers: request.headers },
+    });
+    response.headers.set("Content-Security-Policy", csp);
+    return response;
+  }
 
   const response = await updateSession(request, { "Content-Security-Policy": csp });
   response.headers.set("Content-Security-Policy", csp);

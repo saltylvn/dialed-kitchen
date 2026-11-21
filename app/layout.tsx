@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Mono, Inter } from "next/font/google";
+import { headers } from "next/headers";
 import { connection } from "next/server";
+import { NoPinchZoom } from "@/components/NoPinchZoom";
+import { isIPhone } from "@/lib/device";
 import { ICON_VERSION } from "@/lib/iconVersion";
 import "./globals.css";
 
@@ -22,7 +25,7 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "Dialed Kitchen",
   description: "Grocery lists, best prices, recipes and meal planning.",
-  // The fork icon as plain PNG files in public/ (made by `npm run icons` from
+  // The cart icon as plain PNG files in public/ (made by `npm run icons` from
   // assets/app-icon.svg). ?v= makes phones fetch a fresh copy after a change.
   icons: {
     icon: [
@@ -44,6 +47,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // No zooming (docs/decisions/0056): the app is built for the iPhone screen, with 17px+
+  // text and 48px+ targets, so a stray pinch or double tap only gets in the way. iOS Safari
+  // ignores these two for pinches, so NoPinchZoom and `touch-action` in globals.css finish
+  // the job.
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover", // let the page extend under the notch / home bar
   colorScheme: "light",
   themeColor: "#ffffff", // white status-bar area, matching --bg
@@ -53,10 +62,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Render every page per request (not once at build time), so each page's scripts get
   // that request's CSP nonce (proxy.ts). The app is per-user, so pages are dynamic anyway.
   await connection();
+  // Off the iPhone (the demo on a laptop, docs/decisions/0056), the app sits in a
+  // phone-sized column so it looks the way it does in the hand.
+  const framed = !isIPhone((await headers()).get("user-agent"));
 
   return (
     <html lang="en" className={`${inter.variable} ${dmMono.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <NoPinchZoom />
+        {framed ? (
+          <div className="border-border mx-auto flex min-h-full w-full max-w-[430px] flex-1 flex-col border-x">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
+      </body>
     </html>
   );
 }
