@@ -6,10 +6,19 @@ import { formatMoney } from "@/lib/pricing";
 import type { WeekSummary } from "@/lib/weekShopping";
 import { addWeekToList } from "../actions";
 
-// "This week's groceries": what the planned meals need, its estimated cost at your best
-// prices, and one tap to put it on the grocery list (skipping In stock and what's already
-// there). The numbers come from the database's week_shopping (decision 0019).
-export function WeekGroceries({ week, summary }: { week: string; summary: WeekSummary }) {
+// "This week's groceries": what the planned meals need, its estimated cost at today's
+// cheapest prices (decision 0052) against the household's weekly budget (0053), and one tap
+// to put it on the grocery list (skipping In stock and what's already there). The numbers
+// come from the database's week_shopping (decision 0019).
+export function WeekGroceries({
+  week,
+  summary,
+  budget,
+}: {
+  week: string;
+  summary: WeekSummary;
+  budget: number | null;
+}) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ error: boolean; text: string } | null>(null);
 
@@ -52,8 +61,22 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
         <p className="mt-2">
           Estimated cost{" "}
           <span className="font-medium tabular-nums">{formatMoney(summary.cost)}</span>
+          {budget !== null && (
+            <span className="tabular-nums">
+              {" "}
+              of {formatMoney(budget)}
+              {summary.cost > budget ? (
+                <span className="font-medium">
+                  {" "}
+                  · {formatMoney(summary.cost - budget)} over budget
+                </span>
+              ) : (
+                <span className="text-success-text"> · ✓ within budget</span>
+              )}
+            </span>
+          )}
           <span className="text-muted block text-[14px]">
-            At your best prices
+            At today&apos;s cheapest prices
             {summary.priced < summary.toBuy &&
               ` · ${summary.toBuy - summary.priced} of ${summary.toBuy} not priced yet`}
           </span>

@@ -42,6 +42,7 @@
 - **Calories** and **Macros** per person for each day.
 - **Calorie counting:** a **Today** card logs what you actually ate in one tap (**✓ Ate it** remembers your usual portion; **Ate the plan** logs the whole day), with **Quick add** for anything else, against a daily calorie and protein goal. Each person's log and goal are private, even from their partner.
 - **This week's groceries:** every ingredient summed across the week and scaled to the servings planned, skipping what's In stock or already listed, with an estimated cost at today's cheapest prices. One tap adds it all to the list.
+- **Faster planning:** **Repeat last week** in one tap, plan **leftovers** of a meal for a later day, see which recipes you can make from what's In stock ("4 of 5 in stock"), and compare the week's groceries with a shared **weekly budget**.
 
 **Recipes**
 

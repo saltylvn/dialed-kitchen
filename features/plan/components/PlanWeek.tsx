@@ -11,7 +11,7 @@ import {
   type Nutrition,
 } from "@/lib/nutrition";
 import { dayLabels, MEALS, type MealId } from "@/lib/plan";
-import { addToPlan, removeFromPlan } from "../actions";
+import { addToPlan, planLeftovers, removeFromPlan } from "../actions";
 import type { RecipeChoice } from "../queries";
 import type { PlanEntryRow } from "../schema";
 
@@ -53,6 +53,26 @@ export function PlanWeek({
     });
   }
 
+  // Leftovers of a planned meal, later in the week (decision 0053).
+  function addLeftovers(source: PlanEntryRow, date: string, meal: MealId, servings: number) {
+    setError(null);
+    startTransition(async () => {
+      apply({
+        type: "add",
+        entry: {
+          id: `pending-${crypto.randomUUID()}`,
+          plan_date: date,
+          meal,
+          recipe_id: source.recipe_id,
+          servings,
+          leftover_of: source.id,
+        },
+      });
+      const result = await planLeftovers({ source: source.id, date, meal, servings });
+      if (!result.ok) setError(result.error);
+    });
+  }
+
   function remove(id: string) {
     setError(null);
     startTransition(async () => {
@@ -77,9 +97,11 @@ export function PlanWeek({
             isToday={day === today}
             isPast={today !== "" && day < today}
             entries={optimistic.filter((e) => e.plan_date === day)}
+            laterDays={days.filter((d) => d > day)}
             byId={byId}
             recipes={recipes}
             onAdd={add}
+            onLeftovers={addLeftovers}
             onRemove={remove}
           />
         ))}
@@ -93,21 +115,26 @@ function Day({
   isToday,
   isPast,
   entries,
+  laterDays,
   byId,
   recipes,
   onAdd,
+  onLeftovers,
   onRemove,
 }: {
   day: string;
   isToday: boolean;
   isPast: boolean;
   entries: PlanEntryRow[];
+  laterDays: string[];
   byId: Map<string, RecipeChoice>;
   recipes: RecipeChoice[];
   onAdd: (entry: Omit<PlanEntryRow, "id">) => void;
+  onLeftovers: (source: PlanEntryRow, date: string, meal: MealId, servings: number) => void;
   onRemove: (id: string) => void;
 }) {
   const [adding, setAdding] = useState<MealId | null>(null);
+  const [leftoversOf, setLeftoversOf] = useState<string | null>(null); // entry id
   const { weekday, date } = dayLabels(day);
   const headingId = `day-${day}`;
 
@@ -148,6 +175,7 @@ function Day({
                   <ul className="min-w-0 flex-1">
                     {planned.map((entry) => {
                       const title = byId.get(entry.recipe_id)?.title ?? "Recipe";
+                      const pending = entry.id.startsWith("pending-");
                       return (
                         <li key={entry.id} className="flex items-center">
                           <Link
@@ -155,8 +183,24 @@ function Day({
                             className="flex min-h-12 min-w-0 flex-1 flex-col justify-center py-1"
                           >
                             <span className="break-words">{title}</span>
-                            <span className="text-muted text-[14px]">Serves {entry.servings}</span>
+                            <span className="text-muted text-[14px]">
+                              {entry.leftover_of ? "Leftovers · " : ""}Serves {entry.servings}
+                            </span>
                           </Link>
+                          {!entry.leftover_of && laterDays.length > 0 && (
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() =>
+                                setLeftoversOf(leftoversOf === entry.id ? null : entry.id)
+                              }
+                              aria-expanded={leftoversOf === entry.id}
+                              aria-label={`Plan leftovers of ${title}`}
+                              className="text-muted flex min-h-12 shrink-0 items-center px-2 text-[14px] disabled:opacity-40"
+                            >
+                              Leftovers
+                            </button>
+                          )}
                           <button
                             type="button"
                             disabled={entry.id.startsWith("pending-")}
@@ -172,6 +216,21 @@ function Day({
                   </ul>
                 )}
               </div>
+              {planned.map(
+                (entry) =>
+                  leftoversOf === entry.id && (
+                    <LeftoversForm
+                      key={entry.id}
+                      title={byId.get(entry.recipe_id)?.title ?? "this meal"}
+                      days={laterDays}
+                      onCancel={() => setLeftoversOf(null)}
+                      onAdd={(date, mealId, servings) => {
+                        onLeftovers(entry, date, mealId, servings);
+                        setLeftoversOf(null);
+                      }}
+                    />
+                  ),
+              )}
               {adding === meal.id && (
                 <AddMeal
                   meal={meal}
@@ -179,7 +238,13 @@ function Day({
                   recipes={recipes}
                   onCancel={() => setAdding(null)}
                   onAdd={(recipeId, servings) => {
-                    onAdd({ plan_date: day, meal: meal.id, recipe_id: recipeId, servings });
+                    onAdd({
+                      plan_date: day,
+                      meal: meal.id,
+                      recipe_id: recipeId,
+                      servings,
+                      leftover_of: null,
+                    });
                     setAdding(null);
                   }}
                 />
@@ -303,6 +368,11 @@ function Missing({ meals, what }: { meals: string[]; what: string }) {
   );
 }
 
+// "Chili · 4 of 5 in stock": what you can make from what you have (decision 0053).
+function optionLabel(r: RecipeChoice): string {
+  return r.stock.total > 0 ? `${r.title} · ${r.stock.have} of ${r.stock.total} in stock` : r.title;
+}
+
 const SERVING_CHOICES = Array.from({ length: 12 }, (_, i) => i + 1);
 
 function AddMeal({
@@ -388,7 +458,7 @@ function AddMeal({
               <optgroup label="★ Favorites & regulars">
                 {top.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.title}
+                    {optionLabel(r)}
                   </option>
                 ))}
               </optgroup>
@@ -397,7 +467,7 @@ function AddMeal({
               <optgroup label={top.length > 0 ? `More ${meal.label.toLowerCase()}` : meal.label}>
                 {rest.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.title}
+                    {optionLabel(r)}
                   </option>
                 ))}
               </optgroup>
@@ -406,7 +476,7 @@ function AddMeal({
               <optgroup label="Not sorted yet">
                 {unsorted.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.title}
+                    {optionLabel(r)}
                   </option>
                 ))}
               </optgroup>
@@ -443,6 +513,96 @@ function AddMeal({
           onClick={onCancel}
           className="border-border min-h-12 rounded-lg border px-4 font-medium"
         >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// Leftovers of a meal on a later day this week: the day, the meal and how many servings,
+// each a native wheel on the iPhone. The same recipe is planned again, marked as leftovers.
+function LeftoversForm({
+  title,
+  days,
+  onAdd,
+  onCancel,
+}: {
+  title: string;
+  days: string[];
+  onAdd: (date: string, meal: MealId, servings: number) => void;
+  onCancel: () => void;
+}) {
+  const [date, setDate] = useState(days[0] ?? "");
+  const [meal, setMeal] = useState<MealId>("lunch");
+  const [servings, setServings] = useState(2);
+  const id = useId();
+
+  return (
+    <form
+      className="space-y-3 pb-3"
+      aria-label={`Leftovers of ${title}`}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (date) onAdd(date, meal, servings);
+      }}
+    >
+      <p className="text-[15px]">Leftovers of {title}:</p>
+      <div className="flex gap-2">
+        <label className="sr-only" htmlFor={`${id}-day`}>
+          Day
+        </label>
+        <select
+          id={`${id}-day`}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="field min-w-0 flex-1"
+        >
+          {days.map((d) => (
+            <option key={d} value={d}>
+              {dayLabels(d).weekday}
+            </option>
+          ))}
+        </select>
+        <label className="sr-only" htmlFor={`${id}-meal`}>
+          Meal
+        </label>
+        <select
+          id={`${id}-meal`}
+          value={meal}
+          onChange={(e) => {
+            const chosen = MEALS.find((m) => m.id === e.target.value);
+            if (chosen) setMeal(chosen.id);
+          }}
+          className="field min-w-0 flex-1"
+        >
+          {MEALS.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        <label className="sr-only" htmlFor={`${id}-servings`}>
+          Servings
+        </label>
+        <select
+          id={`${id}-servings`}
+          value={servings}
+          onChange={(e) => setServings(Number(e.target.value))}
+          className="field w-20 shrink-0"
+        >
+          {SERVING_CHOICES.map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex gap-2">
+        <button type="submit" className="btn btn-primary flex-1">
+          Plan leftovers
+        </button>
+        <button type="button" onClick={onCancel} className="btn btn-secondary">
           Cancel
         </button>
       </div>

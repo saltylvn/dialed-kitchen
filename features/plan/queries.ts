@@ -5,6 +5,8 @@ import type { Nutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
 import type { ShoppingRow } from "@/lib/weekShopping";
 import { createClient } from "@/lib/server/db";
+import { matchKey } from "@/lib/ingredients";
+import { inStockKeys } from "@/features/stock/queries";
 import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
 import { planEntryRowSchema, type PlanEntryRow } from "./schema";
 
@@ -19,7 +21,7 @@ export async function getWeekPlan(monday: string): Promise<PlanEntryRow[]> {
   const db = await createClient();
   const { data, error } = await db
     .from("meal_plan_entries")
-    .select("id, plan_date, meal, recipe_id, servings")
+    .select("id, plan_date, meal, recipe_id, servings, leftover_of")
     .gte("plan_date", monday)
     .lte("plan_date", addDays(monday, 6))
     .order("created_at");
@@ -50,18 +52,43 @@ export type RecipeChoice = {
   top: boolean;
   nutrition: Nutrition; // per serving
   meals: MealId[]; // empty: not sorted yet
+  stock: { have: number; total: number }; // ingredients In stock, for "4 of 5 in stock"
 };
 
-// The recipes to plan from: favorites and regulars first (most planned first), then the rest.
+// The recipes to plan from: favorites and regulars first (most planned first), then the rest,
+// each with how many of its ingredients are In stock (plan from what you have; decision 0053).
 export async function getRecipeChoices(): Promise<RecipeChoice[]> {
   const db = await createClient();
-  const [recipes, counts] = await Promise.all([
+  const [recipes, counts, ingredients, items, stock] = await Promise.all([
     db
       .from("recipes")
       .select("id, title, servings, favorite, calories, protein_g, carbs_g, fat_g, meals"),
     recentPlanCounts(),
+    db.from("recipe_ingredients").select("recipe_id, name, item_id"),
+    db.from("items").select("id, name"),
+    inStockKeys(),
   ]);
   if (recipes.error) fail("recipes", recipes.error);
+  if (ingredients.error) fail("recipe_ingredients", ingredients.error);
+  if (items.error) fail("items", items.error);
+
+  // Same matching as the recipe box: the ingredient's own name, or its price-book item's.
+  const itemNames = new Map(
+    z
+      .array(z.object({ id: z.uuid(), name: z.string() }))
+      .parse(items.data)
+      .map((i) => [i.id, i.name]),
+  );
+  const stockByRecipe = new Map<string, { have: number; total: number }>();
+  for (const row of z
+    .array(z.object({ recipe_id: z.uuid(), name: z.string(), item_id: z.uuid().nullable() }))
+    .parse(ingredients.data)) {
+    const tally = stockByRecipe.get(row.recipe_id) ?? { have: 0, total: 0 };
+    tally.total++;
+    const itemName = row.item_id ? itemNames.get(row.item_id) : undefined;
+    if (stock.has(matchKey(row.name)) || (itemName && stock.has(matchKey(itemName)))) tally.have++;
+    stockByRecipe.set(row.recipe_id, tally);
+  }
   const rows = z
     .array(
       recipeRowSchema.pick({
@@ -86,6 +113,7 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
     top: isTop,
     nutrition: nutritionOf(r),
     meals: r.meals,
+    stock: stockByRecipe.get(r.id) ?? { have: 0, total: 0 },
   });
   return [...top.map(choice(true)), ...rest.map(choice(false))];
 }
@@ -108,4 +136,13 @@ export async function getWeekShopping(monday: string): Promise<ShoppingRow[]> {
       }),
     )
     .parse(data);
+}
+
+// The household's weekly grocery budget (decision 0053), or null when none is set.
+export async function getWeeklyBudget(): Promise<number | null> {
+  const db = await createClient();
+  const { data, error } = await db.from("households").select("weekly_budget").maybeSingle();
+  if (error) fail("households", error);
+  if (!data) return null;
+  return z.object({ weekly_budget: z.coerce.number().nullable() }).parse(data).weekly_budget;
 }
