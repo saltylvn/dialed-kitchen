@@ -56,3 +56,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0050](0050-monochrome-redesign.md)                            | A monochrome redesign: near-black on white, Inter, one accent                         | Accepted               |
 | [0051](0051-calorie-counting.md)                               | Calorie counting: a private food log, logged from the plan                            | Accepted               |
 | [0052](0052-smarter-shopping.md)                               | Smarter shopping: today's cheapest price, a By store list, restock from receipts      | Accepted               |
+| [0053](0053-faster-planning.md)                                | Faster planning: repeat a week, leftovers, plan from what's In stock, a weekly budget | Accepted               |

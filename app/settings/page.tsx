@@ -3,6 +3,8 @@ import Link from "next/link";
 import { signOut } from "@/features/auth/actions";
 import { GoalForm } from "@/features/food-log/components/GoalForm";
 import { getMyGoal } from "@/features/food-log/queries";
+import { BudgetForm } from "@/features/plan/components/BudgetForm";
+import { getWeeklyBudget } from "@/features/plan/queries";
 import { PartnerCard } from "@/features/partner/components/PartnerCard";
 import { getMyHousehold } from "@/features/partner/queries";
 import { isAdmin } from "@/features/access/queries";
@@ -13,12 +15,13 @@ import { tabFromParam } from "@/lib/tabs";
 export const metadata: Metadata = { title: "Settings · Dialed Kitchen" };
 
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
-  const [user, household, { from }, admin, goal] = await Promise.all([
+  const [user, household, { from }, admin, goal, budget] = await Promise.all([
     requireUser(),
     getMyHousehold(),
     searchParams,
     isAdmin(),
     getMyGoal(),
+    getWeeklyBudget(),
   ]);
   const backTo = tabFromParam(from); // the tab Settings was opened from
 
@@ -31,6 +34,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
       <div className="mt-6 space-y-4">
         <GoalForm goal={goal} />
+        <BudgetForm budget={budget} />
 
         {isDemoEmail(user.email) ? (
           <section

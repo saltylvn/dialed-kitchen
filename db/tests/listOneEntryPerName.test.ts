@@ -85,6 +85,13 @@ describe("the migration", () => {
     await add(db, alex, "eggs");
     await db.as(alex, "update public.grocery_list_items set checked = true where name = 'Eggs'");
     await add(db, alex, "Rice");
+    // Inserts this fast can share a created_at, which would make "the oldest" a coin toss:
+    // space them a minute apart, in the order they were added.
+    await db.admin(
+      `update public.grocery_list_items set created_at = '2026-01-01'::timestamptz
+         + interval '1 minute' * array_position(array['milk','Milk','Eggs','eggs','Rice'], name)
+       where name in ('milk','Milk','Eggs','eggs','Rice')`,
+    );
 
     await db.migrateRest();
 
