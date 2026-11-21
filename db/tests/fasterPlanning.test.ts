@@ -145,9 +145,12 @@ describe("copy_plan_week", () => {
     expect(await week(alex, NEXT)).toHaveLength(1);
   });
 
-  it("needs Mondays and copies nothing for strangers", async () => {
-    await plan(alex, chili, LAST);
-    await expect(copy(alex, "2026-11-17", NEXT)).rejects.toThrow(/Monday/);
+  it("works from any day, whole weeks apart, and copies nothing for strangers", async () => {
+    // Plan shows today and the next six days (0054): from a Tuesday, the week before is copied.
+    await plan(alex, chili, "2026-11-17");
+    expect(await copy(alex, "2026-11-17", "2026-11-24")).toBe(1);
+    expect((await week(alex, "2026-11-24")).map((r) => r.plan_date)).toEqual(["2026-11-24"]);
+    await expect(copy(alex, "2026-11-17", "2026-11-25")).rejects.toThrow(/whole weeks/);
     expect(await copy(stranger)).toBe(0);
     expect(await week(stranger, NEXT)).toEqual([]);
   });

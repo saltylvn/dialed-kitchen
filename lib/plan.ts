@@ -14,25 +14,19 @@ export const MEALS = [
 export type MealId = (typeof MEALS)[number]["id"];
 export const MEAL_IDS = MEALS.map((m) => m.id) as [MealId, ...MealId[]];
 
-// Weeks run Monday to Sunday. The Monday on or before a date.
-export function mondayOf(isoDate: string): string {
-  const [y, m, d] = isoDate.split("-").map(Number) as [number, number, number];
-  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0 = Sunday
-  return addDays(isoDate, -((weekday + 6) % 7));
+// The Plan tab shows seven days starting today, so today is always at the top
+// (docs/decisions/0054). The seven dates starting on `start`.
+export function weekDays(start: string): string[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
 
-// The seven dates of the week starting on `monday`.
-export function weekDays(monday: string): string[] {
-  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-}
-
-// A ?week= value from the address bar, as a Monday, or null if it isn't a real date.
-// Any date is accepted and moved to its week's Monday, so old links still work.
-export function weekFromParam(value: string | string[] | undefined): string | null {
+// A ?start= value from the address bar: the first of the seven days shown, or null if it
+// isn't a real date.
+export function startFromParam(value: string | string[] | undefined): string | null {
   if (typeof value !== "string" || !isIsoDate(value)) return null;
   const year = Number(value.slice(0, 4));
   if (year < 2020 || year > 2100) return null;
-  return mondayOf(value);
+  return value;
 }
 
 // "Monday", "Oct 26": a day's name and short date, without time-zone shifts.
@@ -45,8 +39,8 @@ export function dayLabels(isoDate: string): { weekday: string; date: string } {
 }
 
 // "Oct 26 – Nov 1"
-export function weekRangeLabel(monday: string): string {
-  return `${dayLabels(monday).date} – ${dayLabels(addDays(monday, 6)).date}`;
+export function weekRangeLabel(start: string): string {
+  return `${dayLabels(start).date} – ${dayLabels(addDays(start, 6)).date}`;
 }
 
 // How far back "planned lately" looks, and how often a recipe must be planned in that time

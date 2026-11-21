@@ -6,7 +6,7 @@ import { getMyGoal, getMyWeekLog } from "@/features/food-log/queries";
 import { getMyHousehold } from "@/features/partner/queries";
 import { PlanWeek } from "@/features/plan/components/PlanWeek";
 import { RepeatWeek } from "@/features/plan/components/RepeatWeek";
-import { GoToThisWeek, ThisWeekLink } from "@/features/plan/components/WeekLinks";
+import { GoToToday, TodayLink } from "@/features/plan/components/WeekLinks";
 import { WeekGroceries } from "@/features/plan/components/WeekGroceries";
 import {
   getRecipeChoices,
@@ -15,17 +15,18 @@ import {
   getWeekShopping,
 } from "@/features/plan/queries";
 import { addDays } from "@/lib/dates";
-import { weekDays, weekFromParam, weekRangeLabel } from "@/lib/plan";
+import { startFromParam, weekDays, weekRangeLabel } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
 import { summarizeWeek } from "@/lib/weekShopping";
 
 export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
 
-// The weekly meal plan, Monday to Sunday. ?week=<Monday> picks the week; the tab link adds
-// it from the phone's clock, and a visit without it moves to this week (GoToThisWeek).
+// The meal plan: seven days starting ?start=<date>, so today sits at the top
+// (docs/decisions/0054). The tab link adds today from the phone's clock, and a visit
+// without it moves to today (GoToToday).
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
-  const { joined, week: weekParam } = await searchParams;
-  const week = weekFromParam(weekParam);
+  const { joined, start: startParam } = await searchParams;
+  const week = startFromParam(startParam);
   const [, household, entries, recipes, shopping, myLog, goal, budget] = await Promise.all([
     requireUser(),
     getMyHousehold(),
@@ -67,10 +68,10 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       )}
       {week ? (
         <>
-          <nav aria-label="Week" className="mb-4 flex items-center gap-1">
+          <nav aria-label="Days shown" className="mb-4 flex items-center gap-1">
             <Link
-              href={`/plan?week=${addDays(week, -7)}`}
-              aria-label="Previous week"
+              href={`/plan?start=${addDays(week, -7)}`}
+              aria-label="Previous 7 days"
               className="-ml-3 flex size-12 items-center justify-center text-2xl"
             >
               <span aria-hidden>‹</span>
@@ -79,14 +80,14 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
               {weekRangeLabel(week)}
             </p>
             <Link
-              href={`/plan?week=${addDays(week, 7)}`}
-              aria-label="Next week"
+              href={`/plan?start=${addDays(week, 7)}`}
+              aria-label="Next 7 days"
               className="flex size-12 items-center justify-center text-2xl"
             >
               <span aria-hidden>›</span>
             </Link>
             <span className="ml-auto">
-              <ThisWeekLink week={week} />
+              <TodayLink start={week} />
             </span>
           </nav>
           <TodayCard days={weekDays(week)} planned={planned} logs={myLog} goal={goal} />
@@ -102,7 +103,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           <PlanWeek key={week} days={weekDays(week)} entries={entries} recipes={recipes} />
         </>
       ) : (
-        <GoToThisWeek joined={Boolean(joined)} />
+        <GoToToday joined={Boolean(joined)} />
       )}
     </TabPage>
   );

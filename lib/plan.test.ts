@@ -4,10 +4,9 @@ import {
   groupByMeal,
   MEALS,
   type MealId,
-  mondayOf,
   rankRecipes,
+  startFromParam,
   weekDays,
-  weekFromParam,
   weekRangeLabel,
 } from "./plan";
 
@@ -17,11 +16,17 @@ describe("meals", () => {
   });
 });
 
-describe("weeks", () => {
-  it("start on Monday", () => {
-    expect(mondayOf("2026-10-26")).toBe("2026-10-26"); // a Monday
-    expect(mondayOf("2026-10-28")).toBe("2026-10-26");
-    expect(mondayOf("2026-11-01")).toBe("2026-10-26"); // Sunday belongs to the week before
+describe("the seven days", () => {
+  it("start on any day, today first", () => {
+    expect(weekDays("2026-11-21")).toEqual([
+      "2026-11-21", // a Saturday, at the top
+      "2026-11-22",
+      "2026-11-23",
+      "2026-11-24",
+      "2026-11-25",
+      "2026-11-26",
+      "2026-11-27",
+    ]);
   });
 
   it("cross months and years", () => {
@@ -36,10 +41,10 @@ describe("weeks", () => {
     ]);
   });
 
-  it("read ?week= safely", () => {
-    expect(weekFromParam("2026-10-29")).toBe("2026-10-26");
+  it("read ?start= safely, keeping the day as given", () => {
+    expect(startFromParam("2026-10-29")).toBe("2026-10-29");
     for (const bad of [undefined, "", "2026-02-30", "next week", ["2026-10-26"], "1999-01-04"]) {
-      expect(weekFromParam(bad), String(bad)).toBeNull();
+      expect(startFromParam(bad), String(bad)).toBeNull();
     }
   });
 
