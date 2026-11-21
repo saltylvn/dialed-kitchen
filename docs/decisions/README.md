@@ -60,3 +60,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0054](0054-plan-from-today.md)                                | Plan shows today and the next six days                                                | Accepted               |
 | [0055](0055-violet-and-green.md)                               | Violet for actions, green for best price, pill buttons                                | Accepted               |
 | [0056](0056-iphone-only.md)                                    | An iPhone app: other devices see "Open on your iPhone", and no zooming                | Accepted               |
+| [0057](0057-weekly-cost-ai-estimates.md)                       | The meal plan's cost on Grocery, with AI estimates for missing prices                 | Accepted               |

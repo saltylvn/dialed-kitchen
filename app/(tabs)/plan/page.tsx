@@ -9,6 +9,7 @@ import { RepeatWeek } from "@/features/plan/components/RepeatWeek";
 import { GoToToday, TodayLink } from "@/features/plan/components/WeekLinks";
 import { WeekGroceries } from "@/features/plan/components/WeekGroceries";
 import {
+  getPriceEstimates,
   getRecipeChoices,
   getWeekPlan,
   getWeeklyBudget,
@@ -17,6 +18,7 @@ import {
 import { addDays } from "@/lib/dates";
 import { startFromParam, weekDays, weekRangeLabel } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
+import { weekCost } from "@/lib/weekCost";
 import { summarizeWeek } from "@/lib/weekShopping";
 
 export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
@@ -27,16 +29,18 @@ export const metadata: Metadata = { title: "Plan · Dialed Kitchen" };
 export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { joined, start: startParam } = await searchParams;
   const week = startFromParam(startParam);
-  const [, household, entries, recipes, shopping, myLog, goal, budget] = await Promise.all([
-    requireUser(),
-    getMyHousehold(),
-    week ? getWeekPlan(week) : [],
-    week ? getRecipeChoices() : [],
-    week ? getWeekShopping(week) : [],
-    week ? getMyWeekLog(week) : [],
-    getMyGoal(),
-    getWeeklyBudget(),
-  ]);
+  const [, household, entries, recipes, shopping, myLog, goal, budget, estimates] =
+    await Promise.all([
+      requireUser(),
+      getMyHousehold(),
+      week ? getWeekPlan(week) : [],
+      week ? getRecipeChoices() : [],
+      week ? getWeekShopping(week) : [],
+      week ? getMyWeekLog(week) : [],
+      getMyGoal(),
+      getWeeklyBudget(),
+      week ? getPriceEstimates() : [],
+    ]);
   // The week's planned meals with each recipe's title and numbers, for the Today card.
   const recipeById = new Map(recipes.map((r) => [r.id, r]));
   const planned: PlannedMeal[] = entries.flatMap((e) => {
@@ -96,6 +100,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
               key={`groceries-${week}`}
               week={week}
               summary={summarizeWeek(shopping)}
+              cost={weekCost(shopping, estimates)}
               budget={budget}
             />
           )}
