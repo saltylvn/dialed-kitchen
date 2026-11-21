@@ -35,12 +35,12 @@ export function InviteCodeForm() {
           autoCapitalize="characters"
           spellCheck={false}
           placeholder="Invite code"
-          className="border-border bg-surface min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-[17px] tracking-wider"
+          className="border-border bg-surface min-h-12 min-w-0 flex-1 rounded-lg border px-3 text-[17px] tracking-wider"
         />
         <button
           type="submit"
           disabled={pending}
-          className="border-border bg-surface min-h-12 shrink-0 rounded-xl border px-4 font-medium disabled:opacity-60"
+          className="border-border bg-surface min-h-12 shrink-0 rounded-lg border px-4 font-medium disabled:opacity-60"
         >
           {pending ? "Checking…" : "Use code"}
         </button>

@@ -13,7 +13,7 @@ export function WaitlistForm() {
 
   if (result?.ok) {
     return (
-      <div role="status" className="border-border bg-surface rounded-2xl border p-4">
+      <div role="status" className="border-border bg-surface rounded-xl border p-4">
         <p className="font-medium">✓ You&apos;re on the waitlist.</p>
         <p className="text-muted mt-1">
           If a place opens up, you&apos;ll get an invite code by email. Enter it on the sign-in
@@ -26,7 +26,7 @@ export function WaitlistForm() {
     );
   }
 
-  const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
+  const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]";
   return (
     <form action={formAction} className="space-y-4">
       <div>
@@ -66,7 +66,7 @@ export function WaitlistForm() {
           name="note"
           maxLength={300}
           rows={3}
-          className="border-border bg-surface mt-2 w-full rounded-xl border px-3 py-2 text-[17px]"
+          className="border-border bg-surface mt-2 w-full rounded-lg border px-3 py-2 text-[17px]"
         />
       </div>
       {result?.ok === false && (
@@ -77,7 +77,7 @@ export function WaitlistForm() {
       <button
         type="submit"
         disabled={pending}
-        className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
       >
         {pending ? "Sending…" : "Join the waitlist"}
       </button>

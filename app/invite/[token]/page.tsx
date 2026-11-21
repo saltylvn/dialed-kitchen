@@ -31,13 +31,11 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center px-4 pt-[max(env(safe-area-inset-top),4.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
       <Wordmark />
-      <div aria-hidden className="bg-accent mt-9 mb-8 h-px w-7" />
+      <div aria-hidden className="bg-primary mt-9 mb-8 h-px w-7" />
 
       {preview.status === "valid" && !hasPartner ? (
         <>
-          <h1 className="font-display text-center text-[34px] leading-tight font-light italic">
-            Share a kitchen
-          </h1>
+          <h1 className="heading-1 text-center">Share a kitchen</h1>
           <p className="mt-4 text-center text-[17px]">
             <span className="font-medium">{preview.inviter_email}</span> invited you to share plans,
             lists, prices and recipes.
@@ -49,9 +47,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
         </>
       ) : (
         <>
-          <h1 className="font-display text-center text-[34px] leading-tight font-light italic">
-            Invite
-          </h1>
+          <h1 className="heading-1 text-center">Invite</h1>
           <p role="status" className="mt-4 text-center text-[17px]">
             {preview.status === "valid"
               ? "You already share your kitchen with a partner. End that partnership in Settings before joining another."
@@ -59,7 +55,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
           </p>
           <Link
             href={HOME_TAB.href}
-            className="border-border mt-auto flex min-h-12 w-full items-center justify-center rounded-xl border font-medium"
+            className="border-border mt-auto flex min-h-12 w-full items-center justify-center rounded-lg border font-medium"
           >
             Go to your kitchen
           </Link>

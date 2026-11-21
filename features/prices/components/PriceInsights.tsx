@@ -13,8 +13,8 @@ import { Tag } from "./BestPriceLine";
 // Two cards for an item's price page (docs/decisions/0020): where it's cheapest now, and
 // how its price has moved. Server components: plain HTML and SVG, no JavaScript sent.
 
-const card = "border-border bg-surface rounded-2xl border p-4";
-const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
+const card = "border-border bg-surface rounded-xl border p-4";
+const heading = "label";
 
 export function StorePrices({
   history,
@@ -104,13 +104,13 @@ export function PriceTrend({
         />
         <polyline
           points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-          className="stroke-accent fill-none"
+          className="stroke-primary fill-none"
           strokeWidth="2"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
         {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="3.5" className="fill-accent" />
+          <circle key={i} cx={p.x} cy={p.y} r="3.5" className="fill-primary" />
         ))}
       </svg>
       <p className="text-muted mt-1 flex justify-between text-[14px] tabular-nums">

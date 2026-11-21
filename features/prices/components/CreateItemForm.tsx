@@ -27,7 +27,7 @@ export function CreateItemForm({ defaultName = "" }: { defaultName?: string }) {
           defaultValue={defaultName}
           autoComplete="off"
           placeholder="Chicken thighs"
-          className="border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]"
+          className="border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]"
         />
       </div>
 
@@ -42,7 +42,7 @@ export function CreateItemForm({ defaultName = "" }: { defaultName?: string }) {
           id="item-unit"
           name="compareUnit"
           defaultValue="lb"
-          className="border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]"
+          className="border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]"
         >
           {GROUPS.map((dimension) => (
             <optgroup key={dimension} label={DIMENSIONS[dimension].label}>
@@ -65,7 +65,7 @@ export function CreateItemForm({ defaultName = "" }: { defaultName?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
       >
         {pending ? "Adding…" : "Add item"}
       </button>

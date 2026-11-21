@@ -77,10 +77,7 @@ export function RecipeBox({
         const id = section.meal ?? "unsorted";
         return (
           <section key={id} aria-labelledby={`meal-${id}`}>
-            <h2
-              id={`meal-${id}`}
-              className="text-muted mb-2 text-[12px] tracking-[0.2em] uppercase"
-            >
+            <h2 id={`meal-${id}`} className="label mb-2">
               {section.label}
             </h2>
             {section.meal === null && (
@@ -126,7 +123,7 @@ function RecipeCard({
   }, [open]);
 
   return (
-    <li ref={ref} className="border-border bg-surface scroll-mt-4 rounded-2xl border">
+    <li ref={ref} className="border-border bg-surface scroll-mt-4 rounded-xl border">
       <div className="flex items-center">
         <button
           type="button"
@@ -161,7 +158,7 @@ function RecipeCard({
           }
           onClick={onFavorite}
           className={`flex size-12 shrink-0 items-center justify-center text-2xl ${
-            recipe.favorite ? "text-accent" : "text-muted"
+            recipe.favorite ? "text-text" : "text-muted"
           }`}
         >
           <span aria-hidden>{recipe.favorite ? "★" : "☆"}</span>
@@ -241,13 +238,13 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
       )}
 
       {wake.supported && (
-        <label className="border-border flex min-h-12 items-center justify-between gap-3 rounded-xl border px-3">
+        <label className="border-border flex min-h-12 items-center justify-between gap-3 rounded-lg border px-3">
           <span>Keep screen on while cooking</span>
           <input
             type="checkbox"
             checked={wake.on}
             onChange={(e) => wake.setOn(e.target.checked)}
-            className="accent-accent size-5"
+            className="accent-primary size-5"
           />
         </label>
       )}
@@ -256,7 +253,7 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
 
       {ingredients.length > 0 && (
         <section aria-label="Ingredients">
-          <h3 className="text-muted text-[12px] tracking-[0.2em] uppercase">Ingredients</h3>
+          <h3 className="label">Ingredients</h3>
           <p className="text-muted mt-1 text-[15px]">
             {needed === 0
               ? "Everything is In stock."
@@ -288,9 +285,7 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
 
       {recipe.steps.length > 0 && (
         <section aria-label="Steps">
-          <h3 className="text-muted text-[12px] tracking-[0.2em] uppercase">
-            Steps · tap when done
-          </h3>
+          <h3 className="label">Steps · tap when done</h3>
           <ol className="mt-2 space-y-2">
             {recipe.steps.map((step, index) => {
               const isDone = done.has(index);
@@ -307,7 +302,7 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
                         return next;
                       })
                     }
-                    className="flex w-full gap-3 rounded-xl py-1.5 text-left"
+                    className="flex w-full gap-3 rounded-lg py-1.5 text-left"
                   >
                     <span
                       aria-hidden
@@ -336,13 +331,13 @@ function RecipeDetail({ recipe, source }: { recipe: RecipeView; source: string |
           type="button"
           onClick={addToList}
           disabled={adding || needed === 0}
-          className="bg-accent text-on-accent min-h-12 flex-1 rounded-xl font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 flex-1 rounded-lg font-medium disabled:opacity-60"
         >
           {adding ? "Adding…" : needed === 0 ? "All In stock" : `Add ${needed} needed to list`}
         </button>
         <Link
           href={`/recipes/${recipe.id}/edit`}
-          className="border-border flex min-h-12 items-center rounded-xl border px-5 font-medium"
+          className="border-border flex min-h-12 items-center rounded-lg border px-5 font-medium"
         >
           Edit
         </Link>
@@ -401,8 +396,8 @@ function QuickSort({ recipe }: { recipe: RecipeView }) {
               type="button"
               aria-pressed={on}
               onClick={() => setChosen((c) => (on ? c.filter((x) => x !== m.id) : [...c, m.id]))}
-              className={`relative min-h-12 min-w-0 rounded-xl border px-1 text-[14px] font-medium ${
-                on ? "bg-accent text-on-accent border-accent" : "border-border bg-surface"
+              className={`relative min-h-12 min-w-0 rounded-lg border px-1 text-[14px] font-medium ${
+                on ? "bg-primary text-on-primary border-primary" : "border-border bg-surface"
               }`}
             >
               {/* Never color alone: a check badge marks the chosen meals. */}
@@ -424,7 +419,7 @@ function QuickSort({ recipe }: { recipe: RecipeView }) {
           type="button"
           onClick={save}
           disabled={saving}
-          className="border-border mt-2 min-h-12 w-full rounded-xl border px-3 font-medium disabled:opacity-60"
+          className="border-border mt-2 min-h-12 w-full rounded-lg border px-3 font-medium disabled:opacity-60"
         >
           {saving
             ? "Saving…"

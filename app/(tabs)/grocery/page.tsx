@@ -10,40 +10,31 @@ import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Grocery · Dialed Kitchen" };
 
-const part = "font-display text-[28px] leading-tight font-light italic";
+const part = "heading-2";
 
-// The same button style as Add item on the Price book page.
-const button = "flex min-h-12 items-center justify-center rounded-xl px-3 font-medium";
+// The three price tools: quiet, equal buttons, so the list below stays the focus.
+const tool = "btn btn-secondary flex-1 px-2 text-[15px]";
 
-// The Grocery tab (docs/decisions/0035): the price buttons (a large Price book button in the accent color,
-// Log a price and Scan a receipt side by side below it), then the Grocery list (with its add
-// box at the end), then what's In stock. Ticking an item on the list moves it In stock, so
-// what you need and what you have are together. Prices live in the Price book, one tap from
-// each item. All reads run in parallel.
+// The Grocery tab (docs/decisions/0050, replacing the layout in 0035): list first, because
+// in the store the list is what you need. Above it, one compact row to the price tools
+// (Price book, Log a price, Scan a receipt); then the Grocery list with its add box at the
+// top; then what's In stock. Ticking an item on the list moves it In stock, so what you
+// need and what you have are together. All reads run in parallel.
 export default async function GroceryPage() {
   const [, page, inStock] = await Promise.all([requireUser(), getListPage(), listInStock()]);
 
   return (
     <TabPage tab="grocery">
-      <nav aria-label="Prices" className="space-y-2">
-        {/* The main button: bigger than the two below it, so the Price book is the focus. */}
-        <Link
-          href="/grocery/prices"
-          className="bg-accent text-on-accent flex min-h-20 w-full items-center justify-center rounded-2xl px-3 text-[22px] font-medium tracking-wide"
-        >
+      <nav aria-label="Prices" className="flex gap-2">
+        <Link href="/grocery/prices" className={tool}>
           Price book
         </Link>
-        <div className="flex gap-2">
-          <Link href="/grocery/log" className={`${button} border-border bg-surface flex-1 border`}>
-            Log a price
-          </Link>
-          <Link
-            href="/grocery/receipt"
-            className={`${button} border-border bg-surface flex-1 border`}
-          >
-            Scan a receipt
-          </Link>
-        </div>
+        <Link href="/grocery/log" className={tool}>
+          Log price
+        </Link>
+        <Link href="/grocery/receipt" className={tool}>
+          Scan receipt
+        </Link>
       </nav>
 
       <div className="mt-8">

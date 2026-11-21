@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { choiceLabel, choicesFor, DIMENSIONS, type Dimension } from "@/lib/units";
 import { addToList, type AddToListResult } from "../actions";
 
-const box = "border-border bg-surface min-h-12 rounded-xl border px-3 text-[17px]";
+const box = "field";
 const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
 // Add to the list: what, and optionally how much. Suggests items from the price book;
@@ -61,7 +61,7 @@ export function AddToListForm({ itemNames }: { itemNames: string[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-accent text-on-accent min-h-12 shrink-0 rounded-xl px-5 font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 shrink-0 rounded-lg px-5 font-medium disabled:opacity-60"
         >
           {pending ? "Adding…" : "Add"}
         </button>

@@ -7,7 +7,7 @@ import { saveRecipe, type SaveRecipeResult } from "../actions";
 import { estimateRecipeNutrition } from "../importActions";
 import { SOURCE_TYPES, type RecipeDraft } from "../schema";
 
-const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
+const field = "border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]";
 const SERVINGS = Array.from({ length: 20 }, (_, i) => i + 1);
 
 // Add or edit a recipe. Ingredients and steps are typed one per line; ingredient amounts
@@ -96,7 +96,7 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
                 defaultChecked={recipe?.meals?.includes(m.id)}
                 className="peer sr-only"
               />
-              <span className="border-border bg-surface peer-checked:bg-accent peer-checked:text-on-accent peer-checked:border-accent peer-focus-visible:outline-accent flex min-h-12 cursor-pointer items-center justify-center rounded-xl border px-1 text-[15px] font-medium peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>.tick]:inline">
+              <span className="border-border bg-surface peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary peer-focus-visible:outline-primary flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-1 text-[15px] font-medium peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>.tick]:inline">
                 <span aria-hidden className="tick mr-1 hidden">
                   ✓
                 </span>
@@ -182,7 +182,7 @@ export function RecipeForm({ recipe }: { recipe?: RecipeDraft }) {
       <button
         type="submit"
         disabled={pending}
-        className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
       >
         {pending ? "Saving…" : recipe?.id ? "Save changes" : "Save recipe"}
       </button>
@@ -258,7 +258,7 @@ function NutritionFields({
               onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
               placeholder={unit}
               aria-describedby={`recipe-${name}-max`}
-              className="border-border bg-surface mt-1 min-h-12 w-full min-w-0 rounded-xl border px-2 text-center text-[17px]"
+              className="border-border bg-surface mt-1 min-h-12 w-full min-w-0 rounded-lg border px-2 text-center text-[17px]"
             />
             <span id={`recipe-${name}-max`} className="sr-only">
               0 to {max} {unit}
@@ -270,7 +270,7 @@ function NutritionFields({
         type="button"
         onClick={estimate}
         disabled={estimating}
-        className="border-border mt-3 min-h-12 w-full rounded-xl border px-4 font-medium disabled:opacity-60"
+        className="border-border mt-3 min-h-12 w-full rounded-lg border px-4 font-medium disabled:opacity-60"
       >
         {estimating ? "Estimating…" : "Estimate with AI"}
       </button>

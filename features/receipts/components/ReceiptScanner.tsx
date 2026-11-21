@@ -34,7 +34,7 @@ import type { ReceiptDraft } from "../schema";
 export type PriceBookItem = { id: string; name: string; compareUnit: Unit };
 
 const RECEIPT_MAX_SIDE = 2400; // pixels: receipt print is small
-const box = "border-border bg-surface min-h-12 rounded-xl border px-3 text-[17px]";
+const box = "field";
 const GROUPS: Dimension[] = ["weight", "volume", "count"];
 
 export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stores: StoreRow[] }) {
@@ -95,8 +95,8 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
   const error = localError ?? (scan?.ok === false ? scan.error : null);
   const cameraButton = (label: string, primary: boolean) => (
     <label
-      className={`flex min-h-12 items-center justify-center rounded-xl px-4 font-medium ${
-        primary ? "bg-accent text-on-accent" : "border-border bg-surface border"
+      className={`flex min-h-12 items-center justify-center rounded-lg px-4 font-medium ${
+        primary ? "bg-primary text-on-primary" : "border-border bg-surface border"
       } ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
     >
       {shrinking ? "Preparing…" : label}
@@ -130,7 +130,7 @@ export function ReceiptScanner({ items, stores }: { items: PriceBookItem[]; stor
             type="button"
             onClick={read}
             disabled={busy}
-            className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+            className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
           >
             {reading ? "Reading the receipt…" : "Read the receipt"}
           </button>
@@ -245,7 +245,7 @@ function ReceiptReview({
   if (result?.ok) {
     return (
       <div className="space-y-4">
-        <p role="status" className="border-border bg-surface rounded-xl border p-4 font-medium">
+        <p role="status" className="border-border bg-surface rounded-lg border p-4 font-medium">
           ✓ Saved {result.data.saved} {result.data.saved === 1 ? "price" : "prices"}
           {result.data.created > 0 &&
             `, with ${result.data.created} new ${result.data.created === 1 ? "item" : "items"} in your price book`}
@@ -253,14 +253,14 @@ function ReceiptReview({
         </p>
         <Link
           href="/grocery/prices"
-          className="bg-accent text-on-accent flex min-h-12 items-center justify-center rounded-xl font-medium"
+          className="bg-primary text-on-primary flex min-h-12 items-center justify-center rounded-lg font-medium"
         >
           See Price Tracker
         </Link>
         <button
           type="button"
           onClick={onRestart}
-          className="border-border min-h-12 w-full rounded-xl border font-medium"
+          className="border-border min-h-12 w-full rounded-lg border font-medium"
         >
           Scan another receipt
         </button>
@@ -308,7 +308,7 @@ function ReceiptReview({
           return (
             <li
               key={i}
-              className={`border-border bg-surface space-y-3 rounded-2xl border p-4 ${
+              className={`border-border bg-surface space-y-3 rounded-xl border p-4 ${
                 row.choice === "skip" ? "opacity-60" : ""
               }`}
             >
@@ -433,14 +433,14 @@ function ReceiptReview({
         <button
           type="button"
           onClick={onRestart}
-          className="border-border min-h-12 flex-1 rounded-xl border font-medium"
+          className="border-border min-h-12 flex-1 rounded-lg border font-medium"
         >
           Start over
         </button>
         <button
           type="submit"
           disabled={saving || kept.length === 0 || !today}
-          className="bg-accent text-on-accent min-h-12 flex-[2] rounded-xl font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 flex-[2] rounded-lg font-medium disabled:opacity-60"
         >
           {saving ? "Saving…" : `Save ${kept.length} ${kept.length === 1 ? "price" : "prices"}`}
         </button>

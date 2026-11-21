@@ -28,7 +28,7 @@ export default async function EditRecipePage({ params }: PageProps<"/recipes/[id
           <input type="hidden" name="recipeId" value={recipe.id} />
           <button
             type="submit"
-            className="border-border min-h-12 w-full rounded-xl border font-medium"
+            className="border-border min-h-12 w-full rounded-lg border font-medium"
           >
             Delete {recipe.title}
           </button>

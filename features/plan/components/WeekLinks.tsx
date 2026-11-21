@@ -16,7 +16,7 @@ export function ThisWeekLink({ week }: { week: string }) {
   return (
     <Link
       href={`/plan?week=${mondayOf(today)}`}
-      className="border-border flex min-h-12 items-center rounded-xl border px-3 font-medium"
+      className="border-border flex min-h-12 items-center rounded-lg border px-3 font-medium"
     >
       This week
     </Link>

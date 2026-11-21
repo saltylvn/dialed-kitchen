@@ -7,12 +7,12 @@ import { setInStock } from "@/features/stock/actions";
 import { addToList, removeFromList } from "../actions";
 import type { ListEntry } from "../queries";
 
-const part = "font-display text-[28px] leading-tight font-light italic";
-const sectionHeading = "text-muted text-[12px] tracking-[0.2em] uppercase";
+const part = "heading-2";
+const sectionHeading = "label";
 
-// The Grocery list (docs/decisions/0035), with the add box at its end. Ticking an item means you've got it: it leaves
+// The Grocery list (docs/decisions/0035, 0050), with the add box at its top. Ticking an item means you've got it: it leaves
 // the list and goes In stock (the list below), with an Undo for a mis-tap. × takes an item
-// off the list. Prices are in the Price book (the button at the top of the page). Taps update the
+// off the list. Prices are in the Price book (linked at the top of the page). Taps update the
 // screen instantly (optimistic UI) and save in the background; a failed save puts the
 // screen back with a message.
 export function GroceryList({
@@ -20,7 +20,7 @@ export function GroceryList({
   children,
 }: {
   entries: ListEntry[];
-  children?: React.ReactNode; // the add box, shown under the list
+  children?: React.ReactNode; // the add box, shown above the list
 }) {
   const [optimistic, remove] = useOptimistic(entries, (state, id: string) =>
     state.filter((e) => e.id !== id),
@@ -70,6 +70,7 @@ export function GroceryList({
       <h2 id="list-heading" className={part}>
         Grocery list
       </h2>
+      <div className="mt-3">{children}</div>
       {error && (
         <p role="alert" className="mt-3 font-medium">
           ⚠️ {error}
@@ -78,7 +79,7 @@ export function GroceryList({
       {moved && (
         <p
           role="status"
-          className="border-border bg-surface mt-3 flex items-center justify-between gap-3 rounded-xl border py-1 pr-1 pl-3"
+          className="border-border bg-surface mt-3 flex items-center justify-between gap-3 rounded-lg border py-1 pr-1 pl-3"
         >
           <span>✓ {moved.name} is In stock</span>
           <button
@@ -91,7 +92,7 @@ export function GroceryList({
         </p>
       )}
       {optimistic.length === 0 ? (
-        <p className="text-muted border-border bg-surface mt-3 rounded-2xl border p-5 text-center">
+        <p className="text-muted border-border mt-3 rounded-xl border border-dashed px-6 py-8 text-center">
           Your list is empty. Add what you need above.
         </p>
       ) : (
@@ -99,7 +100,7 @@ export function GroceryList({
           {groupByCategory(optimistic, (e) => e.name).map((group) => (
             <div key={group.id}>
               <h3 className={sectionHeading}>{group.label}</h3>
-              <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
+              <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-xl border">
                 {group.things.map((entry) => (
                   <Row
                     key={entry.id}
@@ -113,7 +114,6 @@ export function GroceryList({
           ))}
         </div>
       )}
-      <div className="mt-4">{children}</div>
     </section>
   );
 }
@@ -142,7 +142,7 @@ function Row({
       >
         <span
           aria-hidden
-          className="flex size-7 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--muted)]"
+          className="border-text flex size-6 shrink-0 items-center justify-center rounded-md border-[1.5px]"
         />
         {/* The emoji stays beside the name; only the name wraps on a narrow phone. */}
         <span className="flex min-w-0 flex-1 items-start">
@@ -159,7 +159,7 @@ function Row({
           id={`best-${entry.id}`}
           className="w-[6.5rem] shrink-0 text-right text-[14px] leading-snug"
         >
-          <span className="text-muted block text-[12px] tracking-[0.1em] uppercase">Best</span>
+          <span className="label block">Best</span>
           <span className="block font-medium">{entry.best.price}</span>
           <span className="text-muted block">{entry.best.store}</span>
         </p>
