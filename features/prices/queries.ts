@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { pricesByStore, type Observation, type StorePrice } from "@/lib/priceTrends";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import {
   itemRowSchema,
   priceRowSchema,
@@ -17,7 +17,7 @@ import {
 const PRICE_COLUMNS =
   "id, item_id, store_id, price, package_quantity, package_unit, observed_on, unit_price_base";
 
-export type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+export type DbClient = Awaited<ReturnType<typeof createClient>>;
 
 // A price book row (docs/decisions/0044): the item and its latest price at each store where
 // it has one, cheapest first, the cheapest marked (ties all marked).
@@ -31,13 +31,11 @@ function fail(what: string, error: { message: string }): never {
 // Every item with its latest price at each store, alphabetically. Three reads in parallel;
 // the view holds one row per item and store, so this stays small.
 export async function listItemsWithStorePrices(): Promise<ItemWithStorePrices[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [items, latest, stores] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit").order("name"),
-    supabase
-      .from("item_latest_store_prices")
-      .select("item_id, store_id, unit_price_base, observed_on"),
-    supabase.from("stores").select("id, name").order("sort_order"),
+    db.from("items").select("id, name, compare_unit").order("name"),
+    db.from("item_latest_store_prices").select("item_id, store_id, unit_price_base, observed_on"),
+    db.from("stores").select("id, name").order("sort_order"),
   ]);
   if (items.error) fail("items", items.error);
   if (latest.error) fail("item_latest_store_prices", latest.error);
@@ -80,18 +78,18 @@ export type ItemPage = {
 // household's stores (for the store suggestions). null if it doesn't exist or isn't yours.
 export async function getItemPage(itemId: string): Promise<ItemPage | null> {
   if (!z.uuid().safeParse(itemId).success) return null;
-  const supabase = await createClient();
+  const db = await createClient();
   const [item, history, best, stores] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit").eq("id", itemId).maybeSingle(),
-    supabase
+    db.from("items").select("id, name, compare_unit").eq("id", itemId).maybeSingle(),
+    db
       .from("item_prices")
       .select(PRICE_COLUMNS)
       .eq("item_id", itemId)
       .order("observed_on", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase.from("item_best_prices").select("price_id").eq("item_id", itemId).maybeSingle(),
-    supabase.from("stores").select("id, name").order("sort_order"),
+    db.from("item_best_prices").select("price_id").eq("item_id", itemId).maybeSingle(),
+    db.from("stores").select("id, name").order("sort_order"),
   ]);
   if (item.error) fail("item", item.error);
   if (history.error) fail("item_prices", history.error);
@@ -123,12 +121,12 @@ export async function getLogPricePage(): Promise<{
   }[];
   stores: StoreRow[];
 }> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [items, latest, stores] = await Promise.all([
-    supabase.from("items").select("id, name, compare_unit").order("name"),
+    db.from("items").select("id, name, compare_unit").order("name"),
     // At most one row per item and store; the newest per item is picked below.
-    supabase.from("item_latest_store_prices").select("item_id, unit_price_base, observed_on"),
-    supabase.from("stores").select("id, name").order("sort_order"),
+    db.from("item_latest_store_prices").select("item_id, unit_price_base, observed_on"),
+    db.from("stores").select("id, name").order("sort_order"),
   ]);
   if (items.error) fail("items", items.error);
   if (latest.error) fail("item_latest_store_prices", latest.error);

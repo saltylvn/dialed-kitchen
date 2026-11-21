@@ -9,7 +9,7 @@ import { compareUnitFor, detectStore, suggestItem } from "@/lib/receipt";
 import { requireUser } from "@/lib/server/auth";
 import { DAILY_AI_LIMIT, takeAiRequest } from "@/lib/server/aiLimit";
 import { readReceiptFromPhotos } from "@/lib/server/gemini";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { UNITS } from "@/lib/units";
 import { storeRowSchema } from "@/features/prices/schema";
 import { saveReceiptSchema, type ReceiptDraft, type SaveReceiptInput } from "./schema";
@@ -50,11 +50,11 @@ export async function scanReceipt(
     };
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
   const [read, items, stores] = await Promise.all([
     readReceiptFromPhotos(photos),
-    supabase.from("items").select("id, name"),
-    supabase.from("stores").select("id, name"),
+    db.from("items").select("id, name"),
+    db.from("stores").select("id, name"),
   ]);
   if (!read.ok) return { ok: false, error: SCAN_ERRORS[read.reason] };
   if (items.error || stores.error) {
@@ -68,7 +68,7 @@ export async function scanReceipt(
   // Matches remembered from earlier receipts at this store.
   const remembered = new Map<string, string>();
   if (store) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("receipt_aliases")
       .select("receipt_text, item_id")
       .eq("store_id", store.id);
@@ -109,9 +109,9 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the receipt" };
   }
   const { storeId, observedOn, lines } = parsed.data;
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: itemData, error: itemsError } = await supabase
+  const { data: itemData, error: itemsError } = await db
     .from("items")
     .select("id, name, dimension");
   if (itemsError) {
@@ -137,7 +137,7 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
   }
   let created = 0;
   if (toCreate.size > 0) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("items")
       .insert([...toCreate.values()])
       .select("id, name, dimension");
@@ -177,7 +177,7 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
     if (line.receiptText) learned.set(line.receiptText, item.id); // the last match of a text wins
   }
 
-  const { error: pricesError } = await supabase.from("item_prices").insert(prices);
+  const { error: pricesError } = await db.from("item_prices").insert(prices);
   if (pricesError) {
     console.error("receipt prices failed:", pricesError.message);
     return { ok: false, error: GENERIC_ERROR };
@@ -186,7 +186,7 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<SaveReceiptR
   // Remember each receipt text for this store. A failure here only means no suggestion next
   // time, so it's logged, not shown.
   if (learned.size > 0) {
-    const { error } = await supabase.from("receipt_aliases").upsert(
+    const { error } = await db.from("receipt_aliases").upsert(
       [...learned].map(([receipt_text, item_id]) => ({ store_id: storeId, receipt_text, item_id })),
       { onConflict: "household_id,store_id,receipt_text" },
     );

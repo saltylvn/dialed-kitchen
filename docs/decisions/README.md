@@ -52,3 +52,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0046](0046-no-sale-tracking.md)                               | Sales aren't tracked                                                                  | Accepted         |
 | [0047](0047-minimal-cart-app-icon.md)                          | A minimal shopping cart for the app icon                                              | Accepted         |
 | [0048](0048-grocery-tab-in-the-middle.md)                      | Tab order: Plan · Grocery · Recipes, opening on Grocery                               | Accepted         |
+| [0049](0049-move-to-neon.md)                                   | Move the database and sign-in from Supabase to Neon                                   | Accepted         |

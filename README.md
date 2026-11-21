@@ -17,15 +17,15 @@
 
 ## For reviewers: a five-minute tour
 
-| Look at                                                                                                         | What it shows                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [`supabase/migrations/…_households.sql`](supabase/migrations/20261023000000_households.sql)                     | Multi-tenant data model: row-level security, composite foreign keys, column grants, invite tokens stored only as hashes |
-| [`supabase/tests/`](supabase/tests/)                                                                            | 159 tests against real Postgres (PGlite) that sign in as different users and try to read or forge each other's data     |
-| [`lib/server/safeFetch.ts`](lib/server/safeFetch.ts)                                                            | SSRF-safe fetching of user-supplied links, with the address check inside the socket's own DNS lookup (no DNS rebinding) |
-| [`supabase/migrations/…_waitlist_and_invites.sql`](supabase/migrations/20261110000000_waitlist_and_invites.sql) | Invite-only sign-up enforced by a Postgres trigger on `auth.users`, so no app bug can create an account                 |
-| [`lib/ai/receiptFromImage.ts`](lib/ai/receiptFromImage.ts)                                                      | Production AI: a JSON schema for Gemini, Zod validation of every reply, and prompt-injection-aware instructions         |
-| [`lib/pricing.ts`](lib/pricing.ts), [`lib/units.ts`](lib/units.ts)                                              | Pure, unit-tested money and unit math: prices compared per gram, millilitre or item, never guessed across kinds         |
-| [`docs/decisions/`](docs/decisions/)                                                                            | 48 architecture decision records: context, decision, alternatives and consequences                                      |
+| Look at                                                                                             | What it shows                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [`db/migrations/…_households.sql`](db/migrations/20261023000000_households.sql)                     | Multi-tenant data model: row-level security, composite foreign keys, column grants, invite tokens stored only as hashes     |
+| [`db/tests/`](db/tests/)                                                                            | 161 tests against real Postgres (PGlite) that sign in as different users and try to read or forge each other's data         |
+| [`lib/server/safeFetch.ts`](lib/server/safeFetch.ts)                                                | SSRF-safe fetching of user-supplied links, with the address check inside the socket's own DNS lookup (no DNS rebinding)     |
+| [`db/migrations/…_waitlist_and_invites.sql`](db/migrations/20261110000000_waitlist_and_invites.sql) | Invite-only sign-up decided by one Postgres function, asked through a signed, fail-closed webhook before any account exists |
+| [`lib/ai/receiptFromImage.ts`](lib/ai/receiptFromImage.ts)                                          | Production AI: a JSON schema for Gemini, Zod validation of every reply, and prompt-injection-aware instructions             |
+| [`lib/pricing.ts`](lib/pricing.ts), [`lib/units.ts`](lib/units.ts)                                  | Pure, unit-tested money and unit math: prices compared per gram, millilitre or item, never guessed across kinds             |
+| [`docs/decisions/`](docs/decisions/)                                                                | 48 architecture decision records: context, decision, alternatives and consequences                                          |
 
 ## What it does
 
@@ -70,14 +70,14 @@ I built Dialed Kitchen with **Claude Code** as an AI pair programmer. I owned th
 | ----------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | UI and server     | Next.js 16 (App Router), React 19 Server Components and Server Actions, TypeScript (strict)  | One codebase; data access and secrets stay on the server, and little JavaScript ships to phones |
 | Styling           | Tailwind CSS v4 with named design tokens                                                     | One source of truth for colors; text contrast is checked by a test                              |
-| Database and auth | Supabase: Postgres, row-level security, Google sign-in (PKCE)                                | Real relational data; the database itself enforces who can see what                             |
+| Database and auth | Neon: Postgres, row-level security, the Data API, Neon Auth (Google sign-in)                 | Real relational data; the database itself enforces who can see what                             |
 | AI                | Google Gemini (server-side only), structured JSON output, model fallback chain               | Reads receipts and recipe photos and estimates nutrition, on the free tier                      |
 | Validation        | Zod at every trust boundary: forms, URL parameters, fetched pages, AI replies, database rows | Types aren't validation                                                                         |
 | Hosting and CI    | Vercel (Node 24), GitHub Actions, CodeQL, Dependabot                                         | Every push is checked; every merge to `main` deploys                                            |
 
 **Request flow, with a check at each layer:** UI → Server Action (Zod validation and sign-in check) → server-only data access (the user's own session, never a service key) → **Postgres row-level security**, the final guard even if app code has a bug.
 
-**Code layout:** `features/<feature>/` holds each feature's components, actions (writes), queries (reads) and schemas. `lib/` holds pure, unit-tested logic (pricing, units, nutrition, plan rules). `lib/server/` holds server-only infrastructure. `supabase/migrations/` holds versioned SQL.
+**Code layout:** `features/<feature>/` holds each feature's components, actions (writes), queries (reads) and schemas. `lib/` holds pure, unit-tested logic (pricing, units, nutrition, plan rules). `lib/server/` holds server-only infrastructure. `db/migrations/` holds versioned SQL.
 
 ### Data model
 
@@ -99,7 +99,7 @@ Every household table carries `household_id` with row-level security, and compos
 ## Security
 
 - **Row-level security on all 16 tables**, column-level grants (the app can't set `household_id`), and 60+ `check` constraints for invariants.
-- **Invite-only accounts enforced in Postgres:** a trigger on `auth.users` refuses any new account without a redeemed invite code for that email, and keeps the 25-account cap, with an advisory lock so two sign-ups can't race. Codes have 80 bits of randomness and are stored as SHA-256 hashes.
+- **Invite-only accounts decided in Postgres:** before the sign-in service creates any account it calls a signed webhook (Ed25519, replay-protected), which asks one database function; that refuses any new account without a redeemed invite code for that email, and keeps the 25-account cap. If the webhook can't be reached, the sign-up is refused. The webhook's database login can run two functions and read nothing ([0049](docs/decisions/0049-move-to-neon.md)). Codes have 80 bits of randomness and are stored as SHA-256 hashes.
 - **Strict Content Security Policy** with a per-request nonce (no inline scripts or styles in production), plus HSTS, nosniff, COOP, frame blocking and a tight Permissions-Policy.
 - **Server-side auth only:** no database client in the browser; HttpOnly, SameSite, Secure cookies; Google sign-in starts from a POST with an Origin check (CSRF).
 - **SSRF-safe link import:** https on port 443 only, every resolved address checked inside the connection's own DNS lookup (closing DNS rebinding), and redirects re-checked at each hop, with time, size and type limits.
@@ -118,10 +118,10 @@ Every household table carries `household_id` with row-level security, and compos
 
 ## Quality
 
-- **422 automated tests** (Vitest). **159 run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with all 21 migrations applied, testing row-level security as real users: partners share, strangers see nothing, nobody can forge or move rows, and no account appears without an invite.
+- **431 automated tests** (Vitest). **161 run against real Postgres** (PGlite, Postgres compiled to WebAssembly) with all 22 migrations applied, testing row-level security as real users: partners share, strangers see nothing, nobody can forge or move rows, and no account appears without an invite.
 - **CI on every pull request:** production security audit, Prettier, ESLint, TypeScript type check, all tests, and a production build.
 - **Accessibility:** WCAG AA text contrast enforced by a test that reads the CSS, 48px tap targets, 17px+ body text, labels on every control, and meaning never shown by color alone.
-- **48 [architecture decision records](docs/decisions/).**
+- **49 [architecture decision records](docs/decisions/).**
 
 ## Design
 
@@ -132,13 +132,14 @@ Every household table carries `household_id` with row-level security, and compos
 
 ## Running locally
 
-Requires Node.js 24 and a Supabase project.
+Requires Node.js 24, a free Neon project with Neon Auth and the Data API switched on, and the Neon CLI (`npm i -g neon`).
 
 ```bash
-cp .env.example .env.local   # fill in the Supabase URL and publishable key (and optionally a Gemini key)
+cp .env.example .env.local   # fill in the Neon values (and optionally a Gemini key)
 npm install
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push         # applies the migrations in supabase/migrations
+neon link                    # connect this folder to your Neon project
+npm run db:migrate           # applies the migrations in db/migrations
+npm run db:gate-password     # gives the sign-up webhook its own database login
 npm run dev                  # http://localhost:3000
 npm test                     # unit and database tests
 npm run lint && npm run typecheck && npm run build

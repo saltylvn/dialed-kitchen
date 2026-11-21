@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { InviteCodeForm } from "@/features/access/components/InviteCodeForm";
 import { signInAsDemo } from "@/features/auth/actions";
+import { getCurrentUser } from "@/lib/server/auth";
 import { demoPassword } from "@/lib/server/demo";
+import { HOME_TAB } from "@/lib/tabs";
 
 export const metadata: Metadata = { title: "Sign in · Dialed Kitchen" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
+  // Already signed in: nothing to do here.
+  if (await getCurrentUser()) redirect(HOME_TAB.href);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center px-4 pt-[max(env(safe-area-inset-top),4.5rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">

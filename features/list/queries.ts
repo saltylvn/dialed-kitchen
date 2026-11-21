@@ -3,7 +3,7 @@ import { z } from "zod";
 import { formatAmount, sortList } from "@/lib/list";
 import { itemIdFor, nameKey } from "@/lib/priceBook";
 import { formatUnitPrice } from "@/lib/pricing";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import type { Unit } from "@/lib/units";
 import { itemRowSchema, storeRowSchema } from "@/features/prices/schema";
 import { listRowSchema } from "./schema";
@@ -33,16 +33,14 @@ function fail(what: string, error: { message: string }): never {
 }
 
 export async function getListPage(): Promise<ListPage> {
-  const supabase = await createClient();
+  const db = await createClient();
 
   const [list, items, best, stores] = await Promise.all([
-    supabase
-      .from("grocery_list_items")
-      .select("id, item_id, name, quantity, unit, checked, created_at"),
-    supabase.from("items").select("id, name, compare_unit").order("name"),
+    db.from("grocery_list_items").select("id, item_id, name, quantity, unit, checked, created_at"),
+    db.from("items").select("id, name, compare_unit").order("name"),
     // The best price so far per item (computed by the database, decision 0003).
-    supabase.from("item_best_prices").select("item_id, store_id, unit_price_base"),
-    supabase.from("stores").select("id, name"),
+    db.from("item_best_prices").select("item_id, store_id, unit_price_base"),
+    db.from("stores").select("id, name"),
   ]);
   if (list.error) fail("grocery_list_items", list.error);
   if (items.error) fail("items", items.error);

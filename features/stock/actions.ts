@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { type ActionResult } from "@/lib/actionResult";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 
 // "In stock" actions. The database keeps In stock and the grocery list in step: marking
 // something In stock takes it off the list in the same transaction (set_in_stock).
@@ -24,8 +24,8 @@ export async function setInStock(name: string, inStock: boolean): Promise<void> 
   await requireUser();
   const parsed = nameSchema.safeParse(name);
   if (!parsed.success || typeof inStock !== "boolean") return;
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("set_in_stock", { name: parsed.data, in_stock: inStock });
+  const db = await createClient();
+  const { error } = await db.rpc("set_in_stock", { name: parsed.data, in_stock: inStock });
   if (error) {
     console.error("set in stock failed:", error.message);
     throw new Error("Couldn't save that. Check your connection and try again.");

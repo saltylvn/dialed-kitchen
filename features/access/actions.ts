@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { createSignupCode, hashSignupCode, normalizeSignupCode } from "@/lib/signupCodes";
 import { isAdmin } from "./queries";
 import { ACCESS_ERRORS, inviteCodeFormSchema, waitlistFormSchema } from "./schema";
@@ -29,8 +29,8 @@ export async function joinWaitlist(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
   }
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("join_waitlist", {
+  const db = await createClient();
+  const { error } = await db.rpc("join_waitlist", {
     email: parsed.data.email,
     name: parsed.data.name,
     note: parsed.data.note ?? undefined,
@@ -60,8 +60,8 @@ export async function redeemInviteCode(
   };
   if (!normalizeSignupCode(parsed.data.code)) return invalid;
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("redeem_signup_invite", {
+  const db = await createClient();
+  const { data, error } = await db.rpc("redeem_signup_invite", {
     code_hash: hashSignupCode(parsed.data.code),
   });
   if (error) {
@@ -93,8 +93,8 @@ export async function approveWaitlistEntry(
   if (!id.success || !email.success) return { ok: false, error: GENERIC_ERROR };
 
   const code = createSignupCode();
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("create_signup_invite", {
+  const db = await createClient();
+  const { error } = await db.rpc("create_signup_invite", {
     waitlist_id: id.data,
     code_hash: hashSignupCode(code),
   });
@@ -111,11 +111,8 @@ export async function declineWaitlistEntry(formData: FormData): Promise<void> {
   await requireAdmin();
   const id = z.uuid().safeParse(formData.get("id"));
   if (!id.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("waitlist")
-    .update({ status: "declined" })
-    .eq("id", id.data);
+  const db = await createClient();
+  const { error } = await db.from("waitlist").update({ status: "declined" }).eq("id", id.data);
   if (error) console.error("decline failed:", error.message);
   revalidatePath("/admin");
 }
@@ -124,8 +121,8 @@ export async function removeWaitlistEntry(formData: FormData): Promise<void> {
   await requireAdmin();
   const id = z.uuid().safeParse(formData.get("id"));
   if (!id.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("waitlist").delete().eq("id", id.data);
+  const db = await createClient();
+  const { error } = await db.from("waitlist").delete().eq("id", id.data);
   if (error) console.error("remove failed:", error.message);
   revalidatePath("/admin");
 }

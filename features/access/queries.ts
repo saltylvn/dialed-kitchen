@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import {
   adminOverviewSchema,
   waitlistEntrySchema,
@@ -14,8 +14,8 @@ import {
 // by the account's email; once per request.
 export const isAdmin = cache(async (): Promise<boolean> => {
   if (!(await getCurrentUser())) return false;
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("am_i_admin");
+  const db = await createClient();
+  const { data, error } = await db.rpc("am_i_admin");
   if (error) {
     console.error("am_i_admin failed:", error.message);
     return false;
@@ -28,10 +28,10 @@ export async function getAdminPage(): Promise<{
   overview: AdminOverview;
   entries: WaitlistEntry[];
 }> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [overview, entries] = await Promise.all([
-    supabase.rpc("admin_overview").single(),
-    supabase
+    db.rpc("admin_overview").single(),
+    db
       .from("waitlist")
       .select("id, email, name, note, status, created_at")
       .order("created_at", { ascending: true })

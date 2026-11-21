@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { getSupabaseEnv } from "./lib/env";
 import { buildCsp, createNonce } from "./lib/security/csp";
+import { getNeonEnv } from "./lib/server/env";
 import { updateSession } from "./lib/server/session";
 
 // Runs before every page request:
@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
   const csp = buildCsp({
     nonce: createNonce(),
     isDev: process.env.NODE_ENV === "development",
-    supabaseUrl: getSupabaseEnv().url,
+    authUrl: getNeonEnv().authUrl,
   });
 
   const response = await updateSession(request, { "Content-Security-Policy": csp });

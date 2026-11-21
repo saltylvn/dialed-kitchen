@@ -1,25 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isSameOrigin } from "@/lib/security/sameOrigin";
-import { createClient } from "@/lib/server/supabase";
+import { neonAuth } from "@/lib/server/neonAuth";
 
 // "Continue with Google": the sign-in form posts here as a plain form (not a server action),
-// so the browser simply follows the redirects (here → Supabase → Google) as a normal page
+// so the browser simply follows the redirects (here → Neon Auth → Google) as a normal page
 // change, and never has to fetch an outside site, which the CSP's connect-src forbids.
 //
-// Supabase returns Google's sign-in address and stores a one-time PKCE check code in a
-// cookie; Google then returns to /auth/callback, which finishes sign-in.
+// Neon Auth returns Google's sign-in address and remembers a one-time check value in a
+// cookie; Google then returns (through Neon Auth) to /auth/callback, which finishes sign-in.
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request.headers.get("origin"), request.url)) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const callbackURL = new URL("/auth/callback", request.url).toString();
+  const { data, error } = await neonAuth().signIn.social({
     provider: "google",
-    options: { redirectTo: new URL("/auth/callback", request.url).toString() },
+    callbackURL,
+    errorCallbackURL: callbackURL,
   });
 
-  if (error || !data.url) {
+  if (error || !data?.url) {
     console.error("Google sign-in could not start:", error?.message);
     return NextResponse.redirect(new URL("/login?error=signin", request.url), 303);
   }

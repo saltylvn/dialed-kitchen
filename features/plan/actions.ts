@@ -5,7 +5,7 @@ import { z } from "zod";
 import { GENERIC_ERROR, userMessage, type ActionResult } from "@/lib/actionResult";
 import { weekFromParam } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { addToPlanSchema, type AddToPlanInput } from "./schema";
 
 // Meal plan actions. The database (RLS, constraints) has the final word.
@@ -20,8 +20,8 @@ export async function addToPlan(input: AddToPlanInput): Promise<ActionResult<{ i
   }
   const { date, meal, recipeId, servings } = parsed.data;
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("meal_plan_entries")
     .insert({ plan_date: date, meal, recipe_id: recipeId, servings })
     .select("id")
@@ -42,8 +42,8 @@ export async function addToPlan(input: AddToPlanInput): Promise<ActionResult<{ i
 export async function removeFromPlan(id: string): Promise<ActionResult> {
   await requireUser();
   if (!z.uuid().safeParse(id).success) return { ok: false, error: GENERIC_ERROR };
-  const supabase = await createClient();
-  const { error } = await supabase.from("meal_plan_entries").delete().eq("id", id);
+  const db = await createClient();
+  const { error } = await db.from("meal_plan_entries").delete().eq("id", id);
   if (error) {
     console.error("remove from plan failed:", error.message);
     return { ok: false, error: "Couldn't remove that. Check your connection and try again." };
@@ -60,8 +60,8 @@ export async function addWeekToList(monday: string): Promise<ActionResult<{ adde
   if (typeof monday !== "string" || weekFromParam(monday) !== monday) {
     return { ok: false, error: GENERIC_ERROR };
   }
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("add_week_to_list", { week_start: monday });
+  const db = await createClient();
+  const { data, error } = await db.rpc("add_week_to_list", { week_start: monday });
   if (error) {
     console.error("add week to list failed:", error.message);
     return { ok: false, error: "Couldn't add to the list. Check your connection and try again." };

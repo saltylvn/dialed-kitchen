@@ -7,7 +7,7 @@ import { GENERIC_ERROR, type ActionResult } from "@/lib/actionResult";
 import { matchKey } from "@/lib/ingredients";
 import { MEAL_IDS } from "@/lib/plan";
 import { requireUser } from "@/lib/server/auth";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { recipeFormSchema } from "./schema";
 
 // Recipe actions. Input is validated here; the database checks it all again, and save_recipe
@@ -39,16 +39,16 @@ export async function saveRecipe(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form" };
   const recipe = parsed.data;
 
-  const supabase = await createClient();
+  const db = await createClient();
   // Link ingredients to price-book items by name ("Chicken thighs, boneless" → Chicken thighs).
-  const { data: items, error: itemsError } = await supabase.from("items").select("id, name");
+  const { data: items, error: itemsError } = await db.from("items").select("id, name");
   if (itemsError) {
     console.error("save recipe: items failed:", itemsError.message);
     return { ok: false, error: GENERIC_ERROR };
   }
   const itemIds = new Map(items.map((i) => [i.name.toLowerCase(), i.id as string]));
 
-  const { data: id, error } = await supabase.rpc("save_recipe", {
+  const { data: id, error } = await db.rpc("save_recipe", {
     recipe_id: recipe.recipeId,
     title: recipe.title,
     servings: recipe.servings,
@@ -81,8 +81,8 @@ export async function saveRecipe(
 export async function setFavorite(id: string, favorite: boolean): Promise<void> {
   await requireUser();
   if (!z.uuid().safeParse(id).success || typeof favorite !== "boolean") return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("recipes").update({ favorite }).eq("id", id);
+  const db = await createClient();
+  const { error } = await db.from("recipes").update({ favorite }).eq("id", id);
   if (error) {
     console.error("set favorite failed:", error.message);
     throw new Error("Couldn't save that. Check your connection and try again.");
@@ -95,8 +95,8 @@ export type AddToListResult = ActionResult<{ added: number }>;
 export async function addRecipeToList(id: string): Promise<AddToListResult> {
   await requireUser();
   if (!z.uuid().safeParse(id).success) return { ok: false, error: GENERIC_ERROR };
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("add_recipe_to_list", { recipe_id: id });
+  const db = await createClient();
+  const { data, error } = await db.rpc("add_recipe_to_list", { recipe_id: id });
   if (error) {
     console.error("add recipe to list failed:", error.message);
     return { ok: false, error: "Couldn't add to the list. Check your connection and try again." };
@@ -109,8 +109,8 @@ export async function deleteRecipe(formData: FormData): Promise<void> {
   await requireUser();
   const id = z.uuid().safeParse(formData.get("recipeId"));
   if (!id.success) return;
-  const supabase = await createClient();
-  const { error } = await supabase.from("recipes").delete().eq("id", id.data);
+  const db = await createClient();
+  const { error } = await db.from("recipes").delete().eq("id", id.data);
   if (error) console.error("delete recipe failed:", error.message);
   revalidatePath("/recipes");
   redirect("/recipes");
@@ -124,11 +124,8 @@ export async function setRecipeMeals(id: string, meals: string[]): Promise<Actio
     .safeParse({ id, meals });
   if (!parsed.success) return { ok: false, error: GENERIC_ERROR };
   const ordered = MEAL_IDS.filter((m) => parsed.data.meals.includes(m));
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("recipes")
-    .update({ meals: ordered })
-    .eq("id", parsed.data.id);
+  const db = await createClient();
+  const { error } = await db.from("recipes").update({ meals: ordered }).eq("id", parsed.data.id);
   if (error) {
     console.error("set recipe meals failed:", error.message);
     return { ok: false, error: "Couldn't save that. Check your connection and try again." };

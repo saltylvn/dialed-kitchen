@@ -1,80 +1,54 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseEnv } from "../env";
 import { hardenAuthCookie } from "../security/cookies";
 import { RETURN_TO_COOKIE, RETURN_TO_MAX_AGE_SECONDS, safeReturnPath } from "../security/returnTo";
-import { HOME_TAB } from "../tabs";
+import { neonAuth } from "./neonAuth";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-// Pages anyone can open while signed out.
-const PUBLIC_PATHS = ["/login", "/waitlist", "/auth/google", "/auth/callback"];
-const HOME = HOME_TAB.href;
+// Pages (and the one webhook) anyone can reach while signed out.
+const PUBLIC_PATHS = [
+  "/login",
+  "/waitlist",
+  "/auth/google",
+  "/auth/callback",
+  "/webhooks/neon-auth",
+];
 
-// Called by proxy.ts on every page request:
-//  1. refreshes the login session (Supabase tokens expire and must be renewed), and
-//  2. sends signed-out visitors to /login, and signed-in ones away from it.
+// Called by proxy.ts on every page request. Neon Auth's middleware does the session work:
+//  1. finishes a Google sign-in (trades the one-time code in the address for login cookies),
+//  2. refreshes the login session when it is about to expire, and
+//  3. sends signed-out visitors to /login.
 // `extraRequestHeaders` (the CSP) are added to the request the page renders with.
 export async function updateSession(
   request: NextRequest,
   extraRequestHeaders: Record<string, string>,
 ): Promise<NextResponse> {
-  const { url, publishableKey } = getSupabaseEnv();
+  // The middleware passes the request's headers on to the page, so set ours first.
+  for (const [key, value] of Object.entries(extraRequestHeaders)) request.headers.set(key, value);
 
-  // Rebuilt after cookies change, so the page sees the refreshed session and the CSP.
-  const nextResponse = () => {
-    const headers = new Headers(request.headers);
-    for (const [key, value] of Object.entries(extraRequestHeaders)) headers.set(key, value);
-    return NextResponse.next({ request: { headers } });
-  };
-  let response = nextResponse();
+  const middleware = neonAuth().middleware({ loginUrl: "/login", publicRoutes: PUBLIC_PATHS });
+  const response = await middleware(request);
 
-  const supabase = createServerClient(url, publishableKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet, cacheHeaders) {
-        for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
-        response = nextResponse();
-        for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, hardenAuthCookie(options, IS_PRODUCTION));
-        }
-        // Stops CDNs from caching a response that carries someone's login cookies.
-        for (const [key, value] of Object.entries(cacheHeaders)) response.headers.set(key, value);
-      },
-    },
-  });
-
-  // Must come right after createServerClient: this is what refreshes an expiring session.
-  const { data } = await supabase.auth.getClaims();
-  const isSignedIn = Boolean(data?.claims.sub);
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.includes(pathname);
+  const location = response.headers.get("location");
+  const sentToLogin =
+    location !== null &&
+    pathname !== "/login" &&
+    new URL(location, request.url).pathname === "/login";
+  if (!sentToLogin) return response;
 
-  if (!isSignedIn && !isPublic) {
-    const redirect = redirectKeepingCookies(request, response, "/login");
-    // Signed out on an invite link: come back to it after signing in (lib/security/returnTo).
-    const returnTo = safeReturnPath(pathname);
-    if (returnTo) {
-      redirect.cookies.set(RETURN_TO_COOKIE, returnTo, {
-        ...hardenAuthCookie({ path: "/" }, IS_PRODUCTION),
-        maxAge: RETURN_TO_MAX_AGE_SECONDS,
-      });
-    }
-    return redirect;
-  }
-  if (isSignedIn && pathname === "/login") return redirectKeepingCookies(request, response, HOME);
-  return response;
-}
-
-// A redirect must carry along any refreshed login cookies and no-cache headers.
-function redirectKeepingCookies(request: NextRequest, from: NextResponse, path: string) {
-  const redirect = NextResponse.redirect(new URL(path, request.url));
-  for (const cookie of from.cookies.getAll()) redirect.cookies.set(cookie);
-  for (const key of ["cache-control", "expires", "pragma"]) {
-    const value = from.headers.get(key);
-    if (value) redirect.headers.set(key, value);
+  // Our own redirect to a bare /login (the middleware's copy carries the page's query
+  // string along, which a sign-in page has no use for), keeping any cookies it set.
+  const redirect = NextResponse.redirect(new URL("/login", request.url));
+  for (const cookie of response.headers.getSetCookie())
+    redirect.headers.append("Set-Cookie", cookie);
+  // Signed out on an invite link: come back to it after signing in (lib/security/returnTo).
+  const returnTo = safeReturnPath(pathname);
+  if (returnTo) {
+    redirect.cookies.set(RETURN_TO_COOKIE, returnTo, {
+      ...hardenAuthCookie({ path: "/" }, IS_PRODUCTION),
+      maxAge: RETURN_TO_MAX_AGE_SECONDS,
+    });
   }
   return redirect;
 }

@@ -4,7 +4,7 @@ import { addDays, serverToday } from "@/lib/dates";
 import type { Nutrition } from "@/lib/nutrition";
 import { rankRecipes, RECENT_WEEKS, type MealId } from "@/lib/plan";
 import type { ShoppingRow } from "@/lib/weekShopping";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { nutritionOf, recipeRowSchema } from "@/features/recipes/schema";
 import { planEntryRowSchema, type PlanEntryRow } from "./schema";
 
@@ -16,8 +16,8 @@ function fail(what: string, error: { message: string }): never {
 
 // Everything planned for the week starting on `monday`.
 export async function getWeekPlan(monday: string): Promise<PlanEntryRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("meal_plan_entries")
     .select("id, plan_date, meal, recipe_id, servings")
     .gte("plan_date", monday)
@@ -30,8 +30,8 @@ export async function getWeekPlan(monday: string): Promise<PlanEntryRow[]> {
 // How many times each recipe was planned lately (the last RECENT_WEEKS weeks, plus anything
 // already planned ahead). Feeds "regulars" in the recipe box and the plan's recipe picker.
 export async function recentPlanCounts(): Promise<Map<string, number>> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  const db = await createClient();
+  const { data, error } = await db
     .from("meal_plan_entries")
     .select("recipe_id")
     .gte("plan_date", addDays(serverToday(), -7 * RECENT_WEEKS));
@@ -54,9 +54,9 @@ export type RecipeChoice = {
 
 // The recipes to plan from: favorites and regulars first (most planned first), then the rest.
 export async function getRecipeChoices(): Promise<RecipeChoice[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [recipes, counts] = await Promise.all([
-    supabase
+    db
       .from("recipes")
       .select("id, title, servings, favorite, calories, protein_g, carbs_g, fat_g, meals"),
     recentPlanCounts(),
@@ -93,8 +93,8 @@ export async function getRecipeChoices(): Promise<RecipeChoice[]> {
 // What the week's meals need, with In stock, on-the-list and estimated cost (worked out by
 // the database's week_shopping, so the card and "Add to grocery list" always agree).
 export async function getWeekShopping(monday: string): Promise<ShoppingRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("week_shopping", { week_start: monday });
+  const db = await createClient();
+  const { data, error } = await db.rpc("week_shopping", { week_start: monday });
   if (error) fail("week_shopping", error);
   return z
     .array(

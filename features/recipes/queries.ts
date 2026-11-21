@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { formatIngredient, matchKey } from "@/lib/ingredients";
 import { formatAmount } from "@/lib/list";
-import { createClient } from "@/lib/server/supabase";
+import { createClient } from "@/lib/server/db";
 import { recentPlanCounts } from "@/features/plan/queries";
 import { inStockKeys } from "@/features/stock/queries";
 import {
@@ -28,18 +28,18 @@ function fail(what: string, error: { message: string }): never {
 // read in parallel. An ingredient is In stock when its name, or its price-book item's name,
 // matches something In stock (the same rule the database uses).
 export async function listRecipes(): Promise<RecipeView[]> {
-  const supabase = await createClient();
+  const db = await createClient();
   const [recipes, ingredients, items, stock, planCounts] = await Promise.all([
-    supabase
+    db
       .from("recipes")
       .select(RECIPE_COLUMNS)
       .order("favorite", { ascending: false })
       .order("title"),
-    supabase
+    db
       .from("recipe_ingredients")
       .select("recipe_id, sort_order, quantity, unit, name, item_id")
       .order("sort_order"),
-    supabase.from("items").select("id, name"),
+    db.from("items").select("id, name"),
     inStockKeys(),
     recentPlanCounts(),
   ]);
@@ -86,10 +86,10 @@ export type RecipeForEdit = RecipeRow & {
 // One recipe, with ingredients and steps turned back into editable text. null if not yours.
 export async function getRecipeForEdit(id: string): Promise<RecipeForEdit | null> {
   if (!z.uuid().safeParse(id).success) return null;
-  const supabase = await createClient();
+  const db = await createClient();
   const [recipe, ingredients] = await Promise.all([
-    supabase.from("recipes").select(RECIPE_COLUMNS).eq("id", id).maybeSingle(),
-    supabase
+    db.from("recipes").select(RECIPE_COLUMNS).eq("id", id).maybeSingle(),
+    db
       .from("recipe_ingredients")
       .select("recipe_id, sort_order, quantity, unit, name, item_id")
       .eq("recipe_id", id)
