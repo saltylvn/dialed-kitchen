@@ -21,9 +21,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <Wordmark />
       </h1>
 
-      <div aria-hidden className="bg-accent mt-9 mb-8 h-px w-7" />
+      <div aria-hidden className="bg-primary mt-9 mb-8 h-px w-7" />
 
-      <p className="font-display text-center text-[36px] leading-tight font-light italic">
+      <p className="heading-1 text-center">
         Plan it, price it,
         <br />
         cook it.
@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         )}
         <button
           type="submit"
-          className="bg-accent text-on-accent min-h-12 w-full rounded-xl text-[17px] font-medium tracking-wide"
+          className="bg-primary text-on-primary min-h-12 w-full rounded-lg text-[17px] font-medium tracking-wide"
         >
           Continue with Google
         </button>
@@ -61,7 +61,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <form action={signInAsDemo} className="mt-3 w-full">
           <button
             type="submit"
-            className="border-border bg-surface min-h-12 w-full rounded-xl border text-[17px] font-medium"
+            className="border-border bg-surface min-h-12 w-full rounded-lg border text-[17px] font-medium"
           >
             Try the demo
           </button>

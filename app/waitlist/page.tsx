@@ -11,9 +11,7 @@ export default function WaitlistPage() {
       <Link href="/login" className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
         ‹ Sign in
       </Link>
-      <h1 className="font-display mt-1 text-[36px] leading-tight font-light italic">
-        Join the waitlist
-      </h1>
+      <h1 className="heading-1 mt-1">Join the waitlist</h1>
       <p className="text-muted mt-2 mb-6">
         Dialed Kitchen is a personal project with a few places. Ask to join, and if a place opens
         you&apos;ll get an invite code.

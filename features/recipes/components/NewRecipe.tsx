@@ -25,7 +25,7 @@ export function NewRecipe() {
 
   return (
     <div className="space-y-6">
-      <form action={formAction} className="border-border bg-surface rounded-2xl border p-4">
+      <form action={formAction} className="border-border bg-surface rounded-xl border p-4">
         <label htmlFor="import-link" className="font-medium">
           Import from a website
         </label>
@@ -40,12 +40,12 @@ export function NewRecipe() {
             autoComplete="off"
             required
             placeholder="https://"
-            className="border-border bg-bg min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-[17px]"
+            className="border-border bg-bg min-h-12 min-w-0 flex-1 rounded-lg border px-3 text-[17px]"
           />
           <button
             type="submit"
             disabled={pending}
-            className="bg-accent text-on-accent min-h-12 shrink-0 rounded-xl px-4 font-medium disabled:opacity-60"
+            className="bg-primary text-on-primary min-h-12 shrink-0 rounded-lg px-4 font-medium disabled:opacity-60"
           >
             {pending ? "Importing…" : "Import"}
           </button>

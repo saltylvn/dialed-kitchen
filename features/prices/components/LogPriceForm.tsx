@@ -75,7 +75,7 @@ export function LogPriceForm({
             required
             defaultValue={today}
             max={today || undefined}
-            className="border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]"
+            className="border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]"
           />
         </div>
       </div>
@@ -89,7 +89,7 @@ export function LogPriceForm({
       <button
         type="submit"
         disabled={pending}
-        className="bg-accent text-on-accent min-h-12 w-full rounded-xl font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-lg font-medium disabled:opacity-60"
       >
         {pending ? "Saving…" : "Save price"}
       </button>
@@ -102,7 +102,7 @@ function ResultMessage({ result }: { result: LoggedPrice }) {
   return (
     <p
       role="status"
-      className={`border-border bg-surface rounded-xl border p-3 font-medium ${
+      className={`border-border bg-surface rounded-lg border p-3 font-medium ${
         result.comparison.kind === "new_best" ? "text-success-text" : ""
       }`}
     >

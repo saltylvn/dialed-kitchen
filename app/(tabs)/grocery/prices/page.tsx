@@ -9,8 +9,8 @@ import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Price book · Dialed Kitchen" };
 
-const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
-const button = "flex min-h-12 flex-1 items-center justify-center rounded-xl px-3 font-medium";
+const heading = "label";
+const button = "flex min-h-12 flex-1 items-center justify-center rounded-lg px-3 font-medium";
 
 // The price book: every item you've priced, on the list or not, grouped by store section,
 // each comparing your stores' latest prices, cheapest marked (docs/decisions/0034, 0044).
@@ -28,7 +28,7 @@ export default async function PriceBookPage({ searchParams }: PageProps<"/grocer
         <Link href="/grocery/receipt" className={`${button} border-border bg-surface border`}>
           Scan a receipt
         </Link>
-        <Link href="/grocery/items/new" className={`${button} bg-accent text-on-accent`}>
+        <Link href="/grocery/items/new" className={`${button} bg-primary text-on-primary`}>
           Add item
         </Link>
       </div>
@@ -45,7 +45,7 @@ export default async function PriceBookPage({ searchParams }: PageProps<"/grocer
           {groupByCategory(items, (i) => i.name).map((group) => (
             <div key={group.id}>
               <h2 className={heading}>{group.label}</h2>
-              <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-2xl border">
+              <ul className="border-border bg-surface mt-2 divide-y divide-[var(--border)] rounded-xl border">
                 {group.things.map((item) => (
                   <PriceBookRow key={item.id} item={item} highlight={item.id === highlight} />
                 ))}

@@ -32,7 +32,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       {joined && partner && (
         <p
           role="status"
-          className="border-border bg-surface mb-4 rounded-xl border p-3 text-center"
+          className="border-border bg-surface mb-4 rounded-lg border p-3 text-center"
         >
           🎉 You now share your kitchen with {partner.email}.
         </p>

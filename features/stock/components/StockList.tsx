@@ -39,12 +39,12 @@ export function StockList({ items }: { items: StockRow[] }) {
           maxLength={200}
           autoComplete="off"
           placeholder="Add something In stock…"
-          className="border-border bg-surface min-h-12 min-w-0 flex-1 rounded-xl border px-3 text-[17px]"
+          className="field min-w-0 flex-1"
         />
         <button
           type="submit"
           disabled={pending}
-          className="bg-accent text-on-accent min-h-12 shrink-0 rounded-xl px-5 font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary min-h-12 shrink-0 rounded-lg px-5 font-medium disabled:opacity-60"
         >
           Add
         </button>
@@ -61,11 +61,11 @@ export function StockList({ items }: { items: StockRow[] }) {
       )}
 
       {optimistic.length === 0 ? (
-        <p className="text-muted border-border bg-surface rounded-2xl border p-5 text-center">
+        <p className="text-muted border-border bg-surface rounded-xl border p-5 text-center">
           Nothing marked In stock yet. Tick In stock on a recipe or the list, or add it above.
         </p>
       ) : (
-        <ul className="border-border bg-surface divide-y divide-[var(--border)] rounded-2xl border">
+        <ul className="border-border bg-surface divide-y divide-[var(--border)] rounded-xl border">
           {optimistic.map((item) => (
             <li key={item.id} className="flex min-h-14 items-center gap-3 pl-4">
               <span aria-hidden className="text-success-text">

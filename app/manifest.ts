@@ -10,8 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Grocery lists, best prices, recipes and meal planning.",
     start_url: "/grocery",
     display: "standalone", // full-screen, like a native app
-    background_color: "#faf9f5", // cream while the app opens, matching --bg
-    theme_color: "#faf9f5",
+    background_color: "#ffffff", // white while the app opens, matching --bg
+    theme_color: "#ffffff",
     // Newer iPhones take the home-screen icon from here, so the 180×180 size comes first.
     icons: [
       {

@@ -153,7 +153,7 @@ export function WheelPicker({
               goTo(selectedIndex + 1);
             }
           }}
-          className={`border-border bg-surface h-full snap-y snap-mandatory [scrollbar-width:none] overflow-y-scroll overscroll-contain rounded-2xl border [&::-webkit-scrollbar]:hidden ${layout.pad}`}
+          className={`border-border bg-surface h-full snap-y snap-mandatory [scrollbar-width:none] overflow-y-scroll overscroll-contain rounded-xl border [&::-webkit-scrollbar]:hidden ${layout.pad}`}
         >
           {options.map((option, index) => (
             <WheelRow
@@ -170,7 +170,7 @@ export function WheelPicker({
         {/* The band marking the selected row, and soft fades top and bottom. */}
         <div
           aria-hidden
-          className={`border-accent pointer-events-none absolute inset-x-2 h-11 rounded-xl border-y-2 ${layout.band}`}
+          className={`border-border-strong pointer-events-none absolute inset-x-2 h-11 rounded-lg border-y-2 ${layout.band}`}
         />
         <div
           aria-hidden

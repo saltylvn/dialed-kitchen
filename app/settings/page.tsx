@@ -24,15 +24,15 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
       <Link href={backTo.href} className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
         ‹ {backTo.label}
       </Link>
-      <h1 className="font-display mt-1 text-[36px] leading-tight font-light italic">Settings</h1>
+      <h1 className="heading-1 mt-1">Settings</h1>
 
       <div className="mt-6 space-y-4">
         {isDemoEmail(user.email) ? (
           <section
             aria-labelledby="partner-heading"
-            className="border-border bg-surface rounded-2xl border p-4"
+            className="border-border bg-surface rounded-xl border p-4"
           >
-            <h2 id="partner-heading" className="text-muted text-[12px] tracking-[0.2em] uppercase">
+            <h2 id="partner-heading" className="label">
               Partner
             </h2>
             <p className="mt-3">
@@ -47,7 +47,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         {admin && (
           <Link
             href="/admin"
-            className="border-border bg-surface flex min-h-12 items-center justify-between rounded-2xl border p-4 font-medium"
+            className="border-border bg-surface flex min-h-12 items-center justify-between rounded-xl border p-4 font-medium"
           >
             Waitlist and invite codes <span aria-hidden>›</span>
           </Link>
@@ -55,16 +55,16 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
 
         <section
           aria-labelledby="account-heading"
-          className="border-border bg-surface rounded-2xl border p-4"
+          className="border-border bg-surface rounded-xl border p-4"
         >
-          <h2 id="account-heading" className="text-muted text-[12px] tracking-[0.2em] uppercase">
+          <h2 id="account-heading" className="label">
             Account
           </h2>
           <p className="mt-3 text-[17px] break-all">{user.email}</p>
           <form action={signOut} className="mt-3">
             <button
               type="submit"
-              className="border-border min-h-12 w-full rounded-xl border font-medium"
+              className="border-border min-h-12 w-full rounded-lg border font-medium"
             >
               Sign out
             </button>

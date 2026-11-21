@@ -27,7 +27,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="border-border bg-surface fixed inset-x-0 bottom-0 z-10 border-t pb-[env(safe-area-inset-bottom)]"
+      className="border-border fixed inset-x-0 bottom-0 z-10 border-t bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
       <ul className="mx-auto flex max-w-md">
         {TABS.map(({ id, href, label }) => {
@@ -43,7 +43,7 @@ export function TabBar() {
                 }`}
               >
                 {active && (
-                  <span aria-hidden className="bg-accent absolute top-0 h-0.5 w-10 rounded-full" />
+                  <span aria-hidden className="bg-primary absolute top-0 h-0.5 w-10 rounded-full" />
                 )}
                 <Icon />
                 {label}

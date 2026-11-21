@@ -49,14 +49,14 @@ export function PhotoImport({ onDraft }: { onDraft: (draft: RecipeDraft) => void
   const error = localError ?? (result?.ok === false ? result.error : null);
 
   return (
-    <div className="border-border bg-surface rounded-2xl border p-4">
+    <div className="border-border bg-surface rounded-xl border p-4">
       <p className="font-medium">Import from a photo</p>
       <p className="text-muted text-[15px]">
         A cookbook or magazine page, a recipe card, or a screenshot. Up to {MAX_PHOTOS} photos for
         one recipe.
       </p>
       <label
-        className={`bg-accent text-on-accent mt-2 flex min-h-12 items-center justify-center rounded-xl px-4 font-medium ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+        className={`bg-primary text-on-primary mt-2 flex min-h-12 items-center justify-center rounded-lg px-4 font-medium ${busy ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
       >
         {shrinking
           ? "Preparing photos…"

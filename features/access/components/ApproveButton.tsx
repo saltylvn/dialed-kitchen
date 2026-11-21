@@ -19,7 +19,7 @@ export function ApproveButton({ id, email, again }: { id: string; email: string;
       `Open https://dialed-kitchen.vercel.app, enter the code under "Have an invite code?", ` +
       `then Continue with Google as ${result.data.email}. The code works once, for 7 days.`;
     return (
-      <div role="status" className="border-border mt-3 rounded-xl border p-3">
+      <div role="status" className="border-border mt-3 rounded-lg border p-3">
         <p className="text-muted text-[14px]">Invite code (shown once):</p>
         <p className="mt-1 font-medium tracking-wider break-all select-all">{result.data.code}</p>
         <button
@@ -32,7 +32,7 @@ export function ApproveButton({ id, email, again }: { id: string; email: string;
               setCopied(false);
             }
           }}
-          className="bg-accent text-on-accent mt-3 min-h-12 w-full rounded-xl font-medium"
+          className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-lg font-medium"
         >
           {copied ? "✓ Copied message" : "Copy invite message"}
         </button>
@@ -55,7 +55,7 @@ export function ApproveButton({ id, email, again }: { id: string; email: string;
       <button
         type="submit"
         disabled={pending}
-        className="bg-accent text-on-accent min-h-12 w-full rounded-xl px-3 font-medium disabled:opacity-60"
+        className="bg-primary text-on-primary min-h-12 w-full rounded-lg px-3 font-medium disabled:opacity-60"
       >
         {pending ? "Approving…" : again ? "New code" : "Approve"}
       </button>

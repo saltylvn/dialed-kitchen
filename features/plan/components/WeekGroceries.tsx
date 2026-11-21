@@ -40,7 +40,7 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
   return (
     <section
       aria-labelledby="week-groceries"
-      className="border-border bg-surface mb-4 rounded-2xl border p-4"
+      className="border-border bg-surface mb-4 rounded-xl border p-4"
     >
       <h2 id="week-groceries" className="font-medium">
         This week’s groceries
@@ -65,7 +65,7 @@ export function WeekGroceries({ week, summary }: { week: string; summary: WeekSu
           type="button"
           onClick={add}
           disabled={pending}
-          className="bg-accent text-on-accent mt-3 min-h-12 w-full rounded-xl px-4 font-medium disabled:opacity-60"
+          className="bg-primary text-on-primary mt-3 min-h-12 w-full rounded-lg px-4 font-medium disabled:opacity-60"
         >
           {pending ? "Adding…" : `Add ${summary.toAdd} to grocery list`}
         </button>

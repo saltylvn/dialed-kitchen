@@ -25,7 +25,7 @@ export function PriceBookRow({
       id={`item-${item.id}`}
       aria-current={highlight ? "true" : undefined}
       className={`scroll-mt-24 px-3 py-2 ${
-        highlight ? "bg-bg rounded-2xl outline-2 outline-[var(--accent)]" : ""
+        highlight ? "bg-bg rounded-xl outline-2 outline-[var(--primary)]" : ""
       }`}
     >
       <div className="flex items-start gap-3">

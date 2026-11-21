@@ -13,7 +13,7 @@ export type LoggableItem = {
   lastUnitPriceBase: number | null;
 };
 
-const box = "border-border bg-surface mt-2 min-h-12 w-full rounded-xl border px-3 text-[17px]";
+const box = "border-border bg-surface mt-2 min-h-12 w-full rounded-lg border px-3 text-[17px]";
 
 // Log a price for any item (docs/decisions/0035): pick the item (a native menu, so iPhone
 // shows its swipe wheel), then the usual price form: store and price wheels, package size

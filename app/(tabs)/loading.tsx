@@ -5,8 +5,8 @@ export default function Loading() {
       <div className="flex min-h-12 items-center">
         <div className="bg-border h-8 w-32 animate-pulse rounded-lg" />
       </div>
-      <div className="bg-border/60 mt-4 h-28 animate-pulse rounded-2xl" />
-      <div className="bg-border/60 mt-4 h-20 animate-pulse rounded-2xl" />
+      <div className="bg-surface-2 mt-4 h-28 animate-pulse rounded-xl" />
+      <div className="bg-surface-2 mt-4 h-20 animate-pulse rounded-xl" />
     </main>
   );
 }

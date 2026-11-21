@@ -29,7 +29,7 @@ export default async function AdminPage() {
       <Link href="/settings" className="text-muted -ml-1 inline-flex min-h-12 items-center px-1">
         ‹ Settings
       </Link>
-      <h1 className="font-display mt-1 text-[36px] leading-tight font-light italic">Waitlist</h1>
+      <h1 className="heading-1 mt-1">Waitlist</h1>
 
       <p className="mt-3">
         <span className="font-medium tabular-nums">
@@ -45,7 +45,7 @@ export default async function AdminPage() {
       ) : (
         <ul className="mt-6 space-y-3">
           {entries.map((e) => (
-            <li key={e.id} className="border-border bg-surface rounded-2xl border p-4">
+            <li key={e.id} className="border-border bg-surface rounded-xl border p-4">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-medium break-words">{e.name}</p>
                 <p className="text-muted shrink-0 text-[14px]">{STATUS_LABEL[e.status]}</p>
@@ -62,7 +62,7 @@ export default async function AdminPage() {
                       <input type="hidden" name="id" value={e.id} />
                       <button
                         type="submit"
-                        className="border-border min-h-12 rounded-xl border px-4 font-medium"
+                        className="border-border min-h-12 rounded-lg border px-4 font-medium"
                       >
                         Decline
                       </button>
@@ -73,7 +73,7 @@ export default async function AdminPage() {
                     <button
                       type="submit"
                       aria-label={`Remove ${e.name}`}
-                      className="border-border min-h-12 rounded-xl border px-4 font-medium"
+                      className="border-border min-h-12 rounded-lg border px-4 font-medium"
                     >
                       Remove
                     </button>

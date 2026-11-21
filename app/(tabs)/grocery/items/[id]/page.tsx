@@ -14,8 +14,8 @@ import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Item · Dialed Kitchen" };
 
-const card = "border-border bg-surface rounded-2xl border p-4";
-const heading = "text-muted text-[12px] tracking-[0.2em] uppercase";
+const card = "border-border bg-surface rounded-xl border p-4";
+const heading = "label";
 
 export default async function ItemPage({ params }: PageProps<"/grocery/items/[id]">) {
   const [, { id }] = await Promise.all([requireUser(), params]);
@@ -125,7 +125,7 @@ export default async function ItemPage({ params }: PageProps<"/grocery/items/[id
             <input type="hidden" name="itemId" value={item.id} />
             <button
               type="submit"
-              className="border-border min-h-12 w-full rounded-xl border font-medium"
+              className="border-border min-h-12 w-full rounded-lg border font-medium"
             >
               Delete {item.name}
             </button>

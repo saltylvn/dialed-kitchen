@@ -114,13 +114,13 @@ function Day({
   return (
     <li
       aria-labelledby={headingId}
-      className={`bg-surface rounded-2xl border px-4 pt-3 pb-1 ${isToday ? "border-accent border-2" : "border-border"}`}
+      className={`bg-surface rounded-xl border px-4 pt-3 pb-1 ${isToday ? "border-primary border-2" : "border-border"}`}
     >
       <h2 id={headingId} className="flex items-baseline gap-2 pb-1">
         <span className={`font-medium ${isPast ? "text-muted" : ""}`}>{weekday}</span>
         <span className="text-muted text-[15px]">{date}</span>
         {isToday && (
-          <span className="bg-accent text-on-accent rounded-full px-2.5 py-0.5 text-[13px] font-medium">
+          <span className="bg-primary text-on-primary rounded-full px-2.5 py-0.5 text-[13px] font-medium">
             Today
           </span>
         )}
@@ -133,9 +133,7 @@ function Day({
           return (
             <li key={meal.id}>
               <div className="flex min-h-12 items-center gap-2">
-                <span className="text-muted w-20 shrink-0 text-[12px] tracking-[0.1em] uppercase">
-                  {meal.label}
-                </span>
+                <span className="label w-20 shrink-0">{meal.label}</span>
                 {planned.length === 0 ? (
                   <button
                     type="button"
@@ -339,14 +337,14 @@ function AddMeal({
         <div className="mt-2 flex gap-2">
           <Link
             href="/recipes/new"
-            className="bg-accent text-on-accent flex min-h-12 flex-1 items-center justify-center rounded-xl px-4 font-medium"
+            className="bg-primary text-on-primary flex min-h-12 flex-1 items-center justify-center rounded-lg px-4 font-medium"
           >
             Add recipe
           </Link>
           <button
             type="button"
             onClick={onCancel}
-            className="border-border min-h-12 rounded-xl border px-4 font-medium"
+            className="border-border min-h-12 rounded-lg border px-4 font-medium"
           >
             Cancel
           </button>
@@ -360,7 +358,7 @@ function AddMeal({
   const servingChoices = SERVING_CHOICES.includes(servings)
     ? SERVING_CHOICES
     : [...SERVING_CHOICES, servings].sort((a, b) => a - b);
-  const field = "border-border bg-bg mt-1 min-h-12 w-full rounded-xl border px-3 text-[17px]";
+  const field = "border-border bg-bg mt-1 min-h-12 w-full rounded-lg border px-3 text-[17px]";
 
   return (
     <form
@@ -436,14 +434,14 @@ function AddMeal({
       <div className="flex gap-2">
         <button
           type="submit"
-          className="bg-accent text-on-accent min-h-12 flex-1 rounded-xl px-4 font-medium"
+          className="bg-primary text-on-primary min-h-12 flex-1 rounded-lg px-4 font-medium"
         >
           Add
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="border-border min-h-12 rounded-xl border px-4 font-medium"
+          className="border-border min-h-12 rounded-lg border px-4 font-medium"
         >
           Cancel
         </button>
