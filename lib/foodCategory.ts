@@ -1,8 +1,10 @@
 import { foodMatch } from "./foodEmoji";
 
 // A store section for a food's name, so the Prices view groups items the way a store is
-// laid out: 🥬 produce, 🥩 meat, 🥛 dairy… Worked out from the name like the food emoji
-// (docs/decisions/0027), so nothing is stored and every item is covered. Unknown → Other.
+// laid out: 🥬 produce, 🥩 meat, 🥛 dairy… then 🪒 grooming and 🧽 cleaning for the
+// non-food things bought with groceries (docs/decisions/0058). Worked out from the name like
+// the food emoji (docs/decisions/0027), so nothing is stored and every item is covered.
+// Unknown → Other.
 
 export const CATEGORIES = [
   { id: "produce", label: "Produce" },
@@ -11,6 +13,8 @@ export const CATEGORIES = [
   { id: "bakery", label: "Bakery" },
   { id: "pantry", label: "Pantry" },
   { id: "snacks", label: "Snacks & drinks" },
+  { id: "grooming", label: "Grooming" },
+  { id: "cleaning", label: "Cleaning" },
   { id: "other", label: "Other" },
 ] as const;
 
@@ -24,6 +28,8 @@ const BY_EMOJI: Record<string, Category> = {
   ...section("bakery", "🍞🫓🥯🥞🎂"),
   ...section("pantry", "🍝🍚🌾🫘🥜🧂🫒🫗🍯🍬🍲🥫🥣"),
   ...section("snacks", "🍫🍪☕🍵🧃🥤🍿🥨💧🧊"),
+  ...section("grooming", "🪒🪥🧼🧴"),
+  ...section("cleaning", "🧽🧺🧻🧹🗑️"),
 };
 
 // Words whose emoji is shared with another section: yogurt shares 🥣 with oats, and

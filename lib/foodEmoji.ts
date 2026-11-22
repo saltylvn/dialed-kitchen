@@ -30,6 +30,25 @@ const PHRASES: Record<string, string> = {
   "protein powder": "🥤",
   "orange juice": "🧃",
   "apple juice": "🧃",
+  // Grooming and cleaning (not food, but bought with it; lib/foodCategory.ts sorts them).
+  "shaving cream": "🪒",
+  "shaving gel": "🪒",
+  "shave gel": "🪒",
+  "shave cream": "🪒",
+  "dental floss": "🪥",
+  "body wash": "🧼",
+  "face wash": "🧼",
+  "hand wash": "🧼",
+  "lip balm": "🧴",
+  "dish soap": "🧽",
+  "dishwasher pod": "🧽",
+  "dishwasher detergent": "🧽",
+  "paper towel": "🧻",
+  "toilet paper": "🧻",
+  "trash bag": "🗑️",
+  "garbage bag": "🗑️",
+  "fabric softener": "🧺",
+  "dryer sheet": "🧺",
 };
 
 const GROUPS: [string, string[]][] = [
@@ -133,6 +152,15 @@ const GROUPS: [string, string[]][] = [
   ["🥨", ["pretzel"]],
   ["💧", ["water"]],
   ["🧊", ["ice"]],
+  // Grooming 🪒 and cleaning 🧽 (docs/decisions/0058).
+  ["🪒", ["razor", "shaver"]],
+  ["🪥", ["toothpaste", "toothbrush", "floss", "mouthwash"]],
+  ["🧼", ["soap"]],
+  ["🧴", ["lotion", "shampoo", "conditioner", "deodorant", "sunscreen", "moisturizer", "balm"]],
+  ["🧽", ["sponge", "cleaner", "disinfectant", "bleach", "wipe", "scrubber"]],
+  ["🧺", ["detergent", "laundry"]],
+  ["🧻", ["tissue", "napkin"]],
+  ["🧹", ["broom", "mop"]],
 ];
 
 const WORDS = new Map<string, string>(
