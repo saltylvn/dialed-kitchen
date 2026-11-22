@@ -61,3 +61,4 @@ Short notes on important design choices: the context, what was decided, the alte
 | [0055](0055-violet-and-green.md)                               | Violet for actions, green for best price, pill buttons                                | Accepted               |
 | [0056](0056-iphone-only.md)                                    | An iPhone app: other devices see "Open on your iPhone", and no zooming                | Accepted               |
 | [0057](0057-weekly-cost-ai-estimates.md)                       | The meal plan's cost on Grocery, with AI estimates for missing prices                 | Accepted               |
+| [0058](0058-grooming-and-cleaning.md)                          | Grooming and Cleaning sections for non-food things                                    | Accepted               |

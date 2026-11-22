@@ -40,8 +40,16 @@ describe("foodEmoji", () => {
     expect(foodEmoji("Tacos 🌮")).toBeNull();
   });
 
+  it("knows grooming and cleaning things too (decision 0058)", () => {
+    expect(foodEmoji("Disposable razors")).toBe("🪒");
+    expect(foodEmoji("Shaving cream")).toBe("🪒");
+    expect(foodEmoji("Toothpaste")).toBe("🪥");
+    expect(foodEmoji("Paper towels")).toBe("🧻");
+    expect(foodEmoji("Dish soap")).toBe("🧽");
+  });
+
   it("shows nothing rather than guessing", () => {
-    expect(foodEmoji("paper towels")).toBeNull();
+    expect(foodEmoji("aluminum foil")).toBeNull();
     expect(foodEmoji("")).toBeNull();
     expect(foodEmoji("1 1/2")).toBeNull();
   });
